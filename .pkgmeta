@@ -14,9 +14,7 @@ ignore:
   - ARCHITECTURE.md
   - CONTRIBUTING.md
   - LICENSE
-  - art-edits
-  - art-drawn
-  - art-icon
+  - art
   - CHANGELOG.md
   - AGENTS.md
   - CLAUDE.md

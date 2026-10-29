@@ -33,10 +33,10 @@ tools/
                   sea.py, sea_world.py (the sea), gapfill.py (the gaps), banners.py
                   (the cities' banners and cuts), tone.py (zone colours)
   map-art/        export.py / import.py (hand-cleaned world and continent art)
-  map-chart/      the sea chart (Santiago Reyes's, art-drawn/chart/): MapChart textures, Data/Chart.lua
+  map-chart/      the sea chart (Santiago Reyes's, art/drawn/chart/): MapChart textures, Data/Chart.lua
   map-tuning/     align.py: measures each zone's art against the minimap (report only)
   offline-test/   loads the addon in a stubbed client (run.py, lint.py)
-art-edits/        Blizzard's map art edited by hand (names painted out; the border)
+art/edits/        Blizzard's map art edited by hand (names painted out; the border)
 docs/             development.md (how to work on it), testing.md (the in-game check),
                   releasing.md, maintaining.md, curseforge.md
 ```
@@ -54,7 +54,7 @@ Every zone map is drawn onto one canvas in Azeroth's (947) art pixels, placed by
   `MapSeaLight`) in crossfading octaves, so it keeps its size on screen as you zoom
   (`S.SetSea`). Past the world art's edges, the continents' own sea carries on (`MapSeaOut`).
 - the **world** and **continent** art (wide feathered edges; their sea and continent names
-  painted out by hand, `art-edits/`), drawn through its land (`MapBackLand`) and its sea
+  painted out by hand, `art/edits/`), drawn through its land (`MapBackLand`) and its sea
   (`MapSeaMask`). The world's open sea (the whirlpool, the ship) stays the ocean until well
   in; its coastal hatching goes sooner (`MapSeaCoast`). Over land it mutes once zones cover
   it. Along each continent's coast, Blizzard's wave strokes (`MapHatch` through

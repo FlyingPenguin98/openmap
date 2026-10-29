@@ -1,5 +1,5 @@
-# Brings the filled gaps into the addon. For each art-drawn/gaps/<region>.png (a fill of a gap region
-# of art-drawn/gaps/regions.json, painted by hand on the plates gapregions.py exports to source/):
+# Brings the filled gaps into the addon. For each art/drawn/gaps/<region>.png (a fill of a gap region
+# of art/drawn/gaps/regions.json, painted by hand on the plates gapregions.py exports to source/):
 #   1. lined up with the region's zone art: scale and offset (a fill can come back at another
 #      size or framing), found by matching the zone art's edges and kept in fits.json,
 #      so it's found once (delete a region's entry to find it again)
@@ -21,7 +21,7 @@ from scipy import ndimage, optimize
 
 here = os.path.dirname(os.path.abspath(__file__))
 root = os.path.abspath(os.path.join(here, "..", ".."))
-EDITED = os.path.join(root, "art-drawn", "gaps")
+EDITED = os.path.join(root, "art", "drawn", "gaps")
 SRC = os.path.join(EDITED, "source")
 OUT = os.path.join(root, "OpenMap", "Media", "Textures", "MapGapFill")
 LUA = os.path.join(root, "OpenMap", "Data", "GapFills.lua")
@@ -160,7 +160,7 @@ for f in sorted(os.listdir(EDITED)):
     print(stem, "%d of %d tiles" % (len(tiles), cols * rows), flush=True)
 json.dump(dict(sorted(fits.items())), open(fp, "w", encoding="utf-8", newline="\n"), indent=1)
 with open(LUA, "w", encoding="utf-8", newline="\n") as fh_:
-    fh_.write("-- Filled gaps: fills of land no zone map covers, painted by hand (art-drawn/gaps), drawn by\n")
+    fh_.write("-- Filled gaps: fills of land no zone map covers, painted by hand (art/drawn/gaps), drawn by\n")
     fh_.write("-- Stitch.lua over the gaps' paper, under every zone. Each: its tiles' prefix (MapGapFill/<Gnn>_<tile>),\n")
     fh_.write("-- its box on the world (normalized: left, top, right, bottom), its size in px, its columns of\n")
     fh_.write("-- 256-px tiles, and the tiles drawn (row-major, from 1).\n")

@@ -22,7 +22,7 @@ Thanks for helping. A few things make changes easy to review.
   `tools/`. Change the script and regenerate; don't hand-edit the output.
   `Levels.lua` and `Fishing.lua` are entered by hand from the source named at their top: a correction
   needs a source too. `Labels.lua` is measured from the map art (see its top).
-  Hand edits of Blizzard's art go in `art-edits/` (see its README).
+  Hand edits of Blizzard's art go in `art/edits/` (see its README).
 - **Show blending changes with pictures.** `tools/map-preview/render.py` renders
   the stitched map out of game. Attach before / after renders to pull requests
   that touch how the map looks.

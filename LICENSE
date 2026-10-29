@@ -25,6 +25,6 @@ SOFTWARE.
 This licence covers OpenMap's code, data tables and tools. It does not cover the
 textures made from World of Warcraft's own art (listed in
 OpenMap/Media/Textures/NOTICE.md), nor the hand-edited copies of its map art and
-border in art-edits/: that art belongs to Blizzard Entertainment,
+border in art/edits/: that art belongs to Blizzard Entertainment,
 and is included only so the addon looks like the game's own map. Bundled
 libraries keep their own licences (OpenMap/LICENSES).

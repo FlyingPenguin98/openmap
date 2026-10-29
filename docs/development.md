@@ -74,22 +74,22 @@ table CSVs, `<tex>` a texture cache. Order matters where one step reads another'
 | 4a | `tools/map-caves/minimap.py <cache>` (best with `OPENMAP_WOW`) | `Data/CaveMinimap.lua` | 4 |
 | 5 | `tools/map-grade/fetch.py`, `grade.py` (see its README) | `Data/Grade.lua`, `MapBand/`, `MapCore/` | 1 |
 | 6 | `tools/map-textures/make.py` | `MapFeather*`, `MapGrain`, `MapTooth` | |
-| 7 | `tools/map-art/import.py <db2> <tex>` | `MapArt/`, `Data/ArtEdits.lua` | `art-edits/edited/` |
+| 7 | `tools/map-art/import.py <db2> <tex>` | `MapArt/`, `Data/ArtEdits.lua` | `art/edits/edited/` |
 | 8 | `tools/map-preview/render.py <db2> <tex> <out> --bake-land --bake-edges --bake-territory --bake-zone-land --bake-mini-land` | `MapLand/`, `MapEdge/`, `MapTerritory/`, `MapZoneLand/`, `MapZoneBorder/`, `MapMiniLand/` | 5, 7 (`--bake-territory` reads 12's and 12b's data too: run it again after them) |
 | 9 | `tools/map-preview/sea.py <db2> <tex>` | the sea and coast masks | 8 |
 | 10 | `tools/map-preview/sea_world.py <db2> <tex>` | `MapSeaOut/`, `MapSeaOpen/`, `MapSeaCoast/`, `MapSeaFieldOut` | 9 |
 | 11 | `tools/map-preview/banners.py <db2> <tex>` | `MapBanner/`, `MapBannerHole/`, `MapCityMask/`, `Data/Banners.lua` | |
 | 12 | `tools/map-preview/gapfill.py <db2> <tex> [--rerender]` | `MapGapLand/`, `MapGapMask/`, `MapPaper`, `MapCoastArt/`, `Data/Gaps.lua` | 8, 11 |
-| 12a | `tools/map-preview/gapregions.py <db2> <tex> [--only G01]` | `art-drawn/gaps/source/` (not committed: the plates to paint on, each region's fill area and sea) | 12, `art-drawn/gaps/regions.json` |
-| 12b | `tools/map-preview/gapfills.py` | `MapGapFill/`, `Data/GapFills.lua`, `art-drawn/gaps/fits.json` | 12a, `art-drawn/gaps/` (a painting from the painter's Photoshop file: `tools/map-preview/gapexport.py <his .psd>`) |
+| 12a | `tools/map-preview/gapregions.py <db2> <tex> [--only G01]` | `art/drawn/gaps/source/` (not committed: the plates to paint on, each region's fill area and sea) | 12, `art/drawn/gaps/regions.json` |
+| 12b | `tools/map-preview/gapfills.py` | `MapGapFill/`, `Data/GapFills.lua`, `art/drawn/gaps/fits.json` | 12a, `art/drawn/gaps/` (a painting from the painter's Photoshop file: `tools/map-preview/gapexport.py <his .psd>`) |
 | 12c | `tools/map-preview/gapplaces.py <db2> <cache>` (best with `OPENMAP_WOW`: it reads the terrain) | `MapGapPlace/`, `Data/GapPlaces.lua` | 12b |
 | 13 | `tools/map-preview/tone.py <db2> <tex>` | `Data/Tones.lua` | |
 | 13a | `tools/map-preview/minimaplod.py <db2> <tex>` | `MapMiniLOD/`, `Data/MinimapLOD.lua` | 13 |
 | 15 | `tools/map-preview/render.py <db2> <tex> <out> --bake-zones` | `MapZones/`, `Data/ZoneArt.lua` | 5, 7, 8, 11, 12, 12b |
 | 16 | `tools/changelog/build.py` (after any change to `CHANGELOG.md`) | `Data/Changelog.lua` | |
 | 17 | `tools/map-dungeons/build.py <cache> <WoW folder> [preview dir]` | `Data/DungeonMaps.lua` | 1 |
-| 17a | `tools/map-dungeons/drawn.py` | `MapDungeonDrawn/`, `Data/DungeonDrawn.lua` | `art-drawn/dungeons/` |
-| 17b | `tools/map-chart/build.py <db2> <tex>` (his layers from his file first: `tools/map-chart/export.py <psd>`) | `MapChart/`, `Data/Chart.lua` | `art-drawn/chart/` |
+| 17a | `tools/map-dungeons/drawn.py` | `MapDungeonDrawn/`, `Data/DungeonDrawn.lua` | `art/drawn/dungeons/` |
+| 17b | `tools/map-chart/build.py <db2> <tex>` (his layers from his file first: `tools/map-chart/export.py <psd>`) | `MapChart/`, `Data/Chart.lua` | `art/drawn/chart/` |
 | 18 | `tools/locale/translate.py build` (after any change to the translations or to the English in `L[...]`) | `Locales/`, the toc's `## Notes-<locale>` lines | `tools/locale/*.json` |
 
 Text the player reads goes through `ns.L["English"]` (or `L[...]`), never a bare string: the
@@ -108,7 +108,7 @@ and rerun step 1.
 baked into tiles; `OPENMAP_BAKED=1` renders from those tiles, to compare). Each texture in `OpenMap/Media/Textures` is listed in its
 `NOTICE.md` with the script that makes it: add a line when you add a texture.
 
-Hand edits of Blizzard's art (names painted out) live in `art-edits/`
+Hand edits of Blizzard's art (names painted out) live in `art/edits/`
 (see its README). Nothing in the repo is drawn or written by a generator: art is
 Blizzard's, cut, masked or hand-edited; facts come from the game's tables or a cited source.
 

@@ -5,11 +5,11 @@ Warcraft's own map art (Blizzard Entertainment's, not covered by OpenMap's MIT
 licence), generated from noise, or (one folder, below) drawn by a player who lets
 OpenMap use it. Each is made by a script in `tools/`, so it
 can be rebuilt from the game's files; the few touched by hand (marked below) are
-Blizzard's art edited by hand, kept in `art-edits/`.
+Blizzard's art edited by hand, kept in `art/edits/`.
 
 **OpenMap's own icon**: `OpenMapIcon` and `OpenMapIconRound` (cut to the compass's ring) (the AddOns list, the minimap button, the map's menu and
 portrait) is OpenMap's own picture, not Blizzard's: a compass over a parchment map, shrunk from
-`art-icon/openmap.jpg` by `tools/icon/build.py`.
+`art/icon/openmap.jpg` by `tools/icon/build.py`.
 
 **From Blizzard's art** (crops, colour fields and shapes taken from the game's map textures):
 
@@ -40,9 +40,9 @@ permission, credited on the map in game, and not covered by OpenMap's MIT licenc
 
 | Texture | What it is | Made by |
 | --- | --- | --- |
-| `MapDungeonDrawn/` | maps of City of Dalaran (`2959_*`), Excavation Site: Wetlands (`2998_*`), Ruins of Lordaeron (`2999_*`) and The Hall of Thanes (`3065_*`), drawn by Santiago Reyes (<https://ko-fi.com/sr433_20>; originals in `art-drawn/dungeons/`), in the dungeon map layout: 4 x 3 tiles of 256 px | `tools/map-dungeons/drawn.py` |
-| `MapChart/` | the sea chart round the world map (Options' Responsive ocean & border), painted by Santiago Reyes (originals in `art-drawn/chart/`): his paper and sea, the dark ground under it (made to tile), his navigation lines (each compass rose's rays apart), his ornaments and frame corners, each cut out on its own; with them two cross-fade masks for the paper's seams (`SeamX`, `SeamY`, generated) and `Middle`, a mask of the game's world map in the chart (from `MapFeatherWide` and `MapBackLand/947`) | `tools/map-chart/build.py` |
-| `MapGapFill/` | land no zone map covers, painted by hand by Santiago Reyes in the zone maps' style from Blizzard's own art, following the game's minimap (originals in `art-drawn/gaps/`), cut to that land and tiled; with it, the `MapZones/` tiles it shows in | `tools/map-preview/gapfills.py` |
+| `MapDungeonDrawn/` | maps of City of Dalaran (`2959_*`), Excavation Site: Wetlands (`2998_*`), Ruins of Lordaeron (`2999_*`) and The Hall of Thanes (`3065_*`), drawn by Santiago Reyes (<https://ko-fi.com/sr433_20>; originals in `art/drawn/dungeons/`), in the dungeon map layout: 4 x 3 tiles of 256 px | `tools/map-dungeons/drawn.py` |
+| `MapChart/` | the sea chart round the world map (Options' Responsive ocean & border), painted by Santiago Reyes (originals in `art/drawn/chart/`): his paper and sea, the dark ground under it (made to tile), his navigation lines (each compass rose's rays apart), his ornaments and frame corners, each cut out on its own; with them two cross-fade masks for the paper's seams (`SeamX`, `SeamY`, generated) and `Middle`, a mask of the game's world map in the chart (from `MapFeatherWide` and `MapBackLand/947`) | `tools/map-chart/build.py` |
+| `MapGapFill/` | land no zone map covers, painted by hand by Santiago Reyes in the zone maps' style from Blizzard's own art, following the game's minimap (originals in `art/drawn/gaps/`), cut to that land and tiled; with it, the `MapZones/` tiles it shows in | `tools/map-preview/gapfills.py` |
 
 **Generated** (no game art in them): `MapGrain`, `MapTooth` (paper grain, from noise)
 and the `MapFeather*` edge masks (`tools/map-textures/make.py`).

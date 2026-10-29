@@ -238,7 +238,7 @@ zones.sort(key=lambda m: -(m["rect"][1] - m["rect"][0]) * (m["rect"][3] - m["rec
 print(len(maps), "maps", len(zones), "zones", flush=True)
 
 _cache = {}
-EDITED = os.path.join(REPO, "art-edits", "edited")
+EDITED = os.path.join(REPO, "art", "edits", "edited")
 def base(m):
     """a map's art: the hand-cleaned copy (tools/map-art) where there is one, as the addon draws it"""
     k = ("b", m["id"])

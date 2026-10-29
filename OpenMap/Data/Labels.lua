@@ -1,5 +1,5 @@
 -- The continents' and seas' names, lettered live where Blizzard's map art had them (the
--- art itself is hand-cleaned: art-edits/). Measured from that art. One of each,
+-- art itself is hand-cleaned: art/edits/). Measured from that art. One of each,
 -- fixed on the world, so a name stays put as you zoom: the continents' as the world map
 -- sets them, the seas' as the continent maps do (both continent maps name the Great Sea
 -- between them: Eastern Kingdoms' only, the nearer the middle).

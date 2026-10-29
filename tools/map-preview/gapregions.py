@@ -1,4 +1,4 @@
-# Exports the gap regions for filling (art-drawn/gaps/source/, not committed; see art-drawn/gaps/README.md):
+# Exports the gap regions for filling (art/drawn/gaps/source/, not committed; see art/drawn/gaps/README.md):
 # land on the continent maps that no zone map covers (gapfill.py's gaps, less Blizzard's own
 # classic maps of them), each region with PAD world units of the zone maps round it, at the
 # resolution of the finest zone map there (at most MAX_PX px a world unit):
@@ -11,7 +11,7 @@
 #   NN_<zones>_sea.png      white: open sea (no continent land, no zone art), where a painted coastline is kept
 #   NN_<zones>_minimap.png  the game's minimap of the same area, aligned
 #   index_<continent>.png   where each region is
-# The regions are art-drawn/gaps/regions.json (committed): each region's place on its continent and
+# The regions are art/drawn/gaps/regions.json (committed): each region's place on its continent and
 # its scale, exported again as they are, so fills made from them still line up. --find looks for the
 # regions afresh and keeps the --top N (default 10) with the most gap, named G01, G02 ... by size.
 #
@@ -24,7 +24,7 @@ from scipy import ndimage
 
 here = os.path.dirname(os.path.abspath(__file__))
 root = os.path.abspath(os.path.join(here, "..", ".."))
-GAPS = os.path.join(root, "art-drawn", "gaps")
+GAPS = os.path.join(root, "art", "drawn", "gaps")
 OUT = os.path.join(GAPS, "source")
 find = "--find" in sys.argv
 TOP = int(sys.argv[sys.argv.index("--top") + 1]) if "--top" in sys.argv else 10

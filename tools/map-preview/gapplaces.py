@@ -218,7 +218,7 @@ for area in PLACES:
           mid[0], mid[1], ", ".join(by) or "no zone's pieces (always found)"), flush=True)
 
 with open(os.path.join(WM, "GapPlaces.lua"), "w", encoding="utf-8", newline="\n") as fo:
-    fo.write("-- Places a painted gap (art-drawn/gaps) shows that no zone map draws: WoW Forever's own, which the game\n"
+    fo.write("-- Places a painted gap (art/drawn/gaps) shows that no zone map draws: WoW Forever's own, which the game\n"
              "-- marks no one as having explored (AreaTable's AreaBit 0). With unexplored areas hidden or darkened,\n"
              "-- each is unexplored land until it's found as a city is, by the zone maps' pieces under its middle\n"
              "-- (Stitch.lua's Shade.Places). Each: its area (AreaTable), its name, its box on the world (normalized:\n"
