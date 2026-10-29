@@ -39,6 +39,10 @@ python tools/offline-test/run.py combat
 python tools/offline-test/run.py secret
 python tools/offline-test/run.py pad
 python tools/offline-test/run.py padmap
+python tools/offline-test/navigation.py
+python -P tools/offline-test/combat.py
+python -P tools/offline-test/caves.py
+python -P tools/offline-test/explored.py
 python -P tools/offline-test/chart.py
 ```
 

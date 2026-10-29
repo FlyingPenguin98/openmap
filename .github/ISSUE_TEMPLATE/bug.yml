@@ -1,7 +1,19 @@
 name: Bug or Lua error
-description: Something doesn't work, or the game shows a Lua error from OpenMap
+description: Something doesn't work in OpenMap (or on openmap.world), or the game shows a Lua error from it
 labels: ["bug"]
 body:
+  - type: dropdown
+    id: game
+    attributes:
+      label: Game version
+      description: Which game is this about? ("This website" means openmap.world.)
+      options:
+        - Forever
+        - Classic
+        - Retail
+        - This website
+    validations:
+      required: true
   - type: textarea
     id: what
     attributes:

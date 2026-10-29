@@ -12,7 +12,7 @@
 ## Notes-zhCN: 一张无缝世界地图：所有区域拼接在一起，从一个区域缩小，再放大到下一个区域。暴雪的地图、任务日志和Questie照常可用。/openmap
 ## Notes-zhTW: 一張無縫的世界地圖：所有區域拼接成一體，從一個區域縮小就能看到下一個。Blizzard 的地圖、任務日誌與 Questie 照常運作。/openmap
 ## Author: OpenMap contributors
-## IconTexture: Interface\Icons\Achievement_Zone_EasternKingdoms_01
+## IconTexture: Interface\AddOns\OpenMap\Media\Textures\OpenMapIcon
 ## AddonCompartmentFunc: OpenMap_OnAddonCompartmentClick
 ## AddonCompartmentFuncOnEnter: OpenMap_OnAddonCompartmentEnter
 ## AddonCompartmentFuncOnLeave: OpenMap_OnAddonCompartmentLeave
@@ -24,7 +24,7 @@
 ## X-Category: Map
 ## X-License: MIT (code); map art is Blizzard's
 ## X-Curse-Project-ID: 1735937
-## X-Website: https://www.curseforge.com/wow/addons/openmap
+## X-Website: https://github.com/openmap-world/openmap
 
 Libs\Libs.xml
 

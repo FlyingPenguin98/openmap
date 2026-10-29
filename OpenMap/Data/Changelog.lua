@@ -4,6 +4,10 @@
 local _, ns = ...
 
 ns.MapChangelog = {
+	{ version = "Unreleased", date = "", heads = { [1] = "Improved", }, items = {
+		"|cff6e2c0aOpenMap has its own icon|r, a compass over a parchment map, in the AddOns list, on the minimap button and in the map's menu (it borrowed the game's Eastern Kingdoms icon).",
+		"|cff6e2c0aOpenMap is back on GitHub|r, at github.com/openmap-world/openmap: Report a problem opens a report there again, and What's new and the AddOns list link to it.",
+	} },
 	{ version = "v0.7.5-beta", date = "2026-10-23", heads = { [1] = "Fixed", }, items = {
 		"|cff6e2c0aThe map's art is there at once when you open it|r: since 0.7.4 the zones showed blank parchment for a moment each time the map opened.",
 		"|cff6e2c0aClicking a quest on the map keeps the map as it is|r: the quest is tracked and the map zooms in on it, full screen or windowed. It opened the quest's details, which Blizzard shows in the windowed map, so a full-screen map left full screen. With the quest log open beside the map, its details show there too.",
@@ -41,14 +45,5 @@ ns.MapChangelog = {
 		"|cff6e2c0aFlight masters you've learned are in colour|r, all of them: OpenMap knew only the ones it had seen you visit since it was installed (and, on a client not in English, none). It now asks the game which you've found.",
 		"|cff6e2c0aFishing on the zone hover|r shows: OpenMap looked for your Fishing skill in a way WoW Forever no longer offers, and found none.",
 		"|cff6e2c0aZeppelin towers show for the Alliance too|r when Zeppelins is on: they were the Horde's only, though their routes showed for everyone and the goblins' zeppelins take anyone.",
-	} },
-	{ version = "v0.7.0-beta", date = "2026-10-20", heads = { [1] = "New", [4] = "Improved", [7] = "Fixed", }, items = {
-		"|cff6e2c0aFishing on the zone hover|r: if you know Fishing, hovering a zone shows the skill at which every cast there lands (Elwynn Forest 25, Hillsbrad Foothills 150, Stranglethorn Vale 225 ...), green if you have it, yellow if most casts land, red if most get away. With |cff6e2c0aZone levels|r, from the original game's values; WoW Forever's own zones have none yet.",
-		"|cff6e2c0aShortest Path Forever from anywhere on the map|r: Shift-click a spot in another zone, on another continent or zoomed right out over the whole world, and its journey is planned there. Its own Shift-click only reached the map underneath (the zone or continent you were last zoomed into).",
-		"|cff6e2c0aNeedRoll opens where you click|r: a boss in a dungeon's Bosses tab opens NeedRoll on that boss's loot (Shift-click: where the boss is, on NeedRoll's map of the dungeon), and a quest in the Quests tab opens its page there; the Loot tab's button opens the dungeon's own loot. Dire Maul's, Scarlet Monastery's, Stratholme's and Blackrock Spire's wings open on the right one. Needs NeedRoll's newest version (thanks to its author, mikebvs, for the links).",
-		"|cff6e2c0aChoose your map|r: the choice the first time the map opens is in the map window's own frame, with plainer words.",
-		"|cff6e2c0aThe map stays open while you talk to an NPC|r (or open a vendor, the bags' windows ...): the windowed map is no longer put away to make room. Escape still closes it; maximized, it behaves as before.",
-		"|cff6e2c0aReopen map: Center on player, keep zoom|r (the menu's Reopen map, and Options): the map opens on you at the zoom you closed it at.",
-		"|cff6e2c0aIronforge's map shows once you've been there|r, even if you came by the Deeprun Tram and haven't found the land round it yet. With unexplored areas hidden, the city counted as found only once you'd explored the part of Dun Morogh over it; now going into a city finds it too.",
 	} },
 }

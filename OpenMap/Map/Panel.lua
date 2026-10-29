@@ -50,7 +50,8 @@ local function SetIcon(tex, look)
 	if square then tex:SetTexCoord(0.08, 0.92, 0.08, 0.92) end   -- (the spell icons' own frame cut off)
 	return square and true or false
 end
-local OPENMAP_ICON = Icon("Achievement_Zone_EasternKingdoms_01")
+-- OpenMap's own icon (tools/icon/build.py), framed and trimmed as a spell icon is
+local OPENMAP_ICON = { texture = "Interface\\AddOns\\OpenMap\\Media\\Textures\\OpenMapIcon", icon = true }
 
 -- Blizzard's action-button frame round `tex` (`size` square): this client's, with its rounded
 -- mask on the icon, else the classic slot's
@@ -275,7 +276,7 @@ local function Rows()
 			mod:Refresh()
 			if ns.NotifyOptions then ns.NotifyOptions() end
 		end)
-	rows[#rows + 1] = row(L["Minimap button"], "minimapButton", Icon("Achievement_Zone_EasternKingdoms_01"), function() return db.minimapButton end,
+	rows[#rows + 1] = row(L["Minimap button"], "minimapButton", OPENMAP_ICON, function() return db.minimapButton end,
 		function(v)
 			db.minimapButton = v
 			if mod.RefreshLauncher then mod.RefreshLauncher() end
@@ -1204,7 +1205,7 @@ function mod:SetupPanel(worldMap)
 	local border = map.BorderFrame
 	if border and border.SetPortraitToAsset then
 		local function Portrait()
-			border:SetPortraitToAsset(mod.IsStitched() and OPENMAP_ICON.texture or "Interface\\QuestFrame\\UI-QuestLog-BookIcon")
+			border:SetPortraitToAsset(mod.IsStitched() and "Interface\\AddOns\\OpenMap\\Media\\Textures\\OpenMapIconRound" or "Interface\\QuestFrame\\UI-QuestLog-BookIcon")
 		end
 		Portrait()
 		map:HookScript("OnShow", Portrait)

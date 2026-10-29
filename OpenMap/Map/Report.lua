@@ -2,7 +2,7 @@
 -- Report a problem (beta feedback), from the map's menu: draw where it's wrong if it's about a spot
 -- (the quill, Sketch.lua, in red; on a dungeon's map, on its picture: Dungeons.lua's markup), or
 -- nothing (the menu, settings, another addon), say what's wrong, and get a short report code to paste
--- into a comment on OpenMap's CurseForge page (ns.ISSUES_URL; addons can't send anything themselves). The code carries the place, zoom, what
+-- into a GitHub issue (ns.ISSUES_URL; addons can't send anything themselves). The code carries the place, zoom, what
 -- was drawn and the note, so tools/map-preview/report.py can render what the player saw.
 --
 -- Code: OM1|<version>|<mapID>|<u>|<v>|<zoom>|<marks>|<note>
@@ -148,8 +148,8 @@ function mod:ShowReportCode(code)
 			box:SetScript("OnTextChanged", function(self, user) if user then self:SetText(self.value) self:HighlightText() end end)
 			return box
 		end
-		codeFrame.url = Field(L["1. Open OpenMap's comments on CurseForge (Ctrl-C, then paste in your browser):"], -16)
-		codeFrame.code = Field(L["2. Post this code in a comment there, with a screenshot if you can:"], -76)
+		codeFrame.url = Field(L["1. Open OpenMap's report page on GitHub (Ctrl-C, then paste in your browser):"], -16)
+		codeFrame.code = Field(L["2. Paste this code into the report, with a screenshot if you can:"], -76)
 		local tip = codeFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 		tip:SetPoint("TOPLEFT", 14, -140 - top)
 		tip:SetWidth(510)
