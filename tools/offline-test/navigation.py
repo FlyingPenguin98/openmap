@@ -59,8 +59,8 @@ class NavigationTests(unittest.TestCase):
             assert(not opts.rememberView and not opts.rememberViewInView)
             local count = 0
             for _ in pairs(opts.reopenView.values) do count = count + 1 end
-            assert(count == 3)
-            for _, mode in ipairs({ 'player', 'always', 'visible' }) do
+            assert(count == 4)
+            for _, mode in ipairs({ 'player', 'zoom', 'always', 'visible' }) do
                 opts.reopenView.set({ 'reopenView' }, mode)
                 assert(opts.reopenView.get({ 'reopenView' }) == mode)
             end
@@ -164,7 +164,7 @@ class NavigationTests(unittest.TestCase):
                     choices[#choices + 1] = row
                 end
             end
-            assert(#choices == 3)
+            assert(#choices == 4)
             function mod:Refresh() end
             for _, selected in ipairs(choices) do
                 selected[3](true)

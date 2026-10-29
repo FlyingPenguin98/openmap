@@ -7,6 +7,10 @@ be rebuilt from the game's files. Retail's map itself is the game's art as it is
 (its world, continent and zone maps, drawn from the client); these are the masks
 that fit them together.
 
+**OpenMap's own icon**: `OpenMapIcon` and `OpenMapIconRound` (cut to the compass's ring) (shared by both clients, in `Media/Textures/`: the AddOns list,
+the minimap button, the map's menu and portrait) is OpenMap's own picture, not Blizzard's: a compass
+over a parchment map, shrunk from `art-icon/openmap.jpg` by `tools/icon/build.py`.
+
 **From Blizzard's art** (shapes traced from the game's map art and tables):
 
 | Texture | What it is | Made by |

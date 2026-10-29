@@ -7,6 +7,10 @@ OpenMap use it. Each is made by a script in `tools/`, so it
 can be rebuilt from the game's files; the few touched by hand (marked below) are
 Blizzard's art edited by hand, kept in `art-edits/`.
 
+**OpenMap's own icon**: `OpenMapIcon` and `OpenMapIconRound` (cut to the compass's ring) (shared by both clients, in `Media/Textures/`: the AddOns list,
+the minimap button, the map's menu and portrait) is OpenMap's own picture, not Blizzard's: a compass
+over a parchment map, shrunk from `art-icon/openmap.jpg` by `tools/icon/build.py`.
+
 **From Blizzard's art** (crops, colour fields and shapes taken from the game's map textures):
 
 | Texture | What it is | Made by |

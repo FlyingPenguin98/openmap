@@ -13,7 +13,7 @@ local d = mod.defaults
 d.minimapButton = false         -- a button on the minimap's edge
 d.minimapAngle = 200            -- where round the minimap it sits (degrees, counter-clockwise from east)
 
-local ICON = "Interface\\Icons\\Achievement_Zone_EasternKingdoms_01"   -- (the toc's)
+local ICON = "Interface\\AddOns\\OpenMap\\Media\\Textures\\OpenMapIconRound"   -- (OpenMap's own, cut to its compass ring: tools/icon/build.py)
 local button
 
 local function OpenMenu()
@@ -63,7 +63,6 @@ local function Make()
 	bg:SetPoint("TOPLEFT", 7, -5)
 	local icon = button:CreateTexture(nil, "ARTWORK")
 	icon:SetTexture(ICON)
-	icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
 	icon:SetSize(17, 17)
 	icon:SetPoint("TOPLEFT", 7, -6)
 	local border = button:CreateTexture(nil, "OVERLAY")

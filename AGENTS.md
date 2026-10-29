@@ -37,6 +37,7 @@ python -P tools/offline-test/lint.py
 python tools/offline-test/run.py plain
 python tools/offline-test/run.py combat
 python tools/offline-test/run.py secret
+python tools/offline-test/navigation.py
 ```
 
 All must pass. For anything visual, render before and after with

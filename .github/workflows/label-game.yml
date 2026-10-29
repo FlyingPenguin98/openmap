@@ -1,0 +1,30 @@
+# Labels each new issue with the game it's about (forever, classic, retail or website), read from
+# the issue form's "Game version" answer. Issue forms can't add a label from an answer by
+# themselves, and issues posted from openmap.world by visitors lose their labels.
+name: Label game version
+on:
+  issues:
+    types: [opened, edited]
+permissions:
+  issues: write
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const body = context.payload.issue.body || "";
+            const m = /^#{1,6}\s*Game version\s*\r?\n+\s*(.+?)\s*$/im.exec(body);
+            if (!m) return;
+            const games = { forever: "forever", "wow forever": "forever", classic: "classic", retail: "retail", "this website": "website", website: "website" };
+            const label = games[m[1].toLowerCase()];
+            if (!label) return;
+            const others = Object.values(games).filter((l) => l !== label);
+            const have = context.payload.issue.labels.map((l) => l.name);
+            for (const l of have.filter((n) => others.includes(n))) {
+              await github.rest.issues.removeLabel({ ...context.repo, issue_number: context.issue.number, name: l });
+            }
+            if (!have.includes(label)) {
+              await github.rest.issues.addLabels({ ...context.repo, issue_number: context.issue.number, labels: [label] });
+            }

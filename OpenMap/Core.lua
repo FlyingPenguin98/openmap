@@ -14,9 +14,9 @@ ns.name = ADDON
 ns.version = (C_AddOns and C_AddOns.GetAddOnMetadata or GetAddOnMetadata)(ADDON, "Version") or "dev"
 if ns.version:find("^@") then ns.version = "dev" end   -- (a checkout: the packager fills it in for releases)
 ns.ACCENT = "e6b85c"
--- where players send reports (the "Report a problem" button shows it to copy): OpenMap's comments on
--- CurseForge (the GitHub repository's issues, map-problem.yml, are out of reach for now)
-ns.ISSUES_URL = "https://www.curseforge.com/wow/addons/openmap/comments"
+-- where players send reports (the "Report a problem" button shows it to copy): a new issue on
+-- GitHub, with the map-problem form
+ns.ISSUES_URL = "https://github.com/openmap-world/openmap/issues/new?template=map-problem.yml&game=Retail"
 ns.Media = { path = "Interface\\AddOns\\" .. ADDON .. "\\Media\\" }
 -- the textures are each client's own (Data\<client>\Client.lua, loaded before this, names it)
 ns.Media.tex = ns.Media.path .. "Textures\\" .. ns.Client .. "\\"

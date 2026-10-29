@@ -16,6 +16,7 @@ ignore:
   - LICENSE
   - art-edits
   - art-drawn
+  - art-icon
   - CHANGELOG.md
   - AGENTS.md
   - CLAUDE.md

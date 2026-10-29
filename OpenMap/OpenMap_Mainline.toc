@@ -2,7 +2,7 @@
 ## Title: |cffe6b85cOpen|rMap
 ## Notes: One seamless world map: every zone stitched together, zoom out of one into the next. Blizzard's map and quest log keep working. /openmap
 ## Author: OpenMap contributors
-## IconTexture: Interface\Icons\Achievement_Zone_EasternKingdoms_01
+## IconTexture: Interface\AddOns\OpenMap\Media\Textures\OpenMapIcon
 ## AddonCompartmentFunc: OpenMap_OnAddonCompartmentClick
 ## AddonCompartmentFuncOnEnter: OpenMap_OnAddonCompartmentEnter
 ## AddonCompartmentFuncOnLeave: OpenMap_OnAddonCompartmentLeave
@@ -14,7 +14,7 @@
 ## X-Category: Map
 ## X-License: MIT (code); map art is Blizzard's
 ## X-Curse-Project-ID: 1735937
-## X-Website: https://www.curseforge.com/wow/addons/openmap
+## X-Website: https://github.com/openmap-world/openmap
 
 # Retail's toc: its data and textures are the Retail folders (Data\Retail\Client.lua)
 Data\Retail\Client.lua

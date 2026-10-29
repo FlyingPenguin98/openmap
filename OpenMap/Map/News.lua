@@ -21,7 +21,7 @@ local INK = { 0.2, 0.12, 0.05 }       -- (the quest text's)
 local TITLE = { 0.24, 0.13, 0.04 }
 local GOLD = { 1, 0.82, 0 }
 local TITLE_FONT = "Fonts\\MORPHEUS.TTF"
-local URL = "https://www.curseforge.com/wow/addons/openmap"   -- (OpenMap's page: its GitHub repository is out of reach for now)
+local URL = "https://github.com/openmap-world/openmap"
 local MONTHS = { "January", "February", "March", "April", "May", "June", "July", "August", "September",
 	"October", "November", "December" }
 
@@ -273,7 +273,7 @@ local function Build()
 	close:SetPoint("BOTTOMRIGHT", -14, FOOT - 34)
 	local credit = Look:Font(frame:CreateFontString(nil, "OVERLAY"), 13)
 	credit:SetPoint("BOTTOMLEFT", 16, 16)
-	credit:SetText(L["OpenMap is made by |cffe6b85cJi|r: ideas and reports are welcome on CurseForge"])
+	credit:SetText(L["OpenMap is made by |cffe6b85cJi|r, and it's open source: join in on GitHub"])
 	local link = CreateFrame("EditBox", nil, frame, "InputBoxTemplate")
 	link:SetSize(300, 22)
 	link:SetPoint("LEFT", credit, "RIGHT", 14, 0)
