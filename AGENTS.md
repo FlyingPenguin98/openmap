@@ -14,12 +14,12 @@ the game's own files. The addon is `OpenMap/`; everything else is tooling and do
 
 1. **True to the game.** The map stays true to the original game's art style and intent:
    the classic vanilla look and immersion come first. Art starts from Blizzard's, in the
-   game files; edits to it (in `art-edits/`) only mend what's blurry or broken, and add no
+   game files; edits to it (in `art/edits/`) only mend what's blurry or broken, and add no
    places, landmarks or detail the game's own maps don't have. Facts (place names,
    positions, levels) come from the game's tables or a source cited in the file. Interface
    text (option labels, tooltips) is fine. The one exception to Blizzard's art: maps of WoW
    Forever's own dungeons, which the game has none of, drawn by players who let OpenMap use
-   them (`art-drawn/`), credited in game and in `NOTICE.md`.
+   them (`art/drawn/`), credited in game and in `NOTICE.md`.
 2. **Generated files are generated.** Don't hand-edit anything a script writes (its first
    lines say which script). Change the script and rerun it, and commit both together.
 3. **Blizzard's art stays credited.** A new texture gets a line in

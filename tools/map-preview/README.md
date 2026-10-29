@@ -56,7 +56,7 @@ The other bakes, each a script here (run with the same `<db2 dir> <texture cache
 | `sea.py` | the sea's paper and wave strokes, the coastal bands, the backdrop's land / sea masks |
 | `sea_world.py` (after `sea.py`) | the continents' sea past the world map's edges, the sea's colour out there (the world sea's own, carried outward), and the world map's coastal hatching apart from its open sea |
 | `gapfill.py` | the gaps: blank parchment where no zone paints, and Blizzard's classic maps of that land |
-| `gapexport.py <his .psd> [...]` (needs psd-tools; no `<db2 dir>`) | a painting from the painter's Photoshop file into `art-drawn/gaps/` (its README) |
+| `gapexport.py <his .psd> [...]` (needs psd-tools; no `<db2 dir>`) | a painting from the painter's Photoshop file into `art/drawn/gaps/` (its README) |
 | `gapplaces.py` (after `gapfills.py`; best with `OPENMAP_WOW`) | the places a painted gap shows that no zone map draws (WoW Forever's own, which the game marks no one as having explored: the Wetlands' Excavation Site), from the game's terrain: hidden or darkened with unexplored areas until found; it lists the others the paintings show, to look at |
 | `banners.py` | city banners cut from their zone's art (Orgrimmar on Durotar's) |
 | `tone.py` | each zone's colour, for the close-up minimap's tint |

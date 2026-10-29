@@ -1,10 +1,10 @@
 # The sea chart
 
 Options' **Responsive ocean & border** (off unless chosen): Santiago Reyes's sea chart round the world map
-(`art-drawn/chart/`, used with his permission), laid out for the map window's shape. Zoomed right
+(`art/drawn/chart/`, used with his permission), laid out for the map window's shape. Zoomed right
 out, the chart fills the view; the game's own world map stays in its middle, fading into his sea.
 
-- `export.py <his .psd>`: his layers into `art-drawn/chart/` (needs psd-tools).
+- `export.py <his .psd>`: his layers into `art/drawn/chart/` (needs psd-tools).
 - `build.py <db2 dir> <texture cache>`: the textures (`OpenMap/Media/Textures/MapChart/`) and `OpenMap/Data/Chart.lua`.
 - `layout.py`: the layout, used by both, by `tools/map-preview/render.py` (`OPENMAP_CHART=1`) and by
   `preview.py`. `OpenMap/Map/Chart.lua` does the same in game; `tools/offline-test/chart.py` checks

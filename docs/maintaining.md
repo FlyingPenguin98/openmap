@@ -39,7 +39,7 @@ The template's checklist, plus:
   executes downloaded content, no new network endpoints without reason. In workflows: no
   `pull_request_target`, no new secrets, actions from trusted publishers.
 - **Content**: true to the original game's art style and intent (the classic vanilla look
-  first): art from the game files, or an edit in `art-edits/` that only mends what's blurry
+  first): art from the game files, or an edit in `art/edits/` that only mends what's blurry
   or broken and adds nothing the game's maps don't have; facts from the game's tables or a
   cited source.
   New textures are listed in `NOTICE.md`.

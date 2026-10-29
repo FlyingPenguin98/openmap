@@ -1,9 +1,9 @@
 # Exports the map art worth hand-cleaning (sea lettering and the like) as full-size PNGs,
 # the client's own pixels: the world map, the two continents, and every zone map that
-# paints sea. Edit a copy, save it under the same name in art-edits/edited/, and run
+# paints sea. Edit a copy, save it under the same name in art/edits/edited/, and run
 # import.py: the tiles you changed replace the client's in the addon.
 #
-#   art-edits/source/<uiMapID> <name>.png   (regenerate any time; not committed)
+#   art/edits/source/<uiMapID> <name>.png   (regenerate any time; not committed)
 #
 # usage: python -P tools/map-art/export.py <db2 dir> <texture cache>
 import os, sys
@@ -18,9 +18,9 @@ g = {"__name__": "export", "__file__": os.path.join(prev, "render.py")}
 src = open(os.path.join(prev, "render.py"), encoding="utf-8").read()
 exec(compile(src[:src.index("views = sys.argv[4:]")], "render", "exec"), g)
 
-out = os.path.join(here, "..", "..", "art-edits", "source")
+out = os.path.join(here, "..", "..", "art", "edits", "source")
 os.makedirs(out, exist_ok=True)
-os.makedirs(os.path.join(here, "..", "..", "art-edits", "edited"), exist_ok=True)
+os.makedirs(os.path.join(here, "..", "..", "art", "edits", "edited"), exist_ok=True)
 picked = [m for m in g["maps"] if m["id"] == 947 or m["kind"] == 2]
 for z in g["zones"]:
     if g["reveal"].get(z["art"]) and g["zone_sea"](z).sum() > 3000:

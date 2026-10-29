@@ -1,5 +1,5 @@
 # A gap painting from the painter's Photoshop file (not committed: 100-370 MB each) into
-# art-drawn/gaps/<region>.png, which gapfills.py brings into the addon: the composite Photoshop saved in
+# art/drawn/gaps/<region>.png, which gapfills.py brings into the addon: the composite Photoshop saved in
 # the file, as he saw it, except in the regions listed in UNCOVERED, over their fill area.
 # The plates came to him as a layered file with the zones' art on top of his paint layers ("Zone art -
 # Blizzard (do not edit)", for him to paint round). Where that art faded out over the gap it was the zones'
@@ -19,7 +19,7 @@ from scipy import ndimage
 
 Image.MAX_IMAGE_PIXELS = None
 here = os.path.dirname(os.path.abspath(__file__))
-GAPS = os.path.join(here, "..", "..", "art-drawn", "gaps")
+GAPS = os.path.join(here, "..", "..", "art", "drawn", "gaps")
 SRC = os.path.join(GAPS, "source")
 ZONE_ART = "Zone art - Blizzard (do not edit)"   # the plate's layer, as the plates went to him
 UNCOVERED = ("G08",)            # regions flattened without it over their fill area. The others have the same layer
@@ -35,7 +35,7 @@ def export(path, man):
     stem = os.path.splitext(os.path.basename(path))[0]
     e = man.get(stem)
     if not e:
-        sys.exit("%s: not a region of art-drawn/gaps/regions.json" % stem)
+        sys.exit("%s: not a region of art/drawn/gaps/regions.json" % stem)
     psd = PSDImage.open(path)
     W, H = psd.size
     assert [W, H] == e["size"], (stem, psd.size, e["size"])

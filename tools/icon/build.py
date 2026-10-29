@@ -1,4 +1,4 @@
-"""OpenMap's icon, from art-icon/openmap.jpg, as the game reads it (128x128, 32-bit, uncompressed TGA):
+"""OpenMap's icon, from art/icon/openmap.jpg, as the game reads it (128x128, 32-bit, uncompressed TGA):
 - OpenMap/Media/Textures/OpenMapIcon.tga: the whole square picture (the AddOns list, the map's menu)
 - OpenMap/Media/Textures/OpenMapIconRound.tga: cut to the compass's ring, round, the rest clear
   (the minimap button, the map window's round portrait)
@@ -8,7 +8,7 @@ from pathlib import Path
 from PIL import Image, ImageDraw
 
 ROOT = Path(__file__).resolve().parents[2]
-SRC = ROOT / "art-icon" / "openmap.jpg"
+SRC = ROOT / "art" / "icon" / "openmap.jpg"
 OUT = ROOT / "OpenMap" / "Media" / "Textures"
 SIZE = 128
 # the ring's outer edge in the 1024 px picture: centred on the needle's hub, 355 px out (openmap.world crops its round icon the same)

@@ -1,5 +1,5 @@
 # Santiago Reyes's sea chart (his Photoshop file, not committed: 226 MB) into the layers OpenMap's chart
-# is made from, art-drawn/chart/ (committed, as his other art in art-drawn/ is). Each layer flattened on
+# is made from, art/drawn/chart/ (committed, as his other art in art/drawn/ is). Each layer flattened on
 # its own over his whole sheet (3840 px square), as he painted it; tools/map-chart/build.py does the rest.
 #   paper.png        the sheet and the sea painted on it (his "Hoja de mapa" and "Capa 24"), half size
 #   backdrop.png     a piece of the dark ground the sheet lies on ("Fondo")
@@ -16,7 +16,7 @@ import json, os, sys
 from PIL import Image
 from psd_tools import PSDImage
 
-OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "art-drawn", "chart")
+OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "art", "drawn", "chart")
 CONTINENTS = {"1414 Kalimdor": 1414, "1415 Eastern Kingdoms": 1415}
 
 
@@ -57,7 +57,7 @@ def main():
     with open(os.path.join(OUT, "sheet.json"), "w", encoding="utf-8", newline="\n") as f:
         json.dump({"size": size, "continents": boxes}, f, indent=1)
         f.write("\n")
-    print("wrote art-drawn/chart:", sorted(os.listdir(OUT)))
+    print("wrote art/drawn/chart:", sorted(os.listdir(OUT)))
 
 
 if __name__ == "__main__":
