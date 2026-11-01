@@ -13,7 +13,7 @@ local d = mod.defaults
 d.minimapButton = false         -- a button on the minimap's edge
 d.minimapAngle = 200            -- where round the minimap it sits (degrees, counter-clockwise from east)
 
-local ICON = "Interface\\AddOns\\OpenMap\\Media\\Textures\\OpenMapIconRound"   -- (OpenMap's own, cut to its compass ring: tools/icon/build.py)
+local ICON = "Interface\\AddOns\\OpenMap\\Media\\Textures\\OpenMapIconRound"   -- (OpenMap's own, by zloyeb, cut to its gold ring: tools/icon/build.py)
 local button
 
 local function OpenMenu()

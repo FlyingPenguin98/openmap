@@ -28,7 +28,7 @@ Everything is in the **OpenMap** menu on the map (or type `/openmap`, or use the
 
 ## Original game art
 
-Every map and icon OpenMap uses is Blizzard's own art, loaded from the game. The few textures the addon ships are cut or masked from Blizzard's map art (the sea, blank parchment, coastlines, the border) or are plain paper grain made from noise. The zone data, dungeon entrances and levels, boat routes and flight network come from the game's data files; zone level ranges come from the Warcraft Wiki, and townsfolk and spirit healers from Questie.
+Every map and icon OpenMap uses is Blizzard's own art, loaded from the game, except OpenMap's own icon, which zloyeb drew for it. The few textures the addon ships are cut or masked from Blizzard's map art (the sea, blank parchment, coastlines, the border) or are plain paper grain made from noise. The zone data, dungeon entrances and levels, boat routes and flight network come from the game's data files; zone level ranges come from the Warcraft Wiki, and townsfolk and spirit healers from Questie.
 
 ## Help build it
 
