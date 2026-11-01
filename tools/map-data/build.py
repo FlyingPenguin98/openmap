@@ -1,16 +1,19 @@
-# Builds OpenMap's map data from the game's own tables (WoW Forever, build 1.60.1.70245):
-#   OpenMap/Data/Reveal.lua   explored-area pieces per zone art   (WorldMapOverlay, WorldMapOverlayTile)
-#   OpenMap/Data/Places.lua   instance entrances, levels and bosses, boat, zeppelin and airship docks and routes
-#                             (Map, LFGDungeons, ContentTuning, DungeonEncounter, TaxiNodes, TaxiPath,
-#                             TaxiPathNode)
-# The tables are fetched as CSV from wago.tools into a cache folder.
+# Builds OpenMap's map data from the game's own tables (the client's build: tools/clients.py):
+#   OpenMap/Data/<client>/Reveal.lua   explored-area pieces per zone art   (WorldMapOverlay, WorldMapOverlayTile)
+#   OpenMap/Data/<client>/Places.lua   instance entrances, levels and bosses, boat, zeppelin and airship docks and
+#                             routes (Map, LFGDungeons, ContentTuning, DungeonEncounter, TaxiNodes, TaxiPath,
+#                             TaxiPathNode; retail's entrances: JournalInstanceEntrance, JournalInstance)
+# The tables are fetched as CSV from wago.tools into a cache folder. A client with a world of its own
+# (Data/<client>/World.lua, tools/map-data/world.py: run that first) keeps only the places on it.
 # usage: python -P tools/map-data/build.py <cache dir> [build]
 import csv, math, os, sys, time, urllib.request
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-DATA = os.path.join(HERE, "..", "..", "OpenMap", "Data")
+sys.path.insert(0, os.path.join(HERE, ".."))
+import clients, uimap   # the client the tools build for (OPENMAP_CLIENT)
+DATA = clients.DATA
 cache = sys.argv[1]
-BUILD = sys.argv[2] if len(sys.argv) > 2 else "1.60.1.70245"
+BUILD = sys.argv[2] if len(sys.argv) > 2 else clients.BUILD
 os.makedirs(cache, exist_ok=True)
 
 def table(name):
@@ -37,6 +40,11 @@ for o in table("WorldMapOverlay"):
     if not t: continue
     key = "%s:%s:%s:%s" % (o["TextureWidth"], o["TextureHeight"], o["OffsetX"], o["OffsetY"])
     reveal.setdefault(int(o["UiMapArtID"]), {})[key] = ", ".join(f for _, _, f in sorted(t))
+# (a client with a world of its own, World.lua: only its stitched zones' arts, which its map draws)
+_world_zones = (uimap.read_world(os.path.join(DATA, "World.lua")) or {}).get("zones")
+if _world_zones:
+    _arts = {int(r["UiMapArtID"]) for r in table("UiMapXMapArt") if int(r["UiMapID"]) in _world_zones}
+    reveal = {a: v for a, v in reveal.items() if a in _arts}
 with open(os.path.join(DATA, "Reveal.lua"), "w", encoding="utf-8", newline="\n") as f:
     f.write("-- Explored-area pieces per zone art: [UiMapArtID] = { [\"w:h:x:y\"] = \"fileIDs, row-major\" }.\n")
     f.write(HEADER + "ns.MapReveal = {\n")
@@ -94,6 +102,14 @@ def levels(name, raid):
     if not lv: return None, None
     return lv, lv if raid else min(lv + SPAN, 60)
 
+FOREVER_CLIENT = clients.NAME == "forever"
+# a client's own world (World.lua): which positions are on it
+import re
+_world = os.path.join(DATA, "World.lua")
+WORLD = uimap.read_world(_world)
+YARDS = WORLD["yards"] if WORLD else {}
+def on_world(c, x, y): return uimap.on_world(WORLD, c, x, y)
+
 maps = {r["MapName_lang"]: r for r in table("Map") if r["InstanceType"] in ("1", "2")}
 inst, unplaced = [], []
 def entry(mapID, name, raid, lo, hi):
@@ -103,20 +119,43 @@ def place(e, at):
         if where[0] == "map": inst.append(dict(e, cont="map", map=where[1], x=where[2] / 100, y=where[3] / 100))
         else: inst.append(dict(e, cont=where[0], x=where[1], y=where[2]))
     return e["name"] in ENTRANCES or at is not None
-for r in table("Map"):
-    kind = r["InstanceType"]
-    if kind not in ("1", "2") or r["CorpseMapID"] not in ("0", "1"): continue
-    x, y = float(r["Corpse_0"]), float(r["Corpse_1"])
-    name = r["MapName_lang"]
-    if (x == 0 and y == 0) or name.startswith("<") or "Test" in name: continue
-    raid = kind == "2"
-    for wing in WINGS.get(name, [name]):
-        place(entry(int(r["ID"]), wing, raid, *levels(wing, raid)), (int(r["CorpseMapID"]), x, y))
-for name, lo, hi in FOREVER:
-    if any(i["name"] == name for i in inst): continue      # (the Map table placed it already)
-    r = maps.get(name)
-    e = entry(int(r["ID"]) if r else 0, name, False, lo, hi)
-    if not place(e, None): unplaced.append(e)
+if FOREVER_CLIENT:
+    for r in table("Map"):
+        kind = r["InstanceType"]
+        if kind not in ("1", "2") or r["CorpseMapID"] not in ("0", "1"): continue
+        x, y = float(r["Corpse_0"]), float(r["Corpse_1"])
+        name = r["MapName_lang"]
+        if (x == 0 and y == 0) or name.startswith("<") or "Test" in name: continue
+        raid = kind == "2"
+        for wing in WINGS.get(name, [name]):
+            place(entry(int(r["ID"]), wing, raid, *levels(wing, raid)), (int(r["CorpseMapID"]), x, y))
+    for name, lo, hi in FOREVER:
+        if any(i["name"] == name for i in inst): continue      # (the Map table placed it already)
+        r = maps.get(name)
+        e = entry(int(r["ID"]) if r else 0, name, False, lo, hi)
+        if not place(e, None): unplaced.append(e)
+else:
+    # the encounter journal's entrances (JournalInstanceEntrance: what the game's own map shows), each
+    # instance's level range from the group finder's tuning for it at its first difficulty (normal)
+    by_id = {r["ID"]: r for r in table("Map")}
+    ct = {r["ID"]: r for r in table("ContentTuning")}
+    finder = {}
+    for r in sorted(table("LFGDungeons"), key=lambda r: int(r["DifficultyID"] or 0)):
+        if r["TypeID"] in ("1", "2") and r["MapID"] not in finder and r["ContentTuningID"] in ct:
+            finder[r["MapID"]] = ct[r["ContentTuningID"]]
+    journal = {r["ID"]: r for r in table("JournalInstance")}
+    for r in table("JournalInstanceEntrance"):
+        j = journal.get(r["JournalInstanceID"])
+        m = j and by_id.get(j["MapID"])
+        if not m or m["InstanceType"] not in ("1", "2"): continue
+        c, x, y = int(r["MapID"]), float(r["Position_0"]), float(r["Position_1"])
+        if not on_world(c, x, y): continue
+        t = finder.get(j["MapID"])
+        lo = int(t["MinLevelSquish"]) if t and int(t["MinLevelSquish"]) > 0 else None
+        hi = int(t["MaxLevelSquish"]) if t and int(t["MaxLevelSquish"]) > 0 else lo
+        e = entry(int(j["MapID"]), j["Name_lang"], m["InstanceType"] == "2", lo, hi)
+        if not any(i["id"] == e["id"] and i["cont"] == c and math.hypot(i["x"] - x, i["y"] - y) < 30 for i in inst):
+            place(e, (c, x, y))
 
 # each instance's bosses, in the game's order (DungeonEncounter)
 bosses = {}
@@ -131,6 +170,7 @@ def near(g, i):
     return math.hypot(g["x"] - i["x"], g["y"] - i["y"]) < (0.01 if i.get("map") else 250)
 for i in sorted(inst, key=lambda i: i["id"]):
     g = next((g for g in groups if near(g, i)), None)
+    if g and any(o["id"] == i["id"] and o["name"] == i["name"] for o in g["list"]): continue   # (two doors close together)
     if g: g["list"].append(i)
     else: groups.append({"cont": i["cont"], "map": i.get("map"), "x": i["x"], "y": i["y"], "list": [i]})
 
@@ -175,16 +215,17 @@ for p in table("TaxiPath"):
     if n and n["Name_lang"].startswith("Transport"):
         route = n["Name_lang"].split(",", 1)[1].strip()
         kind = "zeppelin" if "Zepplin" in route or "Orgrimmar" in route else "boat"
-    elif int(p["ID"]) in FOREVER_SAILINGS:
+    elif FOREVER_CLIENT and int(p["ID"]) in FOREVER_SAILINGS:
         route = FOREVER_SAILINGS[int(p["ID"])]
         kind = "boat" if all(abs(float(s["Loc_2"])) < 5 for s in stops) else "airship"
     else:
-        if p["FromTaxiNode"] == "0" and stops: print("unnamed sailing: TaxiPath", p["ID"], "(add it to FOREVER_SAILINGS)")
+        if FOREVER_CLIENT and p["FromTaxiNode"] == "0" and stops: print("unnamed sailing: TaxiPath", p["ID"], "(add it to FOREVER_SAILINGS)")
         continue
     uniq = []
     for s in stops:
         c, x, y = int(s["ContinentID"]), float(s["Loc_0"]), float(s["Loc_1"])
         if not any(u[0] == c and math.hypot(u[1] - x, u[2] - y) < 60 for u in uniq): uniq.append((c, x, y))
+    if not all(on_world(*u) for u in uniq): continue     # (a route off the stitched world: to Outland, Argus ...)
     cands.append((kind, route, path, stops, uniq, {stop_key(*u) for u in uniq}))
 # a ship whose stops are all another's, and fewer, is that ship before it called at more:
 # Menethil - Auberdine (295, still in the tables) is now Menethil - Southshore - Auberdine (11167)
@@ -218,6 +259,41 @@ for kind, route, path, stops, uniq, keys in cands:
     if len(seg) > 1: segs.append((last, thin(seg)))
     if segs: sailings.append((kind, route, segs))
 
+if not FOREVER_CLIENT:
+    # Retail's taxi tables keep paths that no longer sail (Auberdine's, before the Cataclysm), and its
+    # docks aren't named there: its map marks them instead (AreaPOI, "Boat to Menethil Harbor, Wetlands"),
+    # each for one faction or both (PlayerConditionID 923 Horde, 924 Alliance). The other end of each:
+    # the dock of the same kind in the place it names that sails back to this one's. No routes drawn.
+    # (where a dock is: the stitched zones and cities whose map holds it; the POIs mostly have no area)
+    import uimap
+    for t in ("UiMap", "UiMapAssignment", "UiMapXMapArt", "UiMapArt", "UiMapArtStyleLayer"): table(t)
+    um = uimap.World(cache, "-" + BUILD)
+    stitched = [int(m) for m in re.findall(r"\[(\d+)\] = [12],", open(_world, encoding="utf-8").read())]
+    def places_of(c, x, y):
+        for r in YARDS.get(c, []):
+            if r[0] <= x <= r[1] and r[2] <= y <= r[3]:
+                u, v = r[4] + r[5] * y, r[6] + r[7] * x
+                here = [m for m in stitched if (lambda q: q and q[0] <= u <= q[1] and q[2] <= v <= q[3])(um.rect(m))]
+                return [um.uimap[k]["Name_lang"] for m in here for k in (m, um.parent(m)) if k in um.uimap]   # (and the maps above: Stranglethorn Vale)
+        return []
+    FACTION = {"923": "Horde", "924": "Alliance"}
+    pois = []
+    for r in table("AreaPOI"):
+        name = r["Name_lang"]
+        kind = "boat" if name.startswith("Boat to ") else "zeppelin" if name.startswith("Zeppelin to ") else None
+        if not kind: continue
+        c, x, y = int(r["ContinentID"]), float(r["Pos_0"]), float(r["Pos_1"])
+        if not on_world(c, x, y): continue
+        dest = name.split(" to ", 1)[1]
+        pois.append({"kind": kind, "route": name, "cont": c, "x": x, "y": y, "dest": [d.strip() for d in dest.split(",")],
+                     "here": places_of(c, x, y), "faction": FACTION.get(r["PlayerConditionID"])})
+    docks, sailings = [], []
+    for p in pois:
+        back = [q for q in pois if q is not p and q["kind"] == p["kind"] and any(d in q["here"] for d in p["dest"])]
+        back.sort(key=lambda q: not any(d in p["here"] for d in q["dest"]))      # (one that sails back here first)
+        to = (back[0]["cont"], back[0]["x"], back[0]["y"]) if back else None
+        docks.append({"kind": p["kind"], "route": p["route"], "cont": p["cont"], "x": p["x"], "y": p["y"], "to": to, "faction": p["faction"]})
+
 def item(i):
     lv = lambda v: "nil" if v is None else str(v)
     return "{ %d, %s, %s, %s, %s }" % (i["id"], lua_str(i["name"]), "true" if i["raid"] else "false", lv(i["min"]), lv(i["max"]))
@@ -231,7 +307,7 @@ with open(os.path.join(DATA, "Places.lua"), "w", encoding="utf-8", newline="\n")
     f.write("--   unplaced[i] = { mapID (0: not in the tables), name, raid, minLevel, maxLevel }: no entrance yet\n")
     f.write("--   bosses[mapID] = { name, ... } in the game's order\n")
     f.write("--   transports[i] = { \"boat\" | \"zeppelin\" | \"airship\", route, continent, x, y, toContinent, toX, toY }\n")
-    f.write("--     (an airship's continent can be 2991, Zephras Isle: not on the stitched map yet)\n")
+    f.write("--     (an airship's continent can be 2991, Zephras Isle: not on the stitched map yet); faction =: one faction's only\n")
     f.write("--   sailings[i] = { kind, route, { { continent, { x1, y1, x2, y2, ... } }, ... } }: the way it sails,\n")
     f.write("--     dock to dock, in pieces per continent map (between pieces it's crossing the open sea)\n")
     f.write(HEADER + "ns.MapPlaces = {\n\tinstances = {\n")
@@ -246,8 +322,8 @@ with open(os.path.join(DATA, "Places.lua"), "w", encoding="utf-8", newline="\n")
     f.write("\t},\n\ttransports = {\n")
     for d in docks:
         to = d["to"]
-        f.write("\t\t{ %s, %s, %d, %.1f, %.1f, %s },\n" % (lua_str(d["kind"]), lua_str(d["route"]), d["cont"], d["x"], d["y"],
-            ("%d, %.1f, %.1f" % to) if to else "nil, nil, nil"))
+        f.write("\t\t{ %s, %s, %d, %.1f, %.1f, %s%s },\n" % (lua_str(d["kind"]), lua_str(d["route"]), d["cont"], d["x"], d["y"],
+            ("%d, %.1f, %.1f" % to) if to else "nil, nil, nil", (", faction = %s" % lua_str(d["faction"])) if d.get("faction") else ""))
     f.write("\t},\n\tsailings = {\n")
     for kind, route, segs in sailings:
         f.write("\t\t{ %s, %s, { %s } },\n" % (lua_str(kind), lua_str(route), ", ".join(

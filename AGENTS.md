@@ -23,11 +23,13 @@ the game's own files. The addon is `OpenMap/`; everything else is tooling and do
 2. **Generated files are generated.** Don't hand-edit anything a script writes (its first
    lines say which script). Change the script and rerun it, and commit both together.
 3. **Blizzard's art stays credited.** A new texture gets a line in
-   `OpenMap/Media/Textures/NOTICE.md` (what it's cut from, which script makes it).
+   its client's `OpenMap/Media/Textures/<client>/NOTICE.md` (what it's cut from, which script makes it).
 4. **Only MIT-compatible contributions.** Don't copy code, data or art from other addons
    unless their licence allows it under MIT (many map addons are "all rights reserved").
 5. **No secrets, no personal data** in the repo: no API keys, tokens, real names, emails
    or local paths. Release credentials live in GitHub Actions secrets only.
+   Never push a tag or start a CurseForge upload without the maintainer's go-ahead for that release
+   (docs/releasing.md).
 6. **Don't weaken CI or the checks** (`tools/offline-test`) to make a change pass.
 
 ## Verify every change
@@ -46,7 +48,8 @@ python -P tools/offline-test/explored.py
 python -P tools/offline-test/chart.py
 ```
 
-All must pass. For anything visual, render before and after with
+All must pass, and the first seven again with `OPENMAP_CLIENT=retail` (retail's toc: one branch holds
+every client, docs/development.md#clients). For anything visual, render before and after with
 `tools/map-preview/render.py` and look at the images; keep render.py's mirrors of
 Stitch.lua's constants in step. You can't run the game: say plainly what still needs an
 in-game check (textures need a full client restart), and don't claim it works in game.

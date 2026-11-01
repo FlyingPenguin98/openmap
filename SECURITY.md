@@ -11,7 +11,7 @@ within a week; we'll agree a fix and a disclosure date with you.
 - **The addon** (`OpenMap/`): anything that could run code it shouldn't, taint the game's
   protected UI (blocking actions in combat), corrupt or leak a player's saved data, or let
   another player affect someone's client.
-- **The release pipeline** (`.github/workflows`, `.pkgmeta`): anything that could expose
+- **The release pipeline** (`.github/workflows`, `tools/package`): anything that could expose
   the release credentials or let someone publish a build.
 - **The tools** (`tools/`): anything that could make a developer's machine run code from
   a downloaded file or a report code.

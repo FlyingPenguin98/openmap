@@ -3,7 +3,7 @@
 # offline, so the blend can be checked without logging in.
 #
 # usage: python -P tools/map-preview/render.py <db2 dir> <texture cache dir> <out dir> [view ...]
-#   db2 dir: the Forever build's UiMap* CSVs (wago.tools, build 1.60.1.70245)
+#   db2 dir: the client's build's UiMap* CSVs (wago.tools; tools/clients.py, OPENMAP_CLIENT)
 #   views:   name=u,v,zoom   (world-normalized centre on Azeroth's map, zoom 1 = whole world)
 import csv, functools, math, os, re, sys, time, urllib.request
 import numpy as np
@@ -11,9 +11,9 @@ from PIL import Image
 from scipy import ndimage
 
 REPO = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-WM = os.path.join(REPO, "OpenMap", "Data")
-TEXDIR = os.path.join(REPO, "OpenMap", "Media", "Textures")
-BUILD = "1.60.1.70245"
+sys.path.insert(0, os.path.join(REPO, "tools"))
+import clients   # the client the tools build for (OPENMAP_CLIENT)
+WM, TEXDIR, BUILD = clients.DATA, clients.TEX, clients.BUILD
 OW, OH = (int(v) for v in os.environ.get("OPENMAP_SIZE", "1400x900").split("x"))
 WORLD = 947
 
@@ -85,7 +85,7 @@ def local(fid, p):
     if not _casc:
         sys.path.insert(0, os.path.join(REPO, "tools", "casc"))
         import casc
-        _casc.append(casc.Casc(WOW, os.environ.get("OPENMAP_PRODUCT", "wow_classic_beta")))
+        _casc.append(casc.Casc(WOW, os.environ.get("OPENMAP_PRODUCT", clients.PRODUCT)))
     try:
         data = _casc[0].read(fid)
     except Exception:

@@ -191,13 +191,13 @@ for path in sorted(glob.glob(os.path.join(ROOT, "*.lua")) + glob.glob(os.path.jo
     problems += check_calls(path)
     problems += check_truncation(path)
     problems += check_shared(path)
-# the "What's new" window's notes (Data/Changelog.lua) are made from CHANGELOG.md: they must agree,
-# or a release ships last version's notes
+# the "What's new" window's notes (Data/<client>/Changelog.lua) are made from each client's changelog
+# (CHANGELOG.md, CHANGELOG-retail.md): they must agree, or a release ships last version's notes
 sys.path.insert(0, os.path.join(ROOT, "..", "tools", "changelog"))
 import build as changelog
-_have = os.path.join(ROOT, "Data", "Changelog.lua")
-if not os.path.exists(_have) or open(_have, encoding="utf-8").read() != changelog.build():
-    problems.append("Data/Changelog.lua is out of date with CHANGELOG.md: run python -P tools/changelog/build.py")
+for _name in changelog.stale():
+    problems.append("Data/%s/Changelog.lua is out of date with %s: run python -P tools/changelog/build.py"
+                    % (changelog.clients.CLIENTS[_name]["folder"], changelog.clients.CLIENTS[_name]["changelog"]))
 # the translations: their placeholders and colour codes as the English's (a wrong one errors or shows
 # garbled in that language only), and Locales/ built from them as they are
 sys.path.insert(0, os.path.join(ROOT, "..", "tools", "locale"))

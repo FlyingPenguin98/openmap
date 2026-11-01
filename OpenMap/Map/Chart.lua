@@ -16,8 +16,8 @@ local S = ns.MapStitch
 local C = { on = false }
 S.Chart = C
 
-local TEX = ns.Media.path .. "Textures\\MapChart\\"
-local FEATHER = ns.Media.path .. "Textures\\MapFeather"
+local TEX = ns.Media.tex .. "MapChart\\"
+local FEATHER = ns.Media.tex .. "MapFeather"
 
 --------------------------------------------------------------------------------
 -- Layout (sheet px: Santiago's sheet, D.size square; the chart's top-left at 0, 0)

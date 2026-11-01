@@ -73,18 +73,28 @@ local function TileTone(u, v)
 	local chain = S.ChainAt(u, v)
 	return Tint(ns.MapTones and ns.MapTones[chain[#chain]] or DEFAULT_TONE)
 end
-local GRAIN = ns.Media.path .. "Textures\\MapGrain"
-local TOOTH = ns.Media.path .. "Textures\\MapTooth"
-local CONT_OF = { [1415] = 0, [1414] = 1 }
-local CONT_MAP = { [0] = 1415, [1] = 1414 }
+local GRAIN = ns.Media.tex .. "MapGrain"
+local TOOTH = ns.Media.tex .. "MapTooth"
+-- each continent's game maps (its minimap tiles and caves) and each game map's continent (whose land its
+-- minimap is drawn through): WoW Forever's two, or a client's own (ns.MapWorld.minimap, world.py)
+local CONT_OF, CONT_MAP = { [1415] = { 0 }, [1414] = { 1 } }, { [0] = 1415, [1] = 1414 }
+if ns.MapWorld and ns.MapWorld.minimap then
+	CONT_OF, CONT_MAP = ns.MapWorld.minimap, {}
+	local ids = {}
+	for c in pairs(CONT_OF) do ids[#ids + 1] = c end
+	table.sort(ids)                 -- (a game map two continents share: the first's land, the Eastern Kingdoms')
+	for _, c in ipairs(ids) do
+		for _, g in ipairs(CONT_OF[c]) do CONT_MAP[g] = CONT_MAP[g] or c end
+	end
+end
 
 local function Smooth(x, r)
 	local t = math.max(0, math.min(1, (x - r[1]) / (r[2] - r[1])))
 	return t * t * (3 - 2 * t)
 end
 
--- the continent (0 / 1) the view's centre is on: looked up again only once the centre has
--- moved a little (the game's lookup makes tables, and this runs every frame of a pan or zoom)
+-- the game maps (continent 0 / 1 ...) of the continent the view's centre is on: looked up again only once
+-- the centre has moved a little (the game's lookup makes tables, and this runs every frame of a pan or zoom)
 local lastCU, lastCV, lastCont
 local function ContinentAt(u, v)
 	if lastCU and math.abs(u - lastCU) < 0.002 and math.abs(v - lastCV) < 0.002 then return lastCont end
@@ -95,14 +105,18 @@ local function ContinentAt(u, v)
 	return lastCont
 end
 
--- every continent (0 / 1) whose map the view overlaps (one list, reused)
+-- every game map (continent 0 / 1 ...) whose continent's map the view overlaps (one list, reused)
 local contsInView = {}
 local function ContinentsInView(u, v, hu, hv)
 	local out = contsInView
 	wipe(out)
-	for mapID, cont in pairs(CONT_OF) do
+	for mapID, conts in pairs(CONT_OF) do
 		local l, r, t, b = S.Rect(mapID)
-		if l and r > u - hu and l < u + hu and b > v - hv and t < v + hv then out[#out + 1] = cont end
+		if l and r > u - hu and l < u + hu and b > v - hv and t < v + hv then
+			for _, cont in ipairs(conts) do
+				if not tContains(out, cont) then out[#out + 1] = cont end
+			end
+		end
 	end
 	return out
 end
@@ -144,7 +158,7 @@ end
 -- thousand). Each copy is cut into pieces of `per` tiles a side, tinted as the tiles are. Drawn
 -- coarse under fine under the game's own tiles, their strengths set so the three add up to `mix`:
 -- the finer takes over as fewer tiles are in view
-local LOD = ns.Media.path .. "Textures\\MapMiniLOD\\"
+local LOD = ns.Media.tex .. "MapMiniLOD\\"
 local NATIVE_FROM = { 64, 36 }  -- tiles in view where the game's own tiles start / finish taking over
 local FINE_FROM = { 40, 24 }    -- tiles across the view where the finer copy starts / finishes taking over
 local lodPieces, lodPool, wantedLOD = {}, {}, {}   -- key -> texture; free textures; (reused each update)
@@ -183,15 +197,17 @@ local function ShowLOD(layer, cont, level, per, keys, tx0, tx1, ty0, ty1, alpha)
 				wantedLOD[key] = true
 				local t = lodPieces[key]
 				if not t then
-					t = LODPiece(layer, cont, -level)
-					t:SetTexture(LOD .. cont .. "_" .. per .. "_" .. col .. "_" .. row, nil, nil, "LINEAR")
-					lodPieces[key] = t
 					local u0, v0 = S.FromYards(cont, (32 - row * per) * TILE, (32 - col * per) * TILE)
 					local u1, v1 = S.FromYards(cont, (32 - (row + 1) * per) * TILE, (32 - (col + 1) * per) * TILE)
-					S.PlaceWorld(t, math.min(u0, u1), math.min(v0, v1), math.max(u0, u1), math.max(v0, v1))
-					t:Show()
+					if u0 and u1 then           -- (none for a piece off the stitched world: Outland's, on 530)
+						t = LODPiece(layer, cont, -level)
+						t:SetTexture(LOD .. cont .. "_" .. per .. "_" .. col .. "_" .. row, nil, nil, "LINEAR")
+						lodPieces[key] = t
+						S.PlaceWorld(t, math.min(u0, u1), math.min(v0, v1), math.max(u0, u1), math.max(v0, v1))
+						t:Show()
+					end
 				end
-				t:SetAlpha(alpha)
+				if t then t:SetAlpha(alpha) end
 			end
 		end
 	end
@@ -229,6 +245,12 @@ local function UpdateMinimap(layer, conts, u, v, hu, hv, mix)
 				for tx = tx0, tx1 do
 					for ty = ty0, ty1 do
 						local fid = list[tx * 64 + ty]
+						local u0, v0, u1, v1
+						if fid and not tiles[TileKey(cont, tx, ty)] then
+							u0, v0 = S.FromYards(cont, (32 - ty) * TILE, (32 - tx) * TILE)
+							u1, v1 = S.FromYards(cont, (31 - ty) * TILE, (31 - tx) * TILE)
+							if not (u0 and u1) then fid = nil end     -- (a tile off the stitched world)
+						end
 						if fid then
 							local key = TileKey(cont, tx, ty)
 							wanted[key] = true
@@ -236,8 +258,6 @@ local function UpdateMinimap(layer, conts, u, v, hu, hv, mix)
 							if not t then
 								t = Tile(layer, fid, cont)
 								tiles[key] = t
-								local u0, v0 = S.FromYards(cont, (32 - ty) * TILE, (32 - tx) * TILE)
-								local u1, v1 = S.FromYards(cont, (31 - ty) * TILE, (31 - tx) * TILE)
 								t[1]:SetVertexColor(TileTone((u0 + u1) / 2, (v0 + v1) / 2))
 								for _, tex in ipairs(t) do
 									S.PlaceWorld(tex, math.min(u0, u1), math.min(v0, v1), math.max(u0, u1), math.max(v0, v1))
@@ -305,7 +325,7 @@ local function UpdateGapMinimap(conts, u, v, hu, hv, alpha)
 	for _, cont in ipairs(conts) do
 		local list = ns.MapMinimap and ns.MapMinimap[cont]
 		local mapID = CONT_MAP[cont]
-		local landMask = mapID and S.GapMask and S.GapMask(mapID)
+		local landMask = mapID and ns.MapGaps and S.GapMask and S.GapMask(mapID)   -- (a client with gaps only)
 		local xa, ya, xb, yb
 		if list and alpha > 0.01 and layer and landMask and ns.MapGaps then
 			xa, ya = S.ToYards(cont, u - hu, v - hv)
@@ -575,18 +595,18 @@ local function Surface(shown, key, r, u, v, hu, hv, steps, focus)
 	return math.max(focus, tz * (1 - Smooth(off, FOCUS_RANGE)))
 end
 
-local function UpdateUnderground(layer, cont, u, v, hu, hv, steps)
+local function UpdateUnderground(layer, conts, u, v, hu, hv, steps)
 	local shown, focus = underShown, 0
 	wipe(shown)
-	if mod.db.underground and cont then
+	if mod.db.underground and conts then
 		for id, c in pairs(ns.MapCaves or EMPTY) do
-			if c[2] == cont and not UNDER_SKIP[id] and Primary(id, c) then
+			if tContains(conts, c[2]) and not UNDER_SKIP[id] and Primary(id, c) then
 				local r = RectOf(id)
 				if r then focus = Surface(shown, id, r, u, v, hu, hv, steps, focus) end
 			end
 		end
 		for i, c in ipairs(ns.MapCaveMinimap or EMPTY) do
-			if c[1] == cont then
+			if tContains(conts, c[1]) then
 				local r = RectOf(-i)
 				if r then focus = Surface(shown, -i, r, u, v, hu, hv, steps, focus) end
 			end
@@ -828,6 +848,7 @@ function mod:CloseOptions(opts, get, set, off)
 	opts.cityMinimap = { type = "toggle", name = ns.L["Minimap detail in major cities"], order = 51.4, get = get, set = set, disabled = noMinimap,
 		desc = ns.L["The minimap's detail over the six major cities' own maps, at half strength at most so the city's plan leads. Off: their own maps alone."] }
 	opts.gapMinimap = { type = "toggle", name = ns.L["Minimap in the gaps (experimental)"], order = 51.5, get = get, set = set, disabled = noMinimap,
+		hidden = function() return not ns.MapGaps end,   -- (a client with no gaps between its zones)
 		desc = ns.L["Land no zone map covers (west of Searing Gorge, Mount Hyjal ...) shows the game's minimap of it, tinted like the zones around it, instead of blank paper."] }
 	opts.soften = { type = "toggle", name = ns.L["Soften and add paper grain"], order = 52, get = get, set = set, disabled = off,
 		desc = ns.L["At the closest zoom the painted map runs out of pixels: soften it and lay paper grain over it."] }

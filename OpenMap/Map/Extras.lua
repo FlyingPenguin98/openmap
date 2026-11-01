@@ -244,8 +244,15 @@ function mod.LevelColor(lo, hi)
 	return ("|cff%02x%02x%02x"):format(color.r * 255, color.g * 255, color.b * 255), lo == hi and tostring(hi) or (lo .. "-" .. hi)
 end
 
+-- (a client without a level list of its own, retail: the game's, as its own map's label shows them)
 local function LevelText(mapID)
-	local lv = mod.db.zoneLevels and ns.MapLevels and ns.MapLevels[mapID]
+	if not mod.db.zoneLevels then return "" end
+	local lv = ns.MapLevels and ns.MapLevels[mapID]
+	if not ns.MapLevels and C_Map.GetMapLevels then
+		local ok, lo, hi = pcall(C_Map.GetMapLevels, mapID)
+		lo, hi = ok and ns.Safe.Value(lo), ok and ns.Safe.Value(hi)
+		if lo and hi and lo > 0 and hi >= lo then lv = { lo, hi } end
+	end
 	if not lv or not lv[1] or not lv[2] then return "" end
 	local code, range = mod.LevelColor(lv[1], lv[2])
 	return (" %s(%s)|r"):format(code, range)

@@ -19,11 +19,11 @@ ASPECTS = [0.3, 0.35, 0.46, 0.6, 0.8, 1.0, 1.2, 1.224, 1.25, 4 / 3, 1.5, 1.6, 16
 class ChartTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.chart = LO.load_chart(ROOT / "OpenMap" / "Data" / "Chart.lua")
+        cls.chart = LO.load_chart(ROOT / "OpenMap" / "Data" / "Forever" / "Chart.lua")
         lua = LuaRuntime(unpack_returned_tuples=True)
-        lua.execute("ns = { MapStitch = {}, Media = { path = 'OpenMap\\\\Media\\\\' } }")
+        lua.execute("ns = { MapStitch = {}, Media = { path = 'OpenMap\\\\Media\\\\', tex = 'OpenMap\\\\Media\\\\Textures\\\\Forever\\\\' } }")
         load = lua.eval("function(src, name) local f = assert(loadstring(src, name)) f('OpenMap', ns) end")
-        load((ROOT / "OpenMap" / "Data" / "Chart.lua").read_text(encoding="utf-8"), "Chart data")
+        load((ROOT / "OpenMap" / "Data" / "Forever" / "Chart.lua").read_text(encoding="utf-8"), "Chart data")
         load((ROOT / "OpenMap" / "Map" / "Chart.lua").read_text(encoding="utf-8"), "Chart.lua")
         cls.lua = lua
 
@@ -102,7 +102,7 @@ class ChartTests(unittest.TestCase):
         # it runs without an error for every shape, puts every region it shows somewhere, and fits the view
         lua = LuaRuntime(unpack_returned_tuples=True)
         lua.execute("""
-            ns = { MapStitch = {}, Media = { path = 'OpenMap\\\\Media\\\\' } }
+            ns = { MapStitch = {}, Media = { path = 'OpenMap\\\\Media\\\\', tex = 'OpenMap\\\\Media\\\\Textures\\\\Forever\\\\' } }
             local function Region()
                 local r = { shown = true }
                 return setmetatable(r, { __index = function(t, k)
@@ -128,7 +128,7 @@ class ChartTests(unittest.TestCase):
             function S.SetChart(on) S.chartWas = on end
         """)
         load = lua.eval("function(src, name) local f = assert(loadstring(src, name)) f('OpenMap', ns) end")
-        load((ROOT / "OpenMap" / "Data" / "Chart.lua").read_text(encoding="utf-8"), "Chart data")
+        load((ROOT / "OpenMap" / "Data" / "Forever" / "Chart.lua").read_text(encoding="utf-8"), "Chart data")
         load((ROOT / "OpenMap" / "Map" / "Chart.lua").read_text(encoding="utf-8"), "Chart.lua")
         # the two continent maps' rectangles on the world, as the game has them (his pictures of them at the
         # scale and place build.py measured: 1.5164 sheet px a world unit, the world map's corner at 1198, 1416)

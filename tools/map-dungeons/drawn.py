@@ -1,18 +1,20 @@
 # Builds the maps of WoW Forever's own dungeons, which the game has no map of: maps drawn by
 # players who let OpenMap use them (art/drawn/dungeons, and its README), credited on the map.
-#   OpenMap/Media/Textures/MapDungeonDrawn/<mapID>_<n>.tga   the picture in Blizzard's dungeon map
+#   OpenMap/Media/Textures/Forever/MapDungeonDrawn/<mapID>_<n>.tga   the picture in Blizzard's dungeon map
 #                                       layout: 1002 x 668 in 4 x 3 tiles of 256 px (Map/Dungeons.lua's)
 #   OpenMap/Data/DungeonDrawn.lua       per instance: its floor's tiles and who drew it
 #
 # usage: python -P tools/map-dungeons/drawn.py
-import os
+import os, sys
 
 from PIL import Image
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.join(HERE, "..", "..")
 ART = os.path.join(ROOT, "art", "drawn", "dungeons")
-OUT = os.path.join(ROOT, "OpenMap", "Media", "Textures", "MapDungeonDrawn")
+sys.path.insert(0, os.path.join(ROOT, "tools"))
+import clients
+OUT = os.path.join(clients.tex("forever"), "MapDungeonDrawn")   # (Forever's own dungeons)
 PIC_W, PIC_H = 1002, 668
 
 # instance mapID (Data/Places.lua's) -> (the drawing, its name, who drew it)
@@ -39,7 +41,7 @@ def main():
         "",
         "local _, ns = ...",
         "",
-        "local P = ns.Media.path .. \"Textures\\\\MapDungeonDrawn\\\\\"",
+        "local P = ns.Media.tex .. \"MapDungeonDrawn\\\\\"",
         "",
         "ns.MapDungeonDrawn = {",
     ]
@@ -58,7 +60,7 @@ def main():
         lines.append("\t},")
         print("%s: 12 tiles, by %s" % (name, credit))
     lines.append("}")
-    with open(os.path.join(ROOT, "OpenMap", "Data", "DungeonDrawn.lua"), "w", encoding="utf-8", newline="\n") as fh:
+    with open(os.path.join(clients.data("forever"), "DungeonDrawn.lua"), "w", encoding="utf-8", newline="\n") as fh:
         fh.write("\n".join(lines) + "\n")
 
 

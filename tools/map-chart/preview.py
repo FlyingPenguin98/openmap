@@ -1,5 +1,5 @@
 # The sea chart alone (no map in the middle: its box outlined), laid out for window shapes, from
-# OpenMap/Data/Chart.lua and Media/Textures/MapChart/ as the game has them: to check a build.
+# OpenMap/Data/Forever/Chart.lua and Media/Textures/Forever/MapChart/ as the game has them: to check a build.
 # render.py OPENMAP_CHART=1 shows it with the map.
 #
 # usage: python -P tools/map-chart/preview.py <out dir> [aspect ...]   (default 0.46 1.6 1.78 2.39)
@@ -12,7 +12,7 @@ REPO = os.path.abspath(os.path.join(HERE, "..", ".."))
 sys.path.insert(0, HERE)
 import layout as LO
 
-TEX = os.path.join(REPO, "OpenMap", "Media", "Textures")
+TEX = os.path.join(REPO, "OpenMap", "Media", "Textures", "Forever")
 _cache = {}
 
 
@@ -32,7 +32,7 @@ def main():
     out_dir = sys.argv[1]
     aspects = [float(a) for a in sys.argv[2:]] or [0.46, 1.6, 16 / 9, 3440 / 1440]
     os.makedirs(out_dir, exist_ok=True)
-    chart = LO.load_chart(os.path.join(REPO, "OpenMap", "Data", "Chart.lua"))
+    chart = LO.load_chart(os.path.join(REPO, "OpenMap", "Data", "Forever", "Chart.lua"))
     for asp in aspects:
         cw, ch = LO.canvas_for(asp, chart["world"])
         H = 900 if asp >= 1 else 1400
