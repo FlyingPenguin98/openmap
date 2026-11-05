@@ -4,7 +4,8 @@
 local _, ns = ...
 
 ns.MapChangelog = {
-	{ version = "Unreleased", date = "", heads = { [1] = "Improved", }, items = {
+	{ version = "Unreleased", date = "", heads = { [1] = "Fixed", [2] = "Improved", }, items = {
+		"|cff6e2c0aFlight masters are named in your own language|r: on a client that isn't English, the map's flight masters kept the game's tables' English names (hovering one said \"Stormwind, Elwynn\" while the flight master in game names it in your language). They're now named as the game names them, and a flight's measured time is found again on a route (the times were keyed by the English names).",
 		"|cff6e2c0aOpenMap has its own icon|r, a compass over a parchment map, in the AddOns list, on the minimap button and in the map's menu (it borrowed the game's Eastern Kingdoms icon).",
 		"|cff6e2c0aOpenMap is back on GitHub|r, at github.com/openmap-world/openmap: Report a problem opens a report there again, and What's new and the AddOns list link to it.",
 	} },
