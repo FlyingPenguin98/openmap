@@ -9,6 +9,12 @@
 - **OpenMap is back on GitHub**, at github.com/openmap-world/openmap: Report a problem opens a
   report there again, and What's new and the AddOns list link to it.
 
+### Fixed
+
+- **The map opened inside a dungeon shows that dungeon's map** (Ragefire Chasm, Deadmines ...): it
+  showed the world map with no one on it, as WoW Forever has no map of its dungeons. Its map only
+  opened from the entrance on the world map.
+
 ## v0.7.5-beta (2026-10-23)
 
 ### Fixed
