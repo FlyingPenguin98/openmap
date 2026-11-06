@@ -249,8 +249,13 @@ end
 S.ArtSize = ArtSize
 
 -- deepest zone / continent under a world point (normalized), with the chain
--- from the world down: { 947, continent, zone }
+-- from the world down: { 947, continent, zone }, and a city's zone before it: { 947, continent, zone, city }.
+-- A city's map is its continent's child in the game's tables, and the continent gives it for any point in
+-- its whole rectangle, which reaches well out over its zone: near Ironforge (Kharanos) the map underneath
+-- went to the city and a click zoomed into it, and Dun Morogh was never in the chain (players' reports).
+-- So a city counts only in the middle of its rectangle (CITY_EDGE: the share of each side left to its zone)
 function S.ChainAt(u, v)
+	local CITY_EDGE = 0.25          -- (not a file local: the file is at Lua's limit of 200)
 	local chain = { WORLD }
 	local mapID, x, y = WORLD, u, v
 	for _ = 1, 4 do
@@ -259,7 +264,15 @@ function S.ChainAt(u, v)
 		if info.mapType ~= Enum.UIMapType.Continent and info.mapType ~= Enum.UIMapType.Zone then break end
 		local l, r, t, b = C_Map.GetMapRectOnMap(info.mapID, mapID)
 		if not l or r <= l or b <= t then break end
-		mapID, x, y = info.mapID, (x - l) / (r - l), (y - t) / (b - t)
+		local cx, cy = (x - l) / (r - l), (y - t) / (b - t)
+		local zone = ns.MapCityZones and ns.MapCityZones[info.mapID]
+		local zl, zr, zt, zb
+		if zone then zl, zr, zt, zb = C_Map.GetMapRectOnMap(zone, mapID) end
+		if zl and zr > zl and zb > zt then
+			tinsert(chain, zone)
+			if math.min(cx, 1 - cx) < CITY_EDGE or math.min(cy, 1 - cy) < CITY_EDGE then break end
+		end
+		mapID, x, y = info.mapID, cx, cy
 		tinsert(chain, mapID)
 	end
 	return chain

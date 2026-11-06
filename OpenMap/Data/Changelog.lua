@@ -10,6 +10,7 @@ ns.MapChangelog = {
 		"|cff6e2c0aThe map closes in combat again|r: with the map open as a fight started, neither Escape nor M closed it (since 0.7.0). The windowed map no longer stays open beside an NPC's window, which is what blocked it.",
 		"|cff6e2c0aFlight masters you haven't learned show as not learned|r: every one showed as learned, as OpenMap counted the stops a flight passes through. What it remembered is forgotten once and counted again at the next flight master you talk to.",
 		"|cff6e2c0aThe map window can't go above the top of the screen|r, where its title bar couldn't be grabbed to bring it back. /openmap reset puts the window back to its size and place.",
+		"|cff6e2c0aDun Morogh stays Dun Morogh near Ironforge|r: around Kharanos, panning or zooming switched the map to Ironforge's and a click zoomed into the city. A city's map now takes over only in its middle, and its zone comes first when you click your way in.",
 		"|cff6e2c0aThe OpenMap menu fits a short screen|r: on a TV at a big UI scale the Look tab ran off the bottom.",
 	} },
 	{ version = "v0.7.5-beta", date = "2026-10-23", heads = { [1] = "Fixed", }, items = {

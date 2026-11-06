@@ -19,6 +19,9 @@
   counted again at the next flight master you talk to.
 - **The map window can't go above the top of the screen**, where its title bar couldn't be
   grabbed to bring it back. `/openmap reset` puts the window back to its size and place.
+- **Dun Morogh stays Dun Morogh near Ironforge**: around Kharanos, panning or zooming switched the map
+  to Ironforge's and a click zoomed into the city. A city's map now takes over only in its middle,
+  and its zone comes first when you click your way in.
 - **The OpenMap menu fits a short screen**: on a TV at a big UI scale the Look tab ran off the
   bottom.
 
