@@ -4,9 +4,13 @@
 local _, ns = ...
 
 ns.MapChangelog = {
-	{ version = "Unreleased", date = "", heads = { [1] = "Improved", }, items = {
+	{ version = "Unreleased", date = "", heads = { [1] = "Improved", [3] = "Fixed", }, items = {
 		"|cff6e2c0aOpenMap has its own icon|r, a compass over a parchment map, in the AddOns list, on the minimap button and in the map's menu (it borrowed the game's Eastern Kingdoms icon).",
 		"|cff6e2c0aOpenMap is back on GitHub|r, at github.com/openmap-world/openmap: Report a problem opens a report there again, and What's new and the AddOns list link to it.",
+		"|cff6e2c0aThe map closes in combat again|r: with the map open as a fight started, neither Escape nor M closed it (since 0.7.0). The windowed map no longer stays open beside an NPC's window, which is what blocked it.",
+		"|cff6e2c0aFlight masters you haven't learned show as not learned|r: every one showed as learned, as OpenMap counted the stops a flight passes through. What it remembered is forgotten once and counted again at the next flight master you talk to.",
+		"|cff6e2c0aThe map window can't go above the top of the screen|r, where its title bar couldn't be grabbed to bring it back. /openmap reset puts the window back to its size and place.",
+		"|cff6e2c0aThe OpenMap menu fits a short screen|r: on a TV at a big UI scale the Look tab ran off the bottom.",
 	} },
 	{ version = "v0.7.5-beta", date = "2026-10-23", heads = { [1] = "Fixed", }, items = {
 		"|cff6e2c0aThe map's art is there at once when you open it|r: since 0.7.4 the zones showed blank parchment for a moment each time the map opened.",

@@ -9,6 +9,19 @@
 - **OpenMap is back on GitHub**, at github.com/openmap-world/openmap: Report a problem opens a
   report there again, and What's new and the AddOns list link to it.
 
+### Fixed
+
+- **The map closes in combat again**: with the map open as a fight started, neither Escape nor M
+  closed it (since 0.7.0). The windowed map no longer stays open beside an NPC's window, which is
+  what blocked it.
+- **Flight masters you haven't learned show as not learned**: every one showed as learned, as
+  OpenMap counted the stops a flight passes through. What it remembered is forgotten once and
+  counted again at the next flight master you talk to.
+- **The map window can't go above the top of the screen**, where its title bar couldn't be
+  grabbed to bring it back. `/openmap reset` puts the window back to its size and place.
+- **The OpenMap menu fits a short screen**: on a TV at a big UI scale the Look tab ran off the
+  bottom.
+
 ## v0.7.5-beta (2026-10-23)
 
 ### Fixed
