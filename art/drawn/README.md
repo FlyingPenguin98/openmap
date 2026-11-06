@@ -4,7 +4,7 @@ WoW Forever's own dungeons have no map in the game. The maps here were drawn by 
 OpenMap use them; each is credited on the map in game ("Map by ..."). They are not Blizzard's art
 and not covered by OpenMap's MIT licence: ask the artist before using them anywhere else.
 
-Santiago Reyes's Ko-fi: https://ko-fi.com/sr433_20
+Santiago Reyes's site: https://sreyesmaps.com/post/proyecto-atlas-de-azeroth-forever
 
 | File | Dungeon | Drawn by |
 | --- | --- | --- |
@@ -12,6 +12,9 @@ Santiago Reyes's Ko-fi: https://ko-fi.com/sr433_20
 | `dungeons/excavation-site-wetlands.png` | Excavation Site: Wetlands | Santiago Reyes |
 | `dungeons/ruins-of-lordaeron.png` | Ruins of Lordaeron | Santiago Reyes |
 | `dungeons/hall-of-thanes.png` | The Hall of Thanes | Santiago Reyes |
+| `dungeons/the-drowned-city.webp` | The Drowned City | Santiago Reyes |
+| `dungeons/kroldok-stronghold.webp` | Krol'dok Stronghold | Santiago Reyes |
+| `dungeons/shapers-terrace.webp` | Shaper's Terrace | Santiago Reyes |
 
 `chart/` holds the sea chart round the world map (Options' Responsive ocean & border: the sea, compass roses, sea
 creatures, ships and frame), painted by Santiago Reyes and used with his permission; not covered by the
@@ -36,4 +39,5 @@ dungeon maps, they're used with the artist's permission and aren't covered by th
 
 `python -P tools/map-dungeons/drawn.py` turns them into `OpenMap/Media/Textures/MapDungeonDrawn/`
 and `OpenMap/Data/DungeonDrawn.lua`. A new one: add the drawing here (a 3:2 picture, the dungeon
-map's 1002 x 668 shape) and a line to the script's `DRAWN`.
+map's 1002 x 668 shape) and a line to the script's `DRAWN` (by the dungeon's mapID in
+`OpenMap/Data/Places.lua`, or by its name there where that mapID is 0).

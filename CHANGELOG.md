@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### New
+
+- **Maps of The Drowned City, Krol'dok Stronghold and Shaper's Terrace**, drawn by Santiago Reyes and
+  used with his permission (credited on the map, as his other dungeon maps are).
+
 ### Improved
 
 - **OpenMap has its own icon**, a compass over a parchment map, in the AddOns list, on the

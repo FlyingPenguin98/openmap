@@ -4,7 +4,8 @@
 local _, ns = ...
 
 ns.MapChangelog = {
-	{ version = "Unreleased", date = "", heads = { [1] = "Improved", }, items = {
+	{ version = "Unreleased", date = "", heads = { [1] = "New", [2] = "Improved", }, items = {
+		"|cff6e2c0aMaps of The Drowned City, Krol'dok Stronghold and Shaper's Terrace|r, drawn by Santiago Reyes and used with his permission (credited on the map, as his other dungeon maps are).",
 		"|cff6e2c0aOpenMap has its own icon|r, a compass over a parchment map, in the AddOns list, on the minimap button and in the map's menu (it borrowed the game's Eastern Kingdoms icon).",
 		"|cff6e2c0aOpenMap is back on GitHub|r, at github.com/openmap-world/openmap: Report a problem opens a report there again, and What's new and the AddOns list link to it.",
 	} },
