@@ -314,16 +314,13 @@ function mod:SetupWindow(worldMap)
 			end)
 		end
 	end
-	-- The windowed map stays open beside other windows (talking to an NPC, a vendor ...): the game lays
-	-- its windows out side by side and puts one away to make room, but not a window that's been moved
-	-- off its place (Edit Mode marks such a frame `editModeManuallyShown`: it's then shown and hidden
-	-- plainly, as any frame). The windowed map is marked so too, once the game has placed it the first
-	-- time; maximized, it's the game's again. Changed only while it's closed, so it's opened and closed
-	-- the same way; Escape still closes it
-	tinsert(UISpecialFrames, map:GetName())
+	-- The map is left a UI panel of the game's, opened and closed by its own panel code. (0.7.0 to 0.7.5
+	-- marked the windowed map `editModeManuallyShown` and put it in UISpecialFrames, to keep it open beside
+	-- an NPC's window. Both are read by the game's code that closes it (HideUIPanel, CloseSpecialWindows),
+	-- and a value OpenMap wrote taints that code: the map holds protected frames (the group members' pin),
+	-- so in combat its Hide was blocked and neither Escape nor M closed it, players' reports)
 	map:HookScript("OnShow", function() mod.ChatOverMap() end)
 	map:HookScript("OnHide", function() mod.ChatOverMap() end)
-	map:HookScript("OnHide", function(self) self.editModeManuallyShown = not Maximized() or nil end)
 	-- Blizzard re-sizes the maximized map when the screen or UI scale changes
 	if map.UpdateMaximizedSize then hooksecurefunc(map, "UpdateMaximizedSize", function() if Maximized() then FillScreen() end end) end
 	map:HookScript("OnShow", Mode)
