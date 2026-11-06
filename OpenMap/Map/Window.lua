@@ -20,7 +20,8 @@ d.fullWidth = true              -- the maximized map fills the screen's width (t
 d.chatOverMap = false           -- the chat windows over the full-screen map, to keep talking while it's open
 local MIN_SCALE, MAX_SCALE = 0.5, 1.6
 local MIN_W, MIN_H = 480, 320
-local TOP_OFF = 68               -- px of the window's top that may go above the screen: its title and the bar under it
+local TOP_OFF = 0                -- px of the window's top that may go above the screen (68, its title and the bar
+                                 --  under it, until 0.7.5: the title went off and the window couldn't be dragged back)
 
 local map, handle, grip         -- (grip: both corners' grips)
 local FillScreen, SetupQuestLog, TurnArrows
@@ -215,8 +216,8 @@ function mod:SetupWindow(worldMap)
 	-- (with Move Any: none of this. Its own drag and resize place the window, and nothing puts it back)
 	if not moveAny then
 		map:SetClampedToScreen(true)
-		-- partly off the screen: sideways and down while some of it stays on, and up as far as its title
-		-- and the bar under it (a map with no bar over it: Options' Reset window brings it back)
+		-- partly off the screen: sideways and down while some of it stays on, never up (its title bar is
+		-- what moves it; /openmap reset or the Look tab's Reset size and place bring it back)
 		local function Clamp()
 			local w, h = map:GetWidth(), map:GetHeight()
 			if not (w and h) or w <= 0 or InCombatLockdown() then return end

@@ -974,6 +974,11 @@ Fill = function()
 		for _, r in ipairs(menu.extraRows or {}) do r:Fill() end
 	end
 	menu:SetHeight(checks.top + tallest + (look and (menu.sliders:GetHeight() + 10) or 0) + 30 + PAD)
+	-- shrunk to fit a short screen (a TV at a big UI scale: the Look tab ran off its foot, a player's report)
+	local room = UIParent:GetHeight() * UIParent:GetEffectiveScale() - 20
+	local need = menu:GetHeight() * menu:GetParent():GetEffectiveScale()
+	local fit = need > room and room / need or 1
+	if math.abs(menu:GetScale() - fit) > 0.001 then menu:SetScale(fit) end
 end
 
 -- the menu stays where it is on the screen while the map window is dragged about: where you put it,
