@@ -18,6 +18,10 @@
   first fixed by RADD95 (OpenMap TextureFix): with this version that addon isn't needed.
   (New textures: restart the game.)
 
+- **An NPC who walks about shows once on the map**: Girl with Puppies in Orgrimmar had a vendor
+  icon at every point of her walk, dozens over the city. An NPC with many spawns in one zone (with
+  Vendors and the other townsfolk on) now has one icon, in the middle of where it walks.
+
 ## v0.8.0-beta (2026-11-07)
 
 ### New

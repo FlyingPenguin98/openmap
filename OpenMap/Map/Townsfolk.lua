@@ -86,6 +86,26 @@ local function Questie()
 	if ok and ok2 and db and db.NPCPointers and db.QueryNPCSingle and zones then return db, zones end
 end
 
+-- An NPC that walks about (Girl with Puppies round Orgrimmar) has every point of its path among its
+-- spawns: past WANDER of them in one zone, one pin, at the spawn nearest the middle of them all
+local WANDER = 6
+local function Middle(coords)
+	local sx, sy, n = 0, 0, 0
+	for _, c in ipairs(coords) do
+		if c[1] and c[1] >= 0 then sx, sy, n = sx + c[1], sy + c[2], n + 1 end
+	end
+	if n == 0 then return coords end
+	sx, sy = sx / n, sy / n
+	local best, bestD
+	for _, c in ipairs(coords) do
+		if c[1] and c[1] >= 0 then
+			local d = (c[1] - sx) ^ 2 + (c[2] - sy) ^ 2
+			if not bestD or d < bestD then best, bestD = c, d end
+		end
+	end
+	return { best }
+end
+
 local function PinEnter(pin)
 	local n = pin.data
 	GameTooltip:SetOwner(pin, "ANCHOR_RIGHT")
@@ -119,10 +139,12 @@ local function Build(kinds, done)
 	AddNames(LOCALIZED_CLASS_NAMES_FEMALE)
 	table.sort(classNames, function(a, b) return #a[1] > #b[1] end)
 
-	-- a kind's pins at each of its spawns ({ [areaID] = { { x, y }, ... } }, as Questie keeps them)
-	local function Pins(k, spawns, info)
+	-- a kind's pins at each of its spawns ({ [areaID] = { { x, y }, ... } }, as Questie keeps them);
+	-- `walker`: one NPC's, a path walked taken as one place (Middle)
+	local function Pins(k, spawns, info, walker)
 		local set = S.PinSet("tf_" .. k.key, k.zoom, 3)
 		for areaID, coords in pairs(spawns) do
+			if walker and #coords > WANDER then coords = Middle(coords) end
 			local uiMapID = ZoneDB:GetUiMapIdByAreaId(areaID)
 			local l, r, t, b
 			if uiMapID then l, r, t, b = S.Rect(uiMapID) end
@@ -203,7 +225,8 @@ local function Build(kinds, done)
 					min = QDB.QueryNPCSingle(id, "minLevel"), max = QDB.QueryNPCSingle(id, "maxLevel"), rank = RANK[rank],
 				}
 				for _, k in ipairs(want) do
-					if (k.hostile or friendly:find(faction, 1, true)) and spawns then Pins(k, spawns, info) end
+					-- (not spirit healers or rare mobs: one NPC at many places, each a place of its own)
+					if (k.hostile or friendly:find(faction, 1, true)) and spawns then Pins(k, spawns, info, not (k.ids or k.rare)) end
 				end
 			end
 		end
