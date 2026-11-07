@@ -500,13 +500,10 @@ local function SetUpPins(name, pins)
 	end
 	local HandlePin = provider.HandlePin
 	provider.HandlePin = function(self, icon, data, ...)
+		-- (an older Questie's path stretch: not put on the stitched map at all, OpenMap draws the paths
+		-- there, as Questie's would be out of place and size; DrawQuestiePaths)
+		if spec.questie and icon.type == "line" and mod.IsStitched() then return end
 		HandlePin(self, icon, data, ...)
-		-- (an older Questie's path stretch: drawn by OpenMap on the stitched map, as Questie's would be
-		-- out of place and size there; DrawQuestiePaths)
-		if spec.questie and icon.type == "line" and icon.SetAlpha then
-			icon:SetAlpha(mod.IsStitched() and 0 or 1)
-			if mod.IsStitched() then return end
-		end
 		local holder = icon:GetParent()
 		local placed = holder and holder.icon == icon and holder.SetPosition and holder
 		if placed then count.placed = count.placed + 1 end
@@ -728,7 +725,9 @@ end
 -- highlighted copy, else its most visible), redrawn whenever Questie redraws its own
 --------------------------------------------------------------------------------
 
-local QPATH = { width = 2.5 }   -- the lines' width on screen (px); set: OpenMap's pin set for them
+local QPATH = { width = 2.5, zones = {}, key = "", dirty = true, at = 0 }   -- set: OpenMap's pin set for them
+local QPATH_MOST_ZONES = 4      -- drawn only zoomed in this far: no more zones than this in view (Questie draws one)
+local QPATH_EVERY = 0.5         -- seconds between redraws at the most (Questie changes its icons in bursts)
 local function QuestiePaths()
 	local Q = _G.QuestieLoader
 	if type(Q) ~= "table" or type(Q.ImportModule) ~= "function" then return end
@@ -736,44 +735,41 @@ local function QuestiePaths()
 	if not ok or type(W) ~= "table" or type(W.paths) ~= "table" or type(W.WorldMapAlpha) ~= "function" then return end
 	return W
 end
-local function DrawOldQuestieLines()
-	local zdb = QPATH.zoneDB
-	for f, d in pairs(QPATH.lines) do
-		local icon = f.iconFrame
-		if icon and not f.hidden and not icon.hidden and d[6] and zdb and zdb.GetUiMapIdByAreaId then
-			local okM, uiMapID = pcall(zdb.GetUiMapIdByAreaId, zdb, d[6])
-			local l, r, t, b
-			if okM and uiMapID then l, r, t, b = S.Rect(uiMapID) end
-			if l then
-				local c = type(d[5]) == "table" and d[5] or { 1, 0.8, 0, 1 }
-				local u1, v1 = l + d[1] / 100 * (r - l), t + d[2] / 100 * (b - t)
-				local u2, v2 = l + d[3] / 100 * (r - l), t + d[4] / 100 * (b - t)
-				S.AddLine(QPATH.set, u1, v1, u2, v2, QPATH.width + 2, 0, 0, 0, (c[4] or 1) / 2)
-				S.AddLine(QPATH.set, u1, v1, u2, v2, QPATH.width, c[1], c[2], c[3], c[4] or 1)
-			end
-		end
+-- the zones near the view (S.Rect over the view, a little round it): a path is drawn only in one of these
+local function QuestieZonesNear(u, v, hu, hv)
+	local zones, n = QPATH.zones, 0
+	wipe(zones)
+	local l0, r0, t0, b0 = u - hu * 1.2, u + hu * 1.2, v - hv * 1.2, v + hv * 1.2
+	local seen = QPATH.seenZones or {}
+	for uiMapID in pairs(seen) do
+		local l, r, t, b = S.Rect(uiMapID)
+		if l and r > l0 and l < r0 and b > t0 and t < b0 then zones[uiMapID] = true n = n + 1 end
 	end
+	return n
 end
 local function DrawQuestiePaths()
 	local W = QuestiePaths()
 	if not (W or QPATH.lines) or not S.IsBuilt() then return end
 	QPATH.set = QPATH.set or S.PinSet("questiepaths", 0, 1)
 	S.ClearPinSet(QPATH.set)
-	if not mod.IsStitched() then return end
-	if not W then DrawOldQuestieLines() return end
-	local routes = {}
-	for path in pairs(W.paths) do
-		local okA, alpha = pcall(W.WorldMapAlpha, path)
-		if okA and alpha and type(path.points) == "table" and path.uiMapId then
-			local rank = alpha + ((W.IsHighlighted and W.IsHighlighted(path)) and 2 or 0)
-			local key = path.route or path
-			if not routes[key] or rank > routes[key].rank then routes[key] = { path = path, alpha = alpha, rank = rank } end
+	QPATH.dirty, QPATH.at = false, GetTime()
+	if not mod.IsStitched() or not QPATH.near then return end
+	local zones = QPATH.zones
+	if W then
+		local routes = {}
+		for path in pairs(W.paths) do
+			if path.uiMapId and zones[path.uiMapId] and type(path.points) == "table" then
+				local okA, alpha = pcall(W.WorldMapAlpha, path)
+				if okA and alpha then
+					local rank = alpha + ((W.IsHighlighted and W.IsHighlighted(path)) and 2 or 0)
+					local key = path.route or path
+					if not routes[key] or rank > routes[key].rank then routes[key] = { path = path, alpha = alpha, rank = rank } end
+				end
+			end
 		end
-	end
-	for _, shown in pairs(routes) do
-		local path = shown.path
-		local l, r, t, b = S.Rect(path.uiMapId)
-		if l then
+		for _, shown in pairs(routes) do
+			local path = shown.path
+			local l, r, t, b = S.Rect(path.uiMapId)
 			local okC, c = pcall(W.Color, path)
 			c = okC and type(c) == "table" and c or { 1, 0.8, 0, 1 }
 			local pts = {}
@@ -785,13 +781,24 @@ local function DrawQuestiePaths()
 			end
 			if #pts >= 4 then S.AddPath(QPATH.set, pts, QPATH.width, c[1], c[2], c[3], (c[4] or 1) * shown.alpha) end
 		end
+		return
+	end
+	for f, d in pairs(QPATH.lines) do
+		local icon = f.iconFrame
+		if d.map and zones[d.map] and icon and not f.hidden and not icon.hidden then
+			local l, r, t, b = S.Rect(d.map)
+			local c = type(d[5]) == "table" and d[5] or { 1, 0.8, 0, 1 }
+			local u1, v1 = l + d[1] / 100 * (r - l), t + d[2] / 100 * (b - t)
+			local u2, v2 = l + d[3] / 100 * (r - l), t + d[4] / 100 * (b - t)
+			S.AddLine(QPATH.set, u1, v1, u2, v2, QPATH.width, c[1], c[2], c[3], c[4] or 1)
+		end
 	end
 end
-mod.DrawQuestiePaths = DrawQuestiePaths
-local function SoonQuestiePaths()
-	if QPATH.soon then return end
-	QPATH.soon = true
-	C_Timer.After(0, function() QPATH.soon = false if map:IsShown() then DrawQuestiePaths() end end)
+mod.DrawQuestiePaths = function() QPATH.dirty = true end   -- (stitched or not: Compat.lua; drawn on the next tick)
+-- a zone a path is in, known to the culling
+local function SeenZone(uiMapID)
+	QPATH.seenZones = QPATH.seenZones or {}
+	if uiMapID and not QPATH.seenZones[uiMapID] then QPATH.seenZones[uiMapID] = true QPATH.key = "" end
 end
 -- Questie before 12.2 draws each stretch of a path as a frame of its own (QuestieFramePool:CreateLine),
 -- sized in pixels for Blizzard's map of its zone and pinned there by its middle: its ends are kept here
@@ -799,20 +806,22 @@ end
 local function HookOldQuestieLines(Q)
 	local ok, FP = pcall(Q.ImportModule, Q, "QuestieFramePool")
 	if not ok or type(FP) ~= "table" or type(FP.CreateLine) ~= "function" then return end
-	local okZ, ZDB = pcall(Q.ImportModule, Q, "ZoneDB")
-	QPATH.zoneDB = okZ and type(ZDB) == "table" and ZDB or nil
+	local okZ, zdb = pcall(Q.ImportModule, Q, "ZoneDB")
+	zdb = okZ and type(zdb) == "table" and type(zdb.GetUiMapIdByAreaId) == "function" and zdb or nil
 	QPATH.lines = setmetatable({}, { __mode = "k" })
 	local create = FP.CreateLine
 	FP.CreateLine = function(self, iconFrame, sx, sy, ex, ey, width, color, areaId, ...)
 		local f = create(self, iconFrame, sx, sy, ex, ey, width, color, areaId, ...)
-		if type(f) == "table" and type(sx) == "number" and type(ey) == "number" then
-			QPATH.lines[f] = { sx, sy, ex, ey, color, areaId or (iconFrame and iconFrame.AreaID) }
-			SoonQuestiePaths()
+		if type(f) == "table" and type(sx) == "number" and type(ey) == "number" and zdb then
+			local area = areaId or (iconFrame and iconFrame.AreaID)
+			local okM, uiMapID = pcall(zdb.GetUiMapIdByAreaId, zdb, area)
+			local d = { sx, sy, ex, ey, color, map = okM and S.Rect(uiMapID or 0) and uiMapID or nil }
+			QPATH.lines[f] = d
+			SeenZone(d.map)
+			if d.map and QPATH.zones[d.map] then QPATH.dirty = true end
 		end
 		return f
 	end
-	local pins = LibStub and LibStub("HereBeDragonsQuestie-Pins-2.0", true)
-	if pins and type(pins.RemoveWorldMapIcon) == "function" then hooksecurefunc(pins, "RemoveWorldMapIcon", SoonQuestiePaths) end
 	return true
 end
 local function HookQuestiePaths()
@@ -823,12 +832,37 @@ local function HookQuestiePaths()
 		local ok, M = pcall(Q.ImportModule, Q, "WaypointMap")
 		if not ok or type(M) ~= "table" or type(M.Invalidate) ~= "function" then return end
 		QPATH.hooked = true
-		-- (Questie's redraws come in bursts, an icon at a time: one redraw here, on the next frame)
-		hooksecurefunc(M, "Invalidate", SoonQuestiePaths)
+		hooksecurefunc(M, "Invalidate", function() QPATH.dirty = true end)
 	elseif HookOldQuestieLines(Q) then
 		QPATH.hooked = true
 	end
 end
+-- each pan / zoom: which zones are near (a change redraws); a light tick while the map is open draws
+-- what changed, at most every QPATH_EVERY (an icon Questie hid: gone by the next one)
+tinsert(S.viewHooks, function(u, v, hu, hv)
+	if not QPATH.hooked then return end
+	local W = QuestiePaths()
+	if W then                                       -- (the newer paths: their zones as they come)
+		for path in pairs(W.paths) do SeenZone(path.uiMapId) end
+	end
+	local n = QuestieZonesNear(u, v, hu, hv)
+	local near = n > 0 and n <= QPATH_MOST_ZONES
+	local key = near and "" or "far"
+	if near then
+		local ids = {}
+		for id in pairs(QPATH.zones) do ids[#ids + 1] = id end
+		table.sort(ids)
+		key = table.concat(ids, ",")
+	end
+	if key ~= QPATH.key or near ~= QPATH.near then QPATH.key, QPATH.near, QPATH.dirty = key, near, true end
+end)
+QPATH.tick = CreateFrame("Frame")
+QPATH.tick:Hide()
+QPATH.tick:SetScript("OnUpdate", function()
+	local now = GetTime()
+	if now - QPATH.at < QPATH_EVERY then return end
+	if QPATH.dirty or now - QPATH.at > 2 then DrawQuestiePaths() end
+end)
 
 function mod:SetupExtras(worldMap)
 	map, sc = worldMap, worldMap.ScrollContainer
@@ -840,7 +874,8 @@ function mod:SetupExtras(worldMap)
 	SetUpAllPins()
 	map:HookScript("OnShow", SetUpAllPins)            -- (a copy an addon loaded since brought)
 	HookQuestiePaths()                               -- (now: an older Questie's path stretches are kept as they're made)
-	map:HookScript("OnShow", function() HookQuestiePaths() DrawQuestiePaths() end)
+	map:HookScript("OnShow", function() HookQuestiePaths() if QPATH.hooked then QPATH.dirty = true QPATH.tick:Show() end end)
+	map:HookScript("OnHide", function() QPATH.tick:Hide() end)
 	if type(map.OnCanvasScaleChanged) == "function" then hooksecurefunc(map, "OnCanvasScaleChanged", OnZoomStep) end
 	ApplyExtras()
 	-- (before the game saves its settings: the player's own back; Compat.lua's reassertion stands down)
