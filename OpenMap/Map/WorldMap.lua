@@ -573,7 +573,11 @@ local viewFrame = CreateFrame("Frame")
 viewFrame:Hide()
 viewFrame:SetScript("OnUpdate", Ours("view update", function(self)
 	self:Hide()
-	if not active or not S.SetView then return end
+	-- (only on the map open: Blizzard resets the view once more as it closes, and a view taken then was
+	-- read on the next opening as one put up while it's open, the zone's whole map, before the zoom kept
+	-- was put back a frame later: "Center on player, keep zoom" opened closer, then jumped. The opening
+	-- runs it again: ApplyZoom)
+	if not active or not S.SetView or not map:IsShown() then return end
 	local u, v, zoom = View()
 	live = live or {}                             -- (kept: the view updates every frame of a pan)
 	live[1], live[2], live[3], live[4], live[5] = u, v, zoom, sc:GetWidth(), sc:GetHeight()

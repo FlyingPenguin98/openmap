@@ -21,6 +21,8 @@
 
 ### Fixed
 
+- **"Center on player, keep zoom" opens at your zoom straight away**: having moved since the map
+  closed, it opened on the zone's whole map for a moment and then jumped to the zoom kept.
 - **The map opens with its art already there**: the game let go of the map's art while it was
   closed, and each opening loaded it again (blank parchment for a moment). OpenMap now keeps it
   loaded while the map is closed; `/openmap warm` turns that off.
