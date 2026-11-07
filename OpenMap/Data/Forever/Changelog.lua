@@ -4,11 +4,21 @@
 local _, ns = ...
 
 ns.MapChangelog = {
-	{ version = "Unreleased", date = "", heads = { [1] = "Improved", [3] = "Fixed", }, items = {
+	{ version = "v0.8.1-beta", date = "2026-11-07", heads = { [1] = "New", [3] = "Improved", [7] = "Fixed", }, items = {
+		"|cff6e2c0aQuestie's mob paths on the stitched map|r, drawn over the art for the zones near the view as you zoom in (Questie's own were under the art, and only on the zone's own map).",
+		"|cff6e2c0aDarkening colour|r (Options, under Darkening): the colour unexplored areas are darkened with, picked with the game's colour picker; |cff6e2c0aDefault colour|r brings back the dark one.",
+		"|cff6e2c0aZooming is about four times smoother|r: OpenMap no longer lays out its hidden icons and its blur on every frame of a zoom (the blur comes back a moment after you stop). Found and measured by Peendars.",
 		"|cff6e2c0aFlight masters are easier to see on the map|r: bigger, with a dark outline, and the ones you haven't learned are no longer half see-through (they were lost on the parchment).",
+		"|cff6e2c0aCtrl-click drops a pin can be turned off|r (Options, and the menu's More tab): with Map Pin Enhanced a Ctrl-click dropped two pins, its own and OpenMap's. Off, the menu's Drop a pin still works.",
 		"|cff6e2c0aThe Drowned City's map is Santiago Reyes's updated version|r, which names more of its places (the Eternal Amphitheater and the Abyssal Dais).",
 		"|cff6e2c0aDungeon and cave maps show in every language|r: on the Latin American Spanish, Russian and Italian clients every dungeon map and Blizzard cave map was solid green squares, as the game doesn't have their art for those languages. OpenMap now brings that art itself. Found and first fixed by RADD95 (OpenMap TextureFix): with this version that addon isn't needed. (New textures: restart the game.)",
-		"|cff6e2c0aAn NPC who walks about shows once on the map|r: Girl with Puppies in Orgrimmar had a vendor icon at every point of her walk, dozens over the city. An NPC with many spawns in one zone (with Vendors and the other townsfolk on) now has one icon, in the middle of where it walks.",
+		"|cff6e2c0aZone names in your client's language|r: on every client but English, the zones' prebuilt art lettered their English names over the map. Other languages now draw the zones from the client's own art (zooming is a little slower there, as with that art turned off).",
+		"|cff6e2c0aQuestie's icons show the first time you open the map|r: after a login they could be missing until the map was closed and opened again (Questie was still setting up when OpenMap looked).",
+		"|cff6e2c0aZygor's waypoint shows on the stitched map|r, in the right place and over the art (Zygor uses its own renamed copy of HereBeDragons, which OpenMap didn't know). Traced by robnoord.",
+		"|cff6e2c0aYour class's trainers are found on every language's client|r: on a French client (and the other non-English ones) every class trainer showed as a profession trainer.",
+		"|cff6e2c0aAn NPC who walks about shows once on the map|r: Girl with Puppies in Orgrimmar had a vendor icon at every point of her walk, dozens over the city. An NPC with many spawns in one zone (with Vendors and the other townsfolk on) now has one icon, in the middle of where it walks. Fixed by diegodiaz1256.",
+		"|cff6e2c0aThe map opened on Zephras Isle shows Zephras Isle|r, as its airship opens it: it showed the stitched world with no one on it.",
+		"|cff6e2c0aNo friends dot or badge for yourself|r: with Share where you are on, you could show on your own map as a guild member (the guild's roster can spell your realm differently).",
 	} },
 	{ version = "v0.8.0-beta", date = "2026-11-07", heads = { [1] = "New", [3] = "Improved", [5] = "Fixed", }, items = {
 		"|cff6e2c0aFriends and guild on the map|r (Options: Friends and guild): your guild members and friends on your realm who are online show on the stitched map, a badge on the zone each is in with who's there. Those who use OpenMap and turn on |cff6e2c0aShare where you are|r show as a class-coloured dot where they stand, updated every few seconds while they move. The map asks once whether to share; it's off unless you say yes, goes only to your guild and your friends, and never from inside a dungeon, raid or battleground.",
