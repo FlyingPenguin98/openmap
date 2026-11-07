@@ -4,10 +4,15 @@
 local _, ns = ...
 
 ns.MapChangelog = {
-	{ version = "Unreleased", date = "", heads = { [1] = "New", [2] = "Improved", }, items = {
+	{ version = "v0.8.0-beta", date = "2026-11-07", heads = { [1] = "New", [2] = "Improved", [4] = "Fixed", }, items = {
 		"|cff6e2c0aFriends and guild on the map|r (Options: Friends and guild): your friends and guild members who are online show on the stitched map, a badge on the zone each is in with who's there. Those who use OpenMap and turn on |cff6e2c0aShare where you are|r show as a class-coloured dot where they stand, updated every few seconds while they move. The map asks once whether to share; it's off unless you say yes, goes only to your guild and your friends, and never from inside a dungeon, raid or battleground.",
 		"|cff6e2c0aA new OpenMap icon, drawn by zloyeb|r: a map scroll in a gold ring, in the AddOns list, on the minimap button, in the map's menu and its portrait (it borrowed the game's Eastern Kingdoms icon).",
 		"|cff6e2c0aOpenMap is back on GitHub|r, at github.com/openmap-world/openmap: Report a problem opens a report there again, and What's new and the AddOns list link to it.",
+		"|cff6e2c0aThe map closes in combat again|r: with the map open as a fight started, neither Escape nor M closed it (since 0.7.0). The windowed map no longer stays open beside an NPC's window, which is what blocked it.",
+		"|cff6e2c0aFlight masters you haven't learned show as not learned|r: some showed as learned, as OpenMap counted the stops a flight passes through. What it remembered is forgotten once and counted again at the next flight master you talk to.",
+		"|cff6e2c0aFlight masters are named in your own language|r: on a client that isn't English, the map's flight masters kept the game's tables' English names. They're now named as the game names them, and a flight's measured time is found again on a route.",
+		"|cff6e2c0aThe map window can't go above the top of the screen|r, where its title bar couldn't be grabbed to bring it back. /openmap reset puts the window back to its size and place.",
+		"|cff6e2c0aThe OpenMap menu fits a short screen|r: on a TV at a big UI scale the Look tab ran off the bottom.",
 	} },
 	{ version = "v0.7.1-beta", date = "2026-10-21", heads = { [1] = "Fixed", }, items = {
 		"|cff6e2c0aThe map loads the zone you pan or zoom to again|r: with an addon adding map icons, it could stay on the zone you started on, so the zone you'd panned to showed none of their icons until you clicked it. Its setting, once Follow the view, is now |cff6e2c0aLoad the zone in view|r.",

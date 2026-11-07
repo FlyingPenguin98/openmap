@@ -1,6 +1,6 @@
 # OpenMap changelog
 
-## Unreleased
+## v0.8.0-beta (2026-11-07)
 
 ### New
 
@@ -16,6 +16,22 @@
   minimap button, in the map's menu and its portrait (it borrowed the game's Eastern Kingdoms icon).
 - **OpenMap is back on GitHub**, at github.com/openmap-world/openmap: Report a problem opens a
   report there again, and What's new and the AddOns list link to it.
+
+### Fixed
+
+- **The map closes in combat again**: with the map open as a fight started, neither Escape nor M
+  closed it (since 0.7.0). The windowed map no longer stays open beside an NPC's window, which is
+  what blocked it.
+- **Flight masters you haven't learned show as not learned**: some showed as learned, as OpenMap
+  counted the stops a flight passes through. What it remembered is forgotten once and counted again
+  at the next flight master you talk to.
+- **Flight masters are named in your own language**: on a client that isn't English, the map's
+  flight masters kept the game's tables' English names. They're now named as the game names them,
+  and a flight's measured time is found again on a route.
+- **The map window can't go above the top of the screen**, where its title bar couldn't be
+  grabbed to bring it back. `/openmap reset` puts the window back to its size and place.
+- **The OpenMap menu fits a short screen**: on a TV at a big UI scale the Look tab ran off the
+  bottom.
 
 ## v0.7.1-beta (2026-10-21)
 
