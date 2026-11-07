@@ -145,7 +145,7 @@ CONT_OF = {1415: 0, 1414: 1}
 MASK_PX = 768                   # the gap mask's width
 TILE_FADE = 6.0                 # world units inside the drawn minimap tiles where the mask fades in
 def minimap_list():
-    src_ = open(os.path.join(here, "..", "..", "OpenMap", "Data", "Minimap.lua"), encoding="utf-8").read()
+    src_ = open(os.path.join(g["WM"], "Minimap.lua"), encoding="utf-8").read()
     out, cur = {}, None
     for line in src_.split("\n"):
         m_ = re.match(r"\s*\[(\d)\] = \{", line)
@@ -456,7 +456,7 @@ for m in g["maps"]:
 
 tile, paper_world = paper_tile()
 Image.fromarray((tile * 255).astype(np.uint8)).resize((256, 256), Image.LANCZOS).save(os.path.join(TEX, "MapPaper.tga"))
-with open(os.path.join(here, "..", "..", "OpenMap", "Data", "Gaps.lua"), "w", encoding="utf-8", newline="\n") as f:
+with open(os.path.join(g["WM"], "Gaps.lua"), "w", encoding="utf-8", newline="\n") as f:
     f.write("-- The gaps: land no zone map covers. Per continent, tiles { col, row, over, ... }, each `tile`\n")
     f.write("-- world units square from the continent map's top-left corner. MapGapLand/<continent>_<col>_<row>\n")
     f.write("-- is where the land is, and the blank map paper (MapPaper, `paper` world units a tile) is drawn\n")

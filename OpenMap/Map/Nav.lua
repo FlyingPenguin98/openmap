@@ -105,7 +105,7 @@ function mod.SavedView(mapID, onlySaved)
 	-- (where your map fits, but never past the deepest zoom set: a city fits further in than that, its
 	-- own extra half that the wheel can still go to; with "zoom", the zoom it closed at)
 	local u, v, best = UnitWorld("player")
-	if u and mode == "zoom" and saved then return u, v, saved[3] end
+	if u and mode == "zoom" and saved then return u, v, saved[3] end   -- (the zoom it closed at)
 	if u then return u, v, math.min(mod.FitZoom(best), mod.db.maxZoom or math.huge) end
 end
 
@@ -176,9 +176,14 @@ end
 -- On the stitched map the pin is always ours, never Blizzard's: a click on Blizzard's runs in
 -- the map's code that OpenMap changes, and its Shift-click (copying a slash command to the
 -- clipboard, which only Blizzard's UI may do) is then blocked, blaming OpenMap
+-- (and, on a client whose map filter can show Blizzard's own dungeon entrances, retail's, those: the
+-- stitched map has OpenMap's, from the same journal, which would show twice)
 local function HideBlizzardPin()
 	if not (mod.IsStitched and mod.IsStitched()) or not map or not map.EnumeratePinsByTemplate then return end
 	for pin in map:EnumeratePinsByTemplate("WaypointLocationPinTemplate") do pin:Hide() end
+	if ns.Client ~= "Forever" then
+		for pin in map:EnumeratePinsByTemplate("DungeonEntrancePinTemplate") do pin:Hide() end
+	end
 end
 
 -- the waypoint now: map, x, y, and whether it's our own (not Blizzard's)
@@ -446,8 +451,10 @@ function mod:SetupNav(worldMap)
 	-- Blizzard's pin comes back each time its provider redraws (the waypoint set, the map changed)
 	-- (found by a method only it has: asking each provider its pin template errors on some, the
 	-- vignettes' takes an argument)
+	local entrances = _G.DungeonEntranceDataProviderMixin
 	for provider in pairs(map.dataProviders or {}) do
-		if type(provider) == "table" and provider.OnWayPointLocationToggleUpdate and provider.RefreshAllData then
+		if type(provider) == "table" and provider.RefreshAllData and (provider.OnWayPointLocationToggleUpdate
+			or ns.Client ~= "Forever" and entrances and provider.RefreshAllData == entrances.RefreshAllData) then
 			hooksecurefunc(provider, "RefreshAllData", HideBlizzardPin)
 		end
 	end

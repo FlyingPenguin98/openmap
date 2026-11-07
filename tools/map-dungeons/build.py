@@ -22,6 +22,8 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.join(HERE, "..", "..")
 sys.path.insert(0, os.path.join(ROOT, "tools", "casc"))
 from casc import Casc
+sys.path.insert(0, os.path.join(ROOT, "tools"))
+import clients   # (Forever's: the client with no dungeon maps of its own)
 
 if len(sys.argv) < 3:
     sys.exit("usage: python -P tools/map-dungeons/build.py <cache dir> <World of Warcraft folder> [preview dir]")
@@ -63,7 +65,7 @@ def squash(name):
 
 
 # ------------------------------------------------------------------ the instances (Places.lua)
-places = open(os.path.join(ROOT, "OpenMap", "Data", "Places.lua"), encoding="utf-8").read()
+places = open(os.path.join(clients.data("forever"), "Places.lua"), encoding="utf-8").read()
 places = places[places.index("instances = {"):places.index("bosses = {")]
 instances = []                  # (mapID, name), in Places' order, a wing each
 for mid, name in re.findall(r'\{ (\d+), "((?:[^"\\]|\\.)*)", (?:true|false)', places):
@@ -124,7 +126,7 @@ for f, p in path_of.items():
 
 # ------------------------------------------------------------------ the install
 print("install", flush=True)
-casc = Casc(wow, "wow_classic_beta")
+casc = Casc(wow, clients.CLIENTS["forever"]["product"])
 
 
 def tile(fid):
@@ -248,7 +250,7 @@ for key in sorted(out, key=lambda k: (isinstance(k, str), k)):
         lines.append("\t\t{ tiles = { %s }%s }," % (", ".join(str(x) for x in f["fids"]), extra))
     lines.append("\t},")
 lines.append("}")
-with open(os.path.join(ROOT, "OpenMap", "Data", "DungeonMaps.lua"), "w", encoding="utf-8", newline="\n") as fh:
+with open(os.path.join(clients.data("forever"), "DungeonMaps.lua"), "w", encoding="utf-8", newline="\n") as fh:
     fh.write("\n".join(lines) + "\n")
 
 print("\nfloors (UiMap, art, name, tiles in the install):")

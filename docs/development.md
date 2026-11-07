@@ -41,6 +41,7 @@ AI coding agents: read [AGENTS.md](../AGENTS.md) too.
    python -P tools/offline-test/caves.py    # caves surfacing (Close.lua, the cave data), Ironforge's own minimap
    python -P tools/offline-test/explored.py # unexplored land hidden up close (Stitch.lua)
    python -P tools/offline-test/chart.py    # the sea chart's layout: Chart.lua as tools/map-chart/layout.py
+   python -P tools/offline-test/friends.py  # friends and guild on the map: what Friends.lua hears and sends
    ```
    `lint.py` catches single backslashes in texture paths, decimal escapes (`"Map\947"` is
    a load error that takes the whole file down), calls to functions that don't exist, and
@@ -59,17 +60,38 @@ AI coding agents: read [AGENTS.md](../AGENTS.md) too.
    the results to copy (kept in the saved settings as `lastBench` too). Compare a run before
    and after a change that should make the map faster.
 
+## Clients
+
+OpenMap is built for more than one game client, each with its own map data and textures and
+one shared Lua codebase (`tools/clients.py` lists them, with their builds and products):
+
+- each client's toc (`OpenMap.toc` is WoW Forever's) loads `Data/<client>/Client.lua` first, which
+  names its folder, then its own `Data/<client>/*.lua`; its textures are
+  `Media/Textures/<client>/` (`ns.Media.tex`). The Lua code, `Locales/` and the icon are shared;
+  some code is WoW Forever's alone and only its toc loads it (`Map/Chart.lua`, `Map/Quests.lua`).
+- each client has its own release notes: `CHANGELOG.md` is WoW Forever's, `CHANGELOG-retail.md`
+  retail's, and each makes its client's `Data/<client>/Changelog.lua` (What's new).
+- one branch, `main`, holds every client: a change to the shared code is made once, and checked for
+  each client (CI runs the offline tests with each toc).
+- the tools build for the client `OPENMAP_CLIENT` names (`forever` if unset), and `run.py` loads
+  that client's toc. Tools for Forever's own content (Santiago Reyes' drawn dungeons and painted
+  gaps, `map-dungeons/`) always write Forever's folders.
+- each release is one tag and a zip per client (`tools/package/build.py <version> --client=<client>`),
+  with only its own toc, data and textures ([releasing.md](releasing.md)).
+
+Below, `Data/` and the texture folders are the client's.
+
 ## Regenerating data and textures
 
-Everything under `OpenMap/Data` (except `Levels.lua`, `Fishing.lua` and `Labels.lua`) and everything
-under `OpenMap/Media/Textures` is made by a script. `<db2>` is a folder of the build's
+Everything under `OpenMap/Data/<client>` (except `Levels.lua`, `Fishing.lua`, `Labels.lua` and `Client.lua`) and everything
+under `OpenMap/Media/Textures/<client>` is made by a script. `<db2>` is a folder of the build's
 table CSVs, `<tex>` a texture cache. Order matters where one step reads another's output:
 
 | Step | Script | Writes | Needs |
 | --- | --- | --- | --- |
 | 1 | `tools/map-data/build.py <cache>` | `Data/Reveal.lua`, `Data/Places.lua` | `ENTRANCES` (below) |
 | 2 | `tools/map-data/minimap.py <cache>` | `Data/Minimap.lua` | |
-| 3 | `tools/map-flights/flights.py <db2> OpenMap/Data/FlightData.lua` | `Data/FlightData.lua` | |
+| 3 | `tools/map-flights/flights.py <db2> OpenMap/Data/Forever/FlightData.lua` | `Data/FlightData.lua` | |
 | 4 | `tools/map-caves/build.py <cache>` (best with `OPENMAP_WOW`: it reads the caves' WMOs, `wmo.py`) | `Data/Caves.lua`, `MapCave/` | |
 | 4a | `tools/map-caves/minimap.py <cache>` (best with `OPENMAP_WOW`) | `Data/CaveMinimap.lua` | 4 |
 | 5 | `tools/map-grade/fetch.py`, `grade.py` (see its README) | `Data/Grade.lua`, `MapBand/`, `MapCore/` | 1 |
@@ -86,7 +108,7 @@ table CSVs, `<tex>` a texture cache. Order matters where one step reads another'
 | 13 | `tools/map-preview/tone.py <db2> <tex>` | `Data/Tones.lua` | |
 | 13a | `tools/map-preview/minimaplod.py <db2> <tex>` | `MapMiniLOD/`, `Data/MinimapLOD.lua` | 13 |
 | 15 | `tools/map-preview/render.py <db2> <tex> <out> --bake-zones` | `MapZones/`, `Data/ZoneArt.lua` | 5, 7, 8, 11, 12, 12b |
-| 16 | `tools/changelog/build.py` (after any change to `CHANGELOG.md`) | `Data/Changelog.lua` | |
+| 16 | `tools/changelog/build.py` (after any change to `CHANGELOG.md` or `CHANGELOG-retail.md`) | every client's `Data/<client>/Changelog.lua` | |
 | 17 | `tools/map-dungeons/build.py <cache> <WoW folder> [preview dir]` | `Data/DungeonMaps.lua` | 1 |
 | 17a | `tools/map-dungeons/drawn.py` | `MapDungeonDrawn/`, `Data/DungeonDrawn.lua` | `art/drawn/dungeons/` |
 | 17b | `tools/map-chart/build.py <db2> <tex>` (his layers from his file first: `tools/map-chart/export.py <psd>`) | `MapChart/`, `Data/Chart.lua` | `art/drawn/chart/` |
@@ -105,7 +127,7 @@ and rerun step 1.
 
 `gapfill.py --rerender` re-renders the zones (slow) after anything that changes them
 (steps 5, 7, 8, 11), and so does `--bake-zones` (step 15: the zones' art as the map draws it,
-baked into tiles; `OPENMAP_BAKED=1` renders from those tiles, to compare). Each texture in `OpenMap/Media/Textures` is listed in its
+baked into tiles; `OPENMAP_BAKED=1` renders from those tiles, to compare). Each texture in `OpenMap/Media/Textures/<client>` is listed in its
 `NOTICE.md` with the script that makes it: add a line when you add a texture.
 
 Hand edits of Blizzard's art (names painted out) live in `art/edits/`
@@ -150,4 +172,5 @@ The map draws thousands of regions; the frame rate depends on how few are live.
   checklist in the template. CI (lint and load tests) must pass.
 - Versions follow `vMAJOR.MINOR.PATCH`, with `-beta` / `-alpha` for pre-releases
   ([releasing.md](releasing.md)). Note user-visible changes under "Unreleased" in
-  [CHANGELOG.md](../CHANGELOG.md).
+  [CHANGELOG.md](../CHANGELOG.md) (WoW Forever) and/or [CHANGELOG-retail.md](../CHANGELOG-retail.md),
+  as the change reaches each.

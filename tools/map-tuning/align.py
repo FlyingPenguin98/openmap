@@ -32,7 +32,7 @@ SEARCH = 14                     # art px each way
 MIN_SHIFT, MIN_GAIN = 1.5, 0.08 # nudge only if it moves this far (art px) and beats no shift by this much
 
 def minimap_tiles():
-    src_ = open(os.path.join(here, "..", "..", "OpenMap", "Data", "Minimap.lua"), encoding="utf-8").read()
+    src_ = open(os.path.join(g["WM"], "Minimap.lua"), encoding="utf-8").read()
     out, cur = {}, None
     for line in src_.split("\n"):
         m_ = re.match(r"\s*\[(\d)\] = \{", line)

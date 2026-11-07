@@ -1,4 +1,4 @@
-# Builds OpenMap/Data/Minimap.lua: the file IDs of the game's minimap tiles per continent,
+# Builds OpenMap/Data/<client>/Minimap.lua: the file IDs of the game's minimap tiles per continent,
 # mixed into the closest zoom levels for detail (Close.lua). Each tile is 533.33 yards
 # square; tile (x, y) covers world Y from (32 - x) * 533.33 down and world X from
 # (32 - y) * 533.33 down (x runs east, y runs south).
@@ -9,13 +9,19 @@
 # versions' tiles of places Forever's world doesn't have (a rebuilt Quel'Thalas and Zul'Aman north
 # and east of the Plaguelands, the sea far west of Dun Morogh and off the coast east of Wetlands,
 # the Draenei isles off Kalimdor), which the game never shows.
+# A client with a world of its own (World.lua, tools/map-data/world.py) has its continents' game maps,
+# and only the tiles on its stitched world (Outland's aren't, on the draenei isles' game map).
 # usage: python -P tools/map-data/minimap.py <cache dir> [build]
 import csv, os, struct, sys, time, urllib.request
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-OUT = os.path.join(HERE, "..", "..", "OpenMap", "Data", "Minimap.lua")
+sys.path.insert(0, os.path.join(HERE, ".."))
+import clients   # the client the tools build for (OPENMAP_CLIENT)
+import uimap
+WORLD = uimap.read_world(os.path.join(clients.DATA, "World.lua"))
+OUT = os.path.join(clients.DATA, "Minimap.lua")
 cache = sys.argv[1]
-BUILD = sys.argv[2] if len(sys.argv) > 2 else "1.60.1.70245"
+BUILD = sys.argv[2] if len(sys.argv) > 2 else clients.BUILD
 os.makedirs(cache, exist_ok=True)
 UA = {"User-Agent": "openmap-tools/1"}
 
@@ -43,7 +49,7 @@ def chunks(data):
 
 
 tiles = {}
-for cont in (0, 1):
+for cont in sorted({g for gs in WORLD["minimap"].values() for g in gs}) if WORLD else (0, 1):
     fid = int(maps[str(cont)]["WdtFileDataID"])
     c = chunks(open(get("https://wago.tools/api/casc/%d?download&version=%s" % (fid, BUILD),
                         os.path.join(cache, "%d-%s.wdt" % (fid, BUILD))), "rb").read())
@@ -51,7 +57,9 @@ for cont in (0, 1):
         y, x = divmod(n, 64)                                    # (both chunks run row by row: y, then x)
         has = struct.unpack_from("<I", c["MAIN"], n * 8)[0] & 1
         mini = struct.unpack_from("<8I", c["MAID"], n * 32)[7]   # (root, obj0, obj1, tex0, lod, map, map normal, minimap)
-        if has and mini: tiles.setdefault(cont, {})[(x, y)] = mini
+        # (the tile's middle on the stitched world: tile x runs along world Y, y along world X)
+        on = uimap.on_world(WORLD, cont, (31.5 - y) * 1600 / 3, (31.5 - x) * 1600 / 3, 0.05)
+        if has and mini and on: tiles.setdefault(cont, {})[(x, y)] = mini
 
 with open(OUT, "w", encoding="utf-8", newline="\n") as f:
     f.write("-- The game's minimap tiles: [continent][x * 64 + y] = file ID (tile x runs east, y south;\n")

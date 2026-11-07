@@ -1,4 +1,4 @@
-# Builds OpenMap/Data/CaveMinimap.lua: every cave and underground area on the two continents, as
+# Builds OpenMap/Data/Forever/CaveMinimap.lua: every cave and underground area on the two continents, as
 # the game's own minimap draws it inside (its WMOs' minimap textures, WMOMinimapTexture). Blizzard
 # made world-map art (micro maps, build.py) for only some of them; the rest have only this.
 # Which WMOs are caves, and how they're placed: wmo.py.
@@ -12,7 +12,7 @@
 # draws it inside, for Close.lua to lay over the city's map up close. Not a cave by wmo.py's names
 # (Forever's own files, numbered): the WMO placed in the city's box with rooms under the terrain.
 #
-#   OpenMap/Data/CaveMinimap.lua
+#   OpenMap/Data/Forever/CaveMinimap.lua
 #     MapCaveMinimap, per cave: continent, its box (yards), its pieces lowest floor first, each a
 #     square (the block's picture and the transparent rest): file, centre (yards), side (yards),
 #     rotation (radians, counter-clockwise on the map), and the picture's share of the square
@@ -60,7 +60,7 @@ def pictures(p, groups):
 
 boxes, under = [], {}            # Blizzard's cave maps and the cities: (continent, minX, minY, maxX, maxY)
 for m in re.finditer(r"\[\d+\] = \{ \"[^\"]+\", (\d), ([-\d.]+), ([-\d.]+), ([-\d.]+), ([-\d.]+)",
-                     open(os.path.join(ROOT, "Data", "Caves.lua"), encoding="utf-8").read()):
+                     open(os.path.join(ROOT, "Data", "Forever", "Caves.lua"), encoding="utf-8").read()):
     boxes.append((int(m.group(1)), *map(float, m.group(2, 3, 4, 5))))
 for r in world.table("UiMapAssignment"):
     if r["UiMapID"] in CITIES and r["OrderIndex"] == "0":
@@ -113,7 +113,7 @@ def entry(cv):
     flat = ", ".join("%d, %.1f, %.1f, %.1f, %.3f, %.3f, %.3f" % o[1:] for o in cv["out"])
     return "{ %d, %.0f, %.0f, %.0f, %.0f, { %s } }" % (cv["cont"], *cv["box"], flat)
 
-with open(os.path.join(ROOT, "Data", "CaveMinimap.lua"), "w", encoding="utf-8", newline="\n") as f:
+with open(os.path.join(ROOT, "Data", "Forever", "CaveMinimap.lua"), "w", encoding="utf-8", newline="\n") as f:
     f.write("-- Caves and underground areas as the game's minimap draws them inside (their WMOs' minimap pictures).\n")
     f.write("--   { continent, minX, minY, maxX, maxY (world yards), { per picture, lowest floor first: file, centre X, Y,\n")
     f.write("--     side (yards), rotation (radians), u1, v0 (texcoords 0..u1, v0..1 of the square) ... } }\n")

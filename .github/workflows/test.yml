@@ -10,6 +10,12 @@ concurrency:
 jobs:
   offline:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        client: [forever, retail]   # each client's toc (tools/clients.py)
+    env:
+      OPENMAP_CLIENT: ${{ matrix.client }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -25,9 +31,13 @@ jobs:
       - run: python tools/offline-test/run.py pad
       - run: python tools/offline-test/run.py padmap
       - run: python tools/offline-test/navigation.py
-      - run: python -P tools/offline-test/combat.py
-      - run: python -P tools/offline-test/caves.py
-      - run: python -P tools/offline-test/explored.py
-      - run: python -P tools/offline-test/chart.py
+      - run: python -P tools/offline-test/friends.py
+      # (WoW Forever's own data: its combat list, caves, painted gaps and sea chart)
+      - if: matrix.client == 'forever'
+        run: |
+          python -P tools/offline-test/combat.py
+          python -P tools/offline-test/caves.py
+          python -P tools/offline-test/explored.py
+          python -P tools/offline-test/chart.py
       - name: The tools at least compile
         run: python -m compileall -q tools

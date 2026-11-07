@@ -188,9 +188,12 @@ local function Atlas(tex, name, turn, ownSize)
 	return true
 end
 
--- Blizzard's map of it, else one drawn for WoW Forever's own dungeons (Data/DungeonDrawn.lua)
+-- Blizzard's map of it, else one drawn for WoW Forever's own dungeons (Data/DungeonDrawn.lua: by
+-- mapID, or by name for one the game's tables have no mapID for yet, Places.lua's 0)
 local function FloorsOf(inst)
-	return ns.MapDungeonMaps and ns.MapDungeonMaps[inst[1]] or ns.MapDungeonDrawn and ns.MapDungeonDrawn[inst[1]]
+	local drawn = ns.MapDungeonDrawn
+	return ns.MapDungeonMaps and ns.MapDungeonMaps[inst[1]]
+		or drawn and (drawn[inst[1]] or inst[1] == 0 and drawn[inst[2]] or nil)
 end
 local BLANK = { { blank = true } }    -- (the floors of a dungeon the client has no map of: one blank page)
 
@@ -293,13 +296,14 @@ local function BuildView()
 	-- a dungeon the client has no map of: the map's own parchment, blank, and a word on it
 	view.blank = view.page:CreateTexture(nil, "ARTWORK")
 	view.blank:SetAllPoints()
-	view.blank:SetTexture(ns.Media.path .. "Textures\\MapPaper", "REPEAT", "REPEAT")
+	view.blank:SetTexture(ns.Media.tex .. "MapPaper", "REPEAT", "REPEAT")
 	view.blank:SetTexCoord(0, 3, 0, 2)          -- (the paper's grain at about the zone maps' size)
 	view.blank:Hide()
 	view.blankText = Look:Font(view.page:CreateFontString(nil, "OVERLAY"), 16)
 	view.blankText:SetPoint("CENTER")
 	view.blankText:SetTextColor(0.32, 0.22, 0.12)
-	view.blankText:SetText(L["WoW Forever has no map of this dungeon yet."])
+	view.blankText:SetText(ns.Client == "Forever" and L["WoW Forever has no map of this dungeon yet."]
+		or L["There's no map of this dungeon to show here."])
 	view.blankText:Hide()
 	-- who drew a map we didn't get from the game (Data/DungeonDrawn.lua): small, at the picture's foot,
 	-- in the middle (its corners have OpenMap's edge tabs, or its button)
@@ -1303,7 +1307,9 @@ function S.BuildDungeonPins(set)
 		local unplaced = {}
 		for _, inst in ipairs(Places().unplaced or {}) do unplaced[inst[2]] = inst end
 		for _, zone in ipairs(C_Map.GetMapChildrenInfo(S.WORLD, Enum.UIMapType.Zone, true) or {}) do
-			local l, r, t, b = S.Rect(zone.mapID)
+			-- (the stitched zones': a client's world leaves some out, Khaz Algar's underground under the Isle of Dorn)
+			local l, r, t, b
+			if S.Stitched(zone.mapID) then l, r, t, b = S.Rect(zone.mapID) end
 			local ok, list = pcall(entrances, zone.mapID)
 			for _, e in ipairs(ok and l and list or {}) do
 				local name = Safe.Value(e.name)
@@ -1477,7 +1483,8 @@ end
 local function Card()
 	card = CreateFrame("Frame", nil, map)
 	card:SetWidth(CARD_W)
-	card:SetPoint("TOPRIGHT", sc, "TOPRIGHT", -8, -8)
+	-- (below Blizzard's filter and pin buttons where a client has them in that corner: retail's)
+	card:SetPoint("TOPRIGHT", sc, "TOPRIGHT", -8, ns.Client == "Forever" and -8 or -70)
 	card:SetFrameLevel(math.min(sc:GetFrameLevel() + 9300, 9950))
 	card:EnableMouse(true)
 	Look:Panel(card, { alpha = 0.92 })
@@ -1752,6 +1759,8 @@ FillSide = function()
 		if NeedRoll() then
 			Text(L["NeedRoll lists this dungeon's loot: what every boss drops, what you've collected, and a wishlist."])
 			items[#items + 1] = { kind = "button", L["Open NeedRoll"], click = function() OpenNeedRoll() end }
+		elseif ns.Client ~= "Forever" then           -- (NeedRoll is WoW Forever's; another client has its own guide)
+			Text(L["This dungeon's loot is in the game's Adventure Guide."])
 		else
 			Text(L["For loot, we recommend |cffffd100NeedRoll|r, by mikebvs: what every boss drops, what you've collected, and a wishlist, made for WoW Forever."])
 			Text("|cff998866" .. L["Get it from CurseForge (click, then Ctrl-C):"] .. "|r")

@@ -13,11 +13,21 @@ cleaning it out by hand.
    line up).
 3. `python -P tools/map-art/import.py <db2 dir> <texture cache>` compares each edited
    PNG with its source and writes only the 256-px tiles you changed to
-   `OpenMap/Media/Textures/MapArt/`, listed in `OpenMap/Data/ArtEdits.lua`. The addon
+   `OpenMap/Media/Textures/Forever/MapArt/`, listed in `OpenMap/Data/Forever/ArtEdits.lua`. The addon
    draws those tiles in place of the client's.
-   The names come back as live lettering (`OpenMap/Data/Labels.lua`, measured from this
+   The names come back as live lettering (`OpenMap/Data/Forever/Labels.lua`, measured from this
    art): one of each, fixed on the world, so they stay put as you zoom.
 4. Restart the game (new textures need a full restart, not `/reload`).
 
 Edits are of Blizzard's own art, and stay true to its style: they take out what's in the way
 and add nothing the game's maps don't have.
+
+## Retail
+
+Retail's plates are in `art/edits/retail/` (the same steps, with `OPENMAP_CLIENT=retail`):
+`export.py` takes the maps to export by uiMapID and writes each one's base art at its own
+size (1002 × 668, or 3840 × 2560 for the newer maps) to `art/edits/retail/source/`; edited copies
+go in `art/edits/retail/edited/`, and `import.py` writes the changed tiles to
+`OpenMap/Media/Textures/Retail/MapArt/` and `OpenMap/Data/Retail/ArtEdits.lua`. Retail has no
+live lettering: paint out only what shows where it doesn't belong (a neighbouring zone's name
+left on the stitched map, an inset of a place that isn't there), not the names the map needs.

@@ -34,7 +34,8 @@ The template's checklist, plus:
 
 - **Correctness**: does it do what it says, and only that? Read the diff, not just the
   description. CI must pass; for visual changes, look at the before / after renders.
-- **Security**: no `loadstring` / `RunScript`, no chat or addon messages, no protected
+- **Security**: no `loadstring` / `RunScript`, no chat messages, no new addon messages
+  without the player asking for them (pins, sharing where you are), no protected
   calls, no writes to Blizzard's frames' layout tables (taint). In tools: nothing that
   executes downloaded content, no new network endpoints without reason. In workflows: no
   `pull_request_target`, no new secrets, actions from trusted publishers.

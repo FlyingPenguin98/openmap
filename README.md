@@ -28,7 +28,7 @@ Everything is in the **OpenMap** menu on the map (or type `/openmap`, or use the
 
 ## Original game art
 
-Every map and icon OpenMap uses is Blizzard's own art, loaded from the game. The few textures the addon ships are cut or masked from Blizzard's map art (the sea, blank parchment, coastlines, the border) or are plain paper grain made from noise. The zone data, dungeon entrances and levels, boat routes and flight network come from the game's data files; zone level ranges come from the Warcraft Wiki, and townsfolk and spirit healers from Questie.
+Every map and icon OpenMap uses is Blizzard's own art, loaded from the game, except OpenMap's own icon, which zloyeb drew for it. The few textures the addon ships are cut or masked from Blizzard's map art (the sea, blank parchment, coastlines, the border) or are plain paper grain made from noise. The zone data, dungeon entrances and levels, boat routes and flight network come from the game's data files; zone level ranges come from the Warcraft Wiki, and townsfolk and spirit healers from Questie.
 
 ## Help build it
 
@@ -63,4 +63,4 @@ Restart the game after adding new texture files; `/reload` is enough for Lua cha
 
 ## Licence
 
-The code, data tables and tools are MIT, see [LICENSE](LICENSE). Bundled libraries keep their own licences (`OpenMap/LICENSES`). The map itself is Blizzard's: the zone and continent art is loaded from the game at run time, and the few textures OpenMap ships that are cut from that art (the sea, the blank paper, coastlines, masks) remain Blizzard's and aren't covered by the MIT licence. [OpenMap/Media/Textures/NOTICE.md](OpenMap/Media/Textures/NOTICE.md) lists them and the scripts that make them.
+The code, data tables and tools are MIT, see [LICENSE](LICENSE). Bundled libraries keep their own licences (`OpenMap/LICENSES`). The map itself is Blizzard's: the zone and continent art is loaded from the game at run time, and the few textures OpenMap ships that are cut from that art (the sea, the blank paper, coastlines, masks) remain Blizzard's and aren't covered by the MIT licence. [OpenMap/Media/Textures/Forever/NOTICE.md](OpenMap/Media/Textures/Forever/NOTICE.md) (and retail's, [Retail/NOTICE.md](OpenMap/Media/Textures/Retail/NOTICE.md)) list them and the scripts that make them.

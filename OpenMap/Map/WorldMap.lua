@@ -37,7 +37,8 @@ local mod = ns:NewModule("worldmap", {
 		desaturate = 0.1,
 		unexplored = "show",    -- areas not explored yet: "show", "dim" or "hide"
 		gapFills = true,        -- the gaps between zones painted by hand (art/drawn/gaps)
-		maxZoom = 48,           -- x the whole-world view (MAX_ZOOM: what it can be set to)
+		maxZoom = 48 * (ns.ClientMaps and ns.ClientMaps.zoom or 1),   -- x the whole-world view (MAX_ZOOM: what it can
+		                        --  be set to; a world of smaller zones goes as much further: Data\<client>\Client.lua)
 		chart = false,          -- Santiago Reyes's sea chart round the world (Chart.lua)
 		padMap = false,         -- OpenMap's map with the Gamepad UI on too (Gamepad.lua binds B and full screen; a test)
 	},
@@ -79,7 +80,7 @@ local function Stitchable(mapID)
 	local info = C_Map.GetMapInfo(mapID)
 	if not info then return false end
 	if info.mapType ~= Enum.UIMapType.Continent and info.mapType ~= Enum.UIMapType.Zone then return false end
-	return S.Rect(mapID) ~= nil and S.ArtSize(mapID) ~= nil
+	return S.Rect(mapID) ~= nil and S.ArtSize(mapID) ~= nil and S.Stitched(mapID, true)   -- (a client's own list: Stitch.lua)
 end
 
 -- view px per world unit when the whole world fits
@@ -106,12 +107,14 @@ local function ZoomFor(mapID, scale) return scale * K(mapID) / FitPx() end
 -- world is in view, its area, not how far it is from fitting it. A view the world map's shape (3:2)
 -- is the same; a tall one (or a very wide one) fits the world across its narrow side and shows much
 -- more of it the other way, so at the same zoom the zones would come in while it still shows a
--- continent's worth of map
+-- continent's worth of map. On a world of smaller zones (retail's twelve continents) by as much less
+-- (ns.ClientMaps.zoom), so each layer comes in on a zone the size it does on WoW Forever's
 local function DetailK()
 	local W, H = S.Size()
 	local w, h = sc:GetWidth(), sc:GetHeight()
-	if not W or w <= 0 or h <= 0 then return 1 end
-	return math.min(w / W, h / H) / math.sqrt(w * h / (W * H))
+	local k = ns.ClientMaps and ns.ClientMaps.zoom or 1
+	if not W or w <= 0 or h <= 0 then return 1 / k end
+	return math.min(w / W, h / H) / math.sqrt(w * h / (W * H)) / k
 end
 local function ScaleFor(mapID, zoom) return zoom * FitPx() / K(mapID) end
 
@@ -570,13 +573,17 @@ local viewFrame = CreateFrame("Frame")
 viewFrame:Hide()
 viewFrame:SetScript("OnUpdate", Ours("view update", function(self)
 	self:Hide()
-	if not active or not S.SetView then return end
+	-- (only on the map open: Blizzard resets the view once more as it closes, and a view taken then was
+	-- read on the next opening as one put up while it's open, the zone's whole map, before the zoom kept
+	-- was put back a frame later: "Center on player, keep zoom" opened closer, then jumped. The opening
+	-- runs it again: ApplyZoom)
+	if not active or not S.SetView or not map:IsShown() then return end
 	local u, v, zoom = View()
 	live = live or {}                             -- (kept: the view updates every frame of a pan)
 	live[1], live[2], live[3], live[4], live[5] = u, v, zoom, sc:GetWidth(), sc:GetHeight()
 	local pu, pv = PerPx(zoom)
 	local g, t0 = Before(), Clock()
-	S.SetView(u, v, sc:GetWidth() / 2 * pu, sc:GetHeight() / 2 * pv, zoom * DetailK(), zoom)
+	S.SetView(u, v, sc:GetWidth() / 2 * pu, sc:GetHeight() / 2 * pv, zoom * DetailK(), zoom / (ns.ClientMaps and ns.ClientMaps.zoom or 1))
 	After("close-up", g)
 	Clocked("OpenMap's view update", t0)
 	if mod.OnViewMoved then mod.OnViewMoved() end   -- (API.lua: other addons told, a few times a second at most)
@@ -867,8 +874,9 @@ local function OnCanvasClick(from, button)
 		if mod.ClearFlightRoute then mod:ClearFlightRoute() end
 		-- (a city's map is its continent's child in the game's tables: out of it, its own zone comes
 		-- first, as out of any other part of that zone; ns.MapCityZones, banners.py)
+		-- (S.ChainAt puts it there itself now: kept for safety, not twice)
 		local zone = ns.MapCityZones and ns.MapCityZones[chain[#chain]]
-		if zone then tinsert(chain, #chain, zone) end
+		if zone and chain[#chain - 1] ~= zone then tinsert(chain, #chain, zone) end
 		local target = WORLD
 		for _, id in ipairs(chain) do
 			if id ~= WORLD and Stitchable(id) and FitZoom(id) < zoom * 0.95 then target = id end
@@ -1084,6 +1092,7 @@ local function Setup()
 	ns.RegisterEvent(mod, "ZONE_CHANGED_NEW_AREA", function() if S.IsBuilt() then S.RefreshCities() end end)
 	Timed("Nav", mod.SetupNav, mod, map)          -- (before the menu: it holds Nav's search box)
 	Timed("Pins", mod.SetupPins, mod, map)
+	Timed("Friends", mod.SetupFriends, mod, map)
 	Timed("Quests", mod.SetupQuests, mod, map)
 	Timed("Dungeons", mod.SetupDungeons, mod, map)
 	Timed("Combat", mod.SetupCombat, mod, map)
@@ -1282,6 +1291,7 @@ function mod:Refresh()
 	if self.RefreshQuests then self:RefreshQuests() end
 	if self.RefreshDungeonCard then self.RefreshDungeonCard() end
 	if self.RefreshSketch then self.RefreshSketch() end
+	if self.RefreshFriends then self.RefreshFriends() end
 	if self.RefreshPanel then self:RefreshPanel() end
 end
 
@@ -1391,6 +1401,7 @@ function mod:Options()
 		desaturate = { type = "range", name = ns.L["Take colour out"], order = 22, min = 0, max = 0.6, step = 0.05, isPercent = true,
 			get = get, set = set, disabled = off },
 		chart = { type = "toggle", name = ns.L["Responsive ocean & border"], order = 23.6, get = get, set = set, disabled = off,
+			hidden = function() return not ns.MapChart end,   -- (WoW Forever's only: Data\Forever\Chart.lua)
 			desc = ns.L["Zoomed right out, the world map lies on an ocean that fills the window, in a border: the sea, compass roses, sea creatures, ships and the frame round it painted by Santiago Reyes (used with his permission), laid out for the window's shape, wide or tall. The game's own map stays in the middle. Off: no border."] },
 		gapFills = { type = "toggle", name = ns.L["Filled gaps"], order = 23.5, get = get, set = set, disabled = off,
 			desc = ns.L["Land no zone map covers, painted by hand in the zone maps' style from Blizzard's own art (by Santiago Reyes, used with his permission). Off: blank map paper there."] },
@@ -1423,6 +1434,7 @@ function mod:Options()
 			isPercent = true, get = get, set = set, disabled = off,
 			desc = ns.L["OpenMap's icons on the map (dungeons, flight masters, boats, townsfolk, your pins ...) at this size. Questie's icons have their own size, in Questie's options."] },
 		allQuests = { type = "toggle", name = ns.L["Quests from every zone"], order = 33.7, get = get, set = set, disabled = off,
+			hidden = function() return mod.defaults.allQuests == nil end,   -- (Quests.lua: not in retail's toc)
 			desc = ns.L["The quests in your log on the map from every zone and at any zoom. Blizzard's map shows a zone's quests only once you've zoomed in on that zone."] },
 		playerArrow = { type = "toggle", name = ns.L["Your arrow"], order = 33, get = get, set = set, disabled = off,
 			desc = ns.L["Your own arrow on the world map. Off, you find your way old-school, by the land around you; your party still shows, and so does the minimap."] },
@@ -1430,6 +1442,7 @@ function mod:Options()
 	if mod.ExtraOptions then mod:ExtraOptions(opts, get, set, off) end
 	if mod.NavOptions then mod:NavOptions(opts, get, set, off) end
 	if mod.PinOptions then mod:PinOptions(opts, get, set, off) end
+	if mod.FriendsOptions then mod:FriendsOptions(opts, get, set, off) end
 	if mod.DungeonOptions then mod:DungeonOptions(opts, get, set, off) end
 	if mod.LauncherOptions then mod:LauncherOptions(opts, get, off) end
 	if mod.SketchOptions then mod:SketchOptions(opts, get, set, off) end
@@ -1441,6 +1454,15 @@ function mod:Options()
 		desc = ns.L["Every slider here (and the OpenMap menu's) back to how OpenMap comes."],
 		confirm = true, confirmText = ns.L["Put every slider back to its default?"],
 		func = function() mod:ResetSliders() end }
+	-- (what a client's data has none of isn't offered: retail's has no colour matching or painted gaps, and
+	-- darkening the unexplored areas takes the colour-matched zones' land masks: hidden or shown, there)
+	if not ns.MapGrade then
+		opts.colorMatch = nil
+		opts.darkening = nil
+		opts.unexplored.values, opts.unexplored.sorting = { show = ns.L["Show"], hide = ns.L["Hide"] }, { "show", "hide" }
+		opts.unexplored.desc = ns.L["Areas you haven't explored yet: shown as they are, or hidden like Blizzard's own map (blank parchment until you get there)."]
+	end
+	if not ns.MapGaps then opts.gapFills = nil end
 	return opts
 end
 

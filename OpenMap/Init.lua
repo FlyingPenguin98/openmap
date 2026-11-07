@@ -12,6 +12,7 @@
 --   /openmap draw           the quill: draw on the map (Sketch.lua)
 --   /openmap dungeons       which map each dungeon entrance opens (Dungeons.lua)
 --   /openmap entrance <name>  where you stand, as a dungeon entrance for tools/map-data (Dungeons.lua)
+--   /openmap highlights     where the game draws each zone's highlight, for tools/map-preview (Debug.lua)
 --------------------------------------------------------------------------------
 
 local ADDON, ns = ...
@@ -50,7 +51,8 @@ local function Slash(msg)
 	local run = {
 		status = "Diag", paint = "TogglePaint", notes = "TogglePaint", debug = "ToggleDebugOverlay",
 		bench = "Bench", pins = "TogglePins", news = "ToggleNews", entrance = "Entrance", draw = "ToggleSketch", dungeons = "DungeonDiag",
-		welcome = "ShowWelcome",
+		welcome = "ShowWelcome", highlights = "Highlights", warm = "ToggleWarm",
+		reset = "ResetWindow",   -- (reset: the windowed map's size and place, for one off the screen)
 	}
 	if run[msg] then
 		if mod.enabled and mod[run[msg]] then mod[run[msg]](mod, takes[msg] and rest or nil)

@@ -277,7 +277,7 @@ local function Build()
 		if not atlas and C_Texture and C_Texture.GetAtlasInfo and C_Texture.GetAtlasInfo(name) then atlas = name end
 	end
 	if atlas then paper:SetAtlas(atlas)
-	elseif paper:SetTexture(ns.Media.path .. "Textures\\MapPaper", "REPEAT", "REPEAT") == false then
+	elseif paper:SetTexture(ns.Media.tex .. "MapPaper", "REPEAT", "REPEAT") == false then
 		paper:SetColorTexture(0.86, 0.78, 0.6, 1)
 	end
 	page.scroll = CreateFrame("ScrollFrame", nil, page, "UIPanelScrollFrameTemplate")
