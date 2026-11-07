@@ -777,6 +777,20 @@ end
 -- DetailK), and `steps`: the plain zoom, from the whole world fitting, as far as the wheel has gone.
 -- The minimap's fades go by that: the same wheel turns in a small window or full screen (by the
 -- area, the full screen's wide view took it in later)
+-- the blur rests while the map moves: its four copies of every zone in view are laid out again
+-- on every frame of a zoom or pan (about 60 ms a zoom frame and 8 ms a pan frame at 16x,
+-- /openmap bench); back `after` seconds once it stops. A lone view update (the map opening, a
+-- setting changed) applies it at once: it rests from the second update in a row (`gap` apart at most)
+local BlurRest = { frame = CreateFrame("Frame"), args = {}, at = -10, after = 0.15, gap = 0.1 }
+BlurRest.frame:Hide()
+BlurRest.frame:SetScript("OnUpdate", function(self)
+	if mod.Zooming and mod.Zooming() then return end
+	if GetTime() - BlurRest.at < BlurRest.after then return end
+	self:Hide()
+	local a = BlurRest.args
+	Try("blur", S.SetBlur, a[1], a[2], a[3], a[4], a[5])
+end)
+
 S.closeView = {}
 function S.SetView(u, v, hu, hv, zoom, steps)
 	steps = steps or zoom
@@ -791,7 +805,19 @@ function S.SetView(u, v, hu, hv, zoom, steps)
 	Try("culling", S.Cull, u - hu, v - hv, u + hu, v + hv)
 	local soft = mod.db.soften and Smooth(zoom, SOFT_FADE) or 0
 	cv.soft = soft
-	Try("blur", S.SetBlur, soft, u - hu, v - hv, u + hu, v + hv)
+	local now = GetTime()
+	local moving = (mod.Zooming and mod.Zooming()) or now - BlurRest.at < BlurRest.gap
+	BlurRest.at = now
+	local blur = soft               -- (the grain still goes by soft: only the blur rests)
+	if soft > 0 and moving then
+		local a = BlurRest.args
+		a[1], a[2], a[3], a[4], a[5] = soft, u - hu, v - hv, u + hu, v + hv
+		BlurRest.frame:Show()
+		blur = 0
+	else
+		BlurRest.frame:Hide()       -- (applied now: an older one waiting would undo it)
+	end
+	Try("blur", S.SetBlur, blur, u - hu, v - hv, u + hu, v + hv)
 	local base = mod.db.minimap and mod.db.minimapMix or 0
 	local k = (mod.db.minimapFrom or MINI_FADE[1]) / MINI_FADE[1]          -- (sooner or later: the fades scale with it)
 	-- (the take-over toward minimapDeep moves later with it, never sooner: it's where the painted

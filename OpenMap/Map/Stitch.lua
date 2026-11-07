@@ -716,6 +716,7 @@ end
 local function Anchor(u, v)
 	local a = tremove(anchorPool) or root:CreateTexture(nil, "BACKGROUND")
 	a:SetAlpha(0)
+	a:Hide()        -- (hidden, not only see-through: a shown one is laid out and drawn on every zoom frame)
 	local rec = { a, u, v, 0.01, 0.01 }
 	dynamic[a] = rec
 	PlaceRecord(rec)
