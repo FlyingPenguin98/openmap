@@ -19,6 +19,7 @@ local Look, Safe, L = ns.Look, ns.Safe, ns.L
 mod.defaults.pins = { list = {}, nextId = 1 }
 mod.defaults.pinsShared = true  -- pins others share reach you (you're asked first)
 mod.defaults.pinsAt = false     -- the Pins list's place once dragged: { point, relPoint, x, y } (UIParent's)
+mod.defaults.ctrlClickPin = true -- Ctrl-click on the map drops a pin (off: another addon's Ctrl-click, Map Pin Enhanced's)
 mod.defaults.pinsHidden = false -- your pins off the map (right-click Pins; the list still has them)
 
 local PREFIX = "OpenMap"        -- (its addon messages)
@@ -796,4 +797,6 @@ end
 function mod:PinOptions(opts, get, set_, off)
 	opts.pinsShared = { type = "toggle", name = L["Pins others share with you"], order = 36, width = "full", get = get, set = set_, disabled = off,
 		desc = L["Map pins your group, guild or a player shares with you: you're asked whether to add them. Off, they're ignored."] }
+	opts.ctrlClickPin = { type = "toggle", name = L["Ctrl-click drops a pin"], order = 35.9, width = "full", get = get, set = set_, disabled = off,
+		desc = L["Ctrl-click on the map drops a pin. Turn it off if another addon drops its own pin on Ctrl-click (Map Pin Enhanced): the menu's Drop a pin still works."] }
 end

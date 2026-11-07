@@ -485,5 +485,7 @@
  "Your friends and guild members who use OpenMap can show on your map as a dot where they stand. Share where you are, so they see you on theirs?": "Eure Freunde und Gildenmitglieder, die OpenMap nutzen, können auf Eurer Karte als Punkt erscheinen, wo sie stehen. Euren Standort teilen, damit sie Euch auf ihrer Karte sehen?",
  "Share where I am": "Standort teilen",
  "Not now": "Jetzt nicht",
- "Only your guild and friends, never from a dungeon, raid or battleground. OpenMap's menu: More, Sharing.": "Nur Eure Gilde und Freunde, nie aus Dungeons, Schlachtzügen oder Schlachtfeldern. OpenMap-Menü: Mehr, Teilen."
+ "Only your guild and friends, never from a dungeon, raid or battleground. OpenMap's menu: More, Sharing.": "Nur Eure Gilde und Freunde, nie aus Dungeons, Schlachtzügen oder Schlachtfeldern. OpenMap-Menü: Mehr, Teilen.",
+ "Ctrl-click drops a pin": "STRG-Klick setzt eine Markierung",
+ "Ctrl-click on the map drops a pin. Turn it off if another addon drops its own pin on Ctrl-click (Map Pin Enhanced): the menu's Drop a pin still works.": "STRG-Klick auf die Karte setzt eine Markierung. Schaltet es aus, wenn ein anderes Addon bei STRG-Klick seine eigene setzt (Map Pin Enhanced): „Markierung setzen“ im Menü funktioniert weiterhin."
 }

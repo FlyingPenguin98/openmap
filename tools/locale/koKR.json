@@ -485,5 +485,7 @@
  "Your friends and guild members who use OpenMap can show on your map as a dot where they stand. Share where you are, so they see you on theirs?": "OpenMap을 사용하는 친구와 길드원이 내 지도에 서 있는 위치의 점으로 표시될 수 있습니다. 내 위치도 공유해서 그들의 지도에 보이게 할까요?",
  "Share where I am": "내 위치 공유",
  "Not now": "나중에",
- "Only your guild and friends, never from a dungeon, raid or battleground. OpenMap's menu: More, Sharing.": "길드원과 친구에게만, 던전, 공격대, 전장 안에서는 절대 보내지 않습니다. OpenMap 메뉴: 기타, 공유."
+ "Only your guild and friends, never from a dungeon, raid or battleground. OpenMap's menu: More, Sharing.": "길드원과 친구에게만, 던전, 공격대, 전장 안에서는 절대 보내지 않습니다. OpenMap 메뉴: 기타, 공유.",
+ "Ctrl-click drops a pin": "Ctrl 클릭으로 핀 꽂기",
+ "Ctrl-click on the map drops a pin. Turn it off if another addon drops its own pin on Ctrl-click (Map Pin Enhanced): the menu's Drop a pin still works.": "지도를 Ctrl 클릭하면 핀을 꽂습니다. 다른 애드온이 Ctrl 클릭으로 자체 핀을 꽂는다면(Map Pin Enhanced) 끄십시오. 메뉴의 '핀 꽂기'는 계속 사용할 수 있습니다."
 }
