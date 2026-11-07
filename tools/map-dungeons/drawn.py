@@ -25,7 +25,7 @@ DRAWN = {
     2998: ("excavation-site-wetlands.png", "Excavation Site: Wetlands", "Santiago Reyes"),
     2999: ("ruins-of-lordaeron.png", "Ruins of Lordaeron", "Santiago Reyes"),
     3065: ("hall-of-thanes.png", "The Hall of Thanes", "Santiago Reyes"),
-    "The Drowned City": ("the-drowned-city.webp", "The Drowned City", "Santiago Reyes"),
+    "The Drowned City": ("the-drowned-city.jpg", "The Drowned City", "Santiago Reyes"),
     "Krol'dok Stronghold": ("kroldok-stronghold.webp", "Krol'dok Stronghold", "Santiago Reyes"),
     "Shaper's Terrace": ("shapers-terrace.webp", "Shaper's Terrace", "Santiago Reyes"),
 }

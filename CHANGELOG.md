@@ -1,5 +1,12 @@
 # OpenMap changelog
 
+## Unreleased
+
+### Improved
+
+- **The Drowned City's map is Santiago Reyes's updated version**, which names more of its places
+  (the Eternal Amphitheater and the Abyssal Dais).
+
 ## v0.8.0-beta (2026-11-07)
 
 ### New
