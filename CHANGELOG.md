@@ -2,19 +2,22 @@
 
 ## Unreleased
 
-### Fixed
-
-- **Flight masters are named in your own language**: on a client that isn't English, the map's
-  flight masters kept the game's tables' English names (hovering one said "Stormwind, Elwynn" while
-  the flight master in game names it in your language). They're now named as the game names them,
-  and a flight's measured time is found again on a route (the times were keyed by the English names).
-
 ### Improved
 
 - **OpenMap has its own icon**, a compass over a parchment map, in the AddOns list, on the
   minimap button and in the map's menu (it borrowed the game's Eastern Kingdoms icon).
 - **OpenMap is back on GitHub**, at github.com/openmap-world/openmap: Report a problem opens a
   report there again, and What's new and the AddOns list link to it.
+
+### Fixed
+
+- **Flight masters are named in your own language**: on a client that isn't English, the map's
+  flight masters kept the game's tables' English names (hovering one said "Stormwind, Elwynn" while
+  the flight master in game names it in your language). They're now named as the game names them,
+  and a flight's measured time is found again on a route (the times were keyed by the English names).
+- **The map opened inside a dungeon shows that dungeon's map** (Ragefire Chasm, Deadmines ...): it
+  showed the world map with no one on it, as WoW Forever has no map of its dungeons. Its map only
+  opened from the entrance on the world map.
 
 ## v0.7.5-beta (2026-10-23)
 

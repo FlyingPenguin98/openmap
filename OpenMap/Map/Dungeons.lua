@@ -1970,6 +1970,24 @@ function mod:SetupDungeons(worldMap)
 		if map[method] then hooksecurefunc(map, method, function() C_Timer.After(0, function() Redock(false) end) end) end
 	end
 	map:HookScript("OnShow", RefreshCard)
+	-- the map opened inside a dungeon the client has no map of (WoW Forever: none of them): its own
+	-- map, as its entrance would open it, not the world with no one on it
+	map:HookScript("OnShow", function()
+		C_Timer.After(0.1, function()
+			if not map:IsShown() or (view and view:IsShown()) or not IsInInstance or not IsInInstance() then return end
+			local instID = select(8, GetInstanceInfo())
+			if not instID then return end
+			for _, g in ipairs(Places().instances or {}) do
+				for _, inst in ipairs(g[4]) do
+					if inst[1] == instID then
+						local id = DungeonMap(inst)
+						if not id then OpenView(inst, nil) elseif map:GetMapID() ~= id then S.OpenMap(id) end
+						return
+					end
+				end
+			end
+		end)
+	end)
 	map:HookScript("OnHide", function()
 		returnTo, shownMap, lastMap, portalCard = nil, nil, nil, nil
 		if chooser then chooser:Hide() end

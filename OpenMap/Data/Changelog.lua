@@ -4,10 +4,11 @@
 local _, ns = ...
 
 ns.MapChangelog = {
-	{ version = "Unreleased", date = "", heads = { [1] = "Fixed", [2] = "Improved", }, items = {
-		"|cff6e2c0aFlight masters are named in your own language|r: on a client that isn't English, the map's flight masters kept the game's tables' English names (hovering one said \"Stormwind, Elwynn\" while the flight master in game names it in your language). They're now named as the game names them, and a flight's measured time is found again on a route (the times were keyed by the English names).",
+	{ version = "Unreleased", date = "", heads = { [1] = "Improved", [3] = "Fixed", }, items = {
 		"|cff6e2c0aOpenMap has its own icon|r, a compass over a parchment map, in the AddOns list, on the minimap button and in the map's menu (it borrowed the game's Eastern Kingdoms icon).",
 		"|cff6e2c0aOpenMap is back on GitHub|r, at github.com/openmap-world/openmap: Report a problem opens a report there again, and What's new and the AddOns list link to it.",
+		"|cff6e2c0aFlight masters are named in your own language|r: on a client that isn't English, the map's flight masters kept the game's tables' English names (hovering one said \"Stormwind, Elwynn\" while the flight master in game names it in your language). They're now named as the game names them, and a flight's measured time is found again on a route (the times were keyed by the English names).",
+		"|cff6e2c0aThe map opened inside a dungeon shows that dungeon's map|r (Ragefire Chasm, Deadmines ...): it showed the world map with no one on it, as WoW Forever has no map of its dungeons. Its map only opened from the entrance on the world map.",
 	} },
 	{ version = "v0.7.5-beta", date = "2026-10-23", heads = { [1] = "Fixed", }, items = {
 		"|cff6e2c0aThe map's art is there at once when you open it|r: since 0.7.4 the zones showed blank parchment for a moment each time the map opened.",
