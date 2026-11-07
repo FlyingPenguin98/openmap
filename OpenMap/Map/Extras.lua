@@ -474,22 +474,15 @@ local function PoolTemplate(spec)
 	end
 end
 
--- a copy taken over: "done"; its pool not there yet: "waiting" (tried again as the map opens); a copy
--- of a shape this can't take over: "unknown"
-local function SetUpPins(name, pins)
-	local spec = PIN_LIBS[name] or { template = DEFAULT_TEMPLATE }
-	local provider = pins and pins.worldmapProvider
-	if type(provider) ~= "table" or type(provider.HandlePin) ~= "function" then return "unknown" end
-	if provider.openmapPins then return "done" end
-	local template = PoolTemplate(spec)
-	if not template then return "waiting" end
-	provider.openmapPins = true
-	pinTemplates[template] = true
-	local count = spec.questie and questie or { placed = 0, ours = 0, moved = 0 }
-	if spec.questie then questie.pins = pins end
-	-- each icon's map point as it was added (the library keeps only its world position and uiMapID;
-	-- Questie's copy also keeps mapX, mapY)
+-- each copy's icons' map points as they were added: [pins] = { [icon] = { uiMapID, x, y } } (the
+-- library keeps only an icon's world position and uiMapID; Questie's copy no mapX, mapY either).
+-- Noted from the moment the copy is seen, before its pool is there to take it over: Questie draws
+-- its icons at login, before the map first opens (#10)
+local atOf = setmetatable({}, { __mode = "k" })
+local function NoteAdds(pins)
+	if atOf[pins] then return atOf[pins] end
 	local at = setmetatable({}, { __mode = "k" })
+	atOf[pins] = at
 	-- (noted before the library places it: it may place the icon straight away)
 	local add = pins.AddWorldMapIconMap
 	if type(add) == "function" then
@@ -498,6 +491,23 @@ local function SetUpPins(name, pins)
 			return add(lib, ref, icon, uiMapID, x, y, ...)
 		end
 	end
+	return at
+end
+
+-- a copy taken over: "done"; its pool not there yet: "waiting" (tried again, PinRetry); a copy of a
+-- shape this can't take over: "unknown"
+local function SetUpPins(name, pins)
+	local spec = PIN_LIBS[name] or { template = DEFAULT_TEMPLATE }
+	local provider = pins and pins.worldmapProvider
+	if type(provider) ~= "table" or type(provider.HandlePin) ~= "function" then return "unknown" end
+	if provider.openmapPins then return "done" end
+	local at = NoteAdds(pins)
+	local template = PoolTemplate(spec)
+	if not template then return "waiting" end
+	provider.openmapPins = true
+	pinTemplates[template] = true
+	local count = spec.questie and questie or { placed = 0, ours = 0, moved = 0 }
+	if spec.questie then questie.pins = pins end
 	local HandlePin = provider.HandlePin
 	provider.HandlePin = function(self, icon, data, ...)
 		-- (an older Questie's path stretch: not put on the stitched map at all, OpenMap draws the paths
@@ -511,6 +521,10 @@ local function SetUpPins(name, pins)
 		if not mod.IsStitched() then return end
 		local uiMapID, mx, my = data.uiMapID, data.mapX, data.mapY
 		if not (mx and my) and at[icon] and at[icon][1] == uiMapID then uiMapID, mx, my = at[icon][1], at[icon][2], at[icon][3] end
+		-- (a Questie icon added before anything noted it: Questie keeps its map point on the icon, in percent)
+		if not (mx and my) and spec.questie and icon.UiMapID == uiMapID and type(icon.x) == "number" and type(icon.y) == "number" then
+			mx, my = icon.x / 100, icon.y / 100
+		end
 		if not uiMapID or not mx or not my then return end
 		local mapID = self:GetMap():GetMapID()
 		if mapID == S.WORLD and spec.questie then return end   -- (Questie's own Forever path: right there)
@@ -542,6 +556,8 @@ local function SetUpPins(name, pins)
 			return Refresh(self, ...)
 		end
 	end
+	-- (taken over with the map open, after the library placed its icons the game's way: again, ours)
+	if map:IsShown() and type(provider.RefreshAllData) == "function" then provider:RefreshAllData() end
 	return "done"
 end
 
@@ -555,8 +571,9 @@ local function Tell(name)
 	ns:Print(ns.L["A map addon brings its own HereBeDragons (%s), which OpenMap doesn't know: its pins keep the game's own placement."], name)
 end
 
--- every copy of the pins library loaded so far (an addon loaded later: next time the map opens)
-local function SetUpAllPins()
+-- every copy of the pins library loaded so far (an addon loaded later: as it loads, or as the map opens).
+-- opening: a map opening, counted for one whose pool never comes (OPEN_TRIES)
+local function SetUpAllPins(opening)
 	if not LibStub or not LibStub.IterateLibraries then return end
 	for name, lib in LibStub:IterateLibraries() do
 		if type(name) == "string" and name:match("^HereBeDragons.*%-Pins%-2%.0$") then
@@ -564,13 +581,30 @@ local function SetUpAllPins()
 			if state == "unknown" then
 				Tell(name)
 			elseif state == "waiting" then
-				pending[name] = (pending[name] or 0) + 1
+				pending[name] = (pending[name] or 0) + (opening == true and 1 or 0)
 				if pending[name] > OPEN_TRIES then Tell(name) end
 			else
 				pending[name] = nil
 			end
 		end
 	end
+end
+
+-- a copy still waiting for its pool (Questie still setting up as the map first opened after a login,
+-- #7): tried again every half second while the map is open, not only at the next opening
+local PinRetry = CreateFrame("Frame")
+PinRetry.at = 0
+PinRetry:Hide()
+PinRetry:SetScript("OnUpdate", function(self)
+	local now = GetTime()
+	if now - self.at < 0.5 then return end
+	self.at = now
+	if not map or not map:IsShown() or not next(pending) then self:Hide() return end
+	SetUpAllPins()
+end)
+local function SetUpAllPinsAndWait()
+	SetUpAllPins(true)
+	if next(pending) then PinRetry.at = GetTime() PinRetry:Show() end
 end
 
 -- for /openmap status: Questie's pins, and how many are on the map now
@@ -872,7 +906,8 @@ function mod:SetupExtras(worldMap)
 	map:HookScript("OnShow", WarmLetGo)
 	hooksecurefunc(map, "SetAlpha", KeepFade)
 	SetUpAllPins()
-	map:HookScript("OnShow", SetUpAllPins)            -- (a copy an addon loaded since brought)
+	map:HookScript("OnShow", SetUpAllPinsAndWait)     -- (a copy an addon loaded since brought)
+	ns.RegisterEvent(PinRetry, "ADDON_LOADED", function() SetUpAllPins() end)
 	HookQuestiePaths()                               -- (now: an older Questie's path stretches are kept as they're made)
 	map:HookScript("OnShow", function() HookQuestiePaths() if QPATH.hooked then QPATH.dirty = true QPATH.tick:Show() end end)
 	map:HookScript("OnHide", function() QPATH.tick:Hide() end)
