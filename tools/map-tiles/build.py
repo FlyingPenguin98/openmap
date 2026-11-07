@@ -16,7 +16,6 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(HERE, ".."))
 sys.path.insert(0, os.path.join(HERE, "..", "casc"))
 import clients
-from casc import Casc
 
 OUT = os.path.join(clients.tex("forever"), "MapTile")
 
@@ -34,6 +33,7 @@ def tile_ids():
 def main():
     if len(sys.argv) < 2:
         raise SystemExit("usage: python -P tools/map-tiles/build.py <World of Warcraft folder> [--locales]")
+    from casc import Casc   # here, not at the top: lint imports this file for tile_ids(), and CI has no numpy
     casc = Casc(sys.argv[1], clients.CLIENTS["forever"]["product"])
     ids = tile_ids()
     os.makedirs(OUT, exist_ok=True)
