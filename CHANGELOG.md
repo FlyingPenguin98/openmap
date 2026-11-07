@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Improved
+
+- **Flight masters are easier to see on the map**: bigger, with a dark outline, and the ones you
+  haven't learned are no longer half see-through (they were lost on the parchment).
+
 ### Fixed
 
 - **Dungeon and cave maps show in every language**: on the Latin American Spanish, Russian and
