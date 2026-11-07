@@ -3,7 +3,7 @@
 -- this game too) and in your guild shows by zone, as the game's own lists give it: a badge on the
 -- zone, with who's there. Those who use OpenMap and share where they are show as a class-coloured
 -- dot where they stand instead. Your party and raid are left to Nav.lua's dots and Blizzard's.
--- Sharing (Options' Share where you are; off unless turned on): your place as an addon message
+-- Sharing (asked once as the map opens; the menu's and Options' Share where you are; off unless turned on): your place as an addon message
 -- (prefix OpenMapLoc) every few seconds while you move, each minute while you stand still, to your
 -- guild and to your friends who use OpenMap; never from inside a dungeon, raid or battleground.
 -- Friends who use OpenMap are found by a hello to each as they come online (H1, answered H2).
@@ -422,6 +422,61 @@ function mod.RefreshFriends()
 end
 
 --------------------------------------------------------------------------------
+-- Asked once, the first time the map opens with this version (after the new install's own
+-- question, Welcome.lua, has had its turn): whether to share where you are. Off until then, and
+-- after Not now; the menu's Share where you are changes it any time. (shareAsked: per account)
+--------------------------------------------------------------------------------
+
+local ask
+
+local function Answer(share)
+	mod.db.shareAsked = true
+	if share then
+		mod.db.friendsShare = true
+		mod.RefreshFriends()
+		if ns.NotifyOptions then ns.NotifyOptions() end
+		if mod.RefreshPanel then mod:RefreshPanel() end
+	end
+	ask:Hide()
+end
+
+local function BuildAsk(worldMap)
+	ask = CreateFrame("Frame", nil, worldMap)
+	ask:SetSize(460, 186)
+	ask:SetPoint("CENTER", worldMap.ScrollContainer or worldMap, "CENTER")
+	ask:SetFrameStrata("DIALOG")
+	ask:EnableMouse(true)
+	if mod.padRoots then mod.padRoots[#mod.padRoots + 1] = ask end   -- (the gamepad's cursor presses its buttons: Gamepad.lua)
+	local top, _, close = ns.Look:Window(ask, L["Friends and guild"])
+	close:Hide()                    -- (an answer is wanted: closing the map asks again next time)
+	local text = ask:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+	text:SetPoint("TOP", 0, -top - 12)
+	text:SetWidth(420)
+	text:SetText(L["Your friends and guild members who use OpenMap can show on your map as a dot where they stand. Share where you are, so they see you on theirs?"])
+	local function Button(x, label, share)
+		local b = CreateFrame("Button", nil, ask, "UIPanelButtonTemplate")
+		b:SetSize(170, 26)
+		b:SetPoint("BOTTOM", ask, "BOTTOM", x, 40)
+		b:SetText(label)
+		b:SetScript("OnClick", function() Answer(share) end)
+	end
+	Button(-92, L["Share where I am"], true)
+	Button(92, L["Not now"], false)
+	local note = ask:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
+	note:SetPoint("BOTTOM", 0, 16)
+	note:SetWidth(420)
+	note:SetText(L["Only your guild and friends, never from a dungeon, raid or battleground. OpenMap's menu: More, Sharing."])
+	ask:Hide()
+end
+
+local function MaybeAsk(worldMap)
+	if mod.db.shareAsked or mod.db.friendsShare or not mod.enabled or mod.db.presetAsked == false then return end
+	if InCombatLockdown() then return end
+	if not ask then BuildAsk(worldMap) end
+	ask:Show()
+end
+
+--------------------------------------------------------------------------------
 
 function mod:SetupFriends(worldMap)
 	map = worldMap
@@ -447,7 +502,10 @@ function mod:SetupFriends(worldMap)
 		if redrawIn <= 0 or mod.IsStitched() ~= stitched then dirty = true end
 		if dirty then redrawIn, stitched = REDRAW_EVERY, mod.IsStitched() Redraw() end
 	end)
-	worldMap:HookScript("OnShow", function() wait, rosterIn, dirty = 0, 0, true end)
+	worldMap:HookScript("OnShow", function()
+		wait, rosterIn, dirty = 0, 0, true
+		C_Timer.After(0.2, function() if worldMap:IsShown() then MaybeAsk(worldMap) end end)
+	end)
 end
 
 function mod:FriendsOptions(opts, get, set, off)

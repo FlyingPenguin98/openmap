@@ -481,5 +481,9 @@
  "Your guild, and your friends who use OpenMap, see you as a dot where you stand on their map, sent every few seconds while you move. Never from inside a dungeon, raid or battleground. Off, they see only your zone, as the friends list and guild roster show it.": "你的公會和使用OpenMap的好友會在他們的地圖上看到你的圓點，移動時每隔幾秒更新一次。在地城、團隊副本或戰場內絕不傳送。關閉時，他們只看得到你所在的區域，與好友名單和公會名單一致。",
  "Friend": "好友",
  "Updated %d s ago": "%d秒前更新",
- "Your guild and friends see you": "公會和好友看得到你"
+ "Your guild and friends see you": "公會和好友看得到你",
+ "Your friends and guild members who use OpenMap can show on your map as a dot where they stand. Share where you are, so they see you on theirs?": "使用OpenMap的好友和公會成員可以在你的地圖上以圓點顯示其所在位置。要分享你的位置，讓他們在自己的地圖上看到你嗎？",
+ "Share where I am": "分享我的位置",
+ "Not now": "暫不",
+ "Only your guild and friends, never from a dungeon, raid or battleground. OpenMap's menu: More, Sharing.": "僅限你的公會和好友，在地城、團隊副本或戰場內絕不傳送。OpenMap選單：更多，分享。"
 }

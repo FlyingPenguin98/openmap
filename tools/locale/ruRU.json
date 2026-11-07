@@ -481,5 +481,9 @@
  "Your guild, and your friends who use OpenMap, see you as a dot where you stand on their map, sent every few seconds while you move. Never from inside a dungeon, raid or battleground. Off, they see only your zone, as the friends list and guild roster show it.": "Ваша гильдия и друзья, которые пользуются OpenMap, видят вас точкой на своей карте; она обновляется каждые несколько секунд, пока вы двигаетесь. Никогда изнутри подземелий, рейдов и полей боя. Если выключено, видна только ваша зона, как в списке друзей и списке гильдии.",
  "Friend": "Друг",
  "Updated %d s ago": "Обновлено: %d с назад",
- "Your guild and friends see you": "Вас видят гильдия и друзья"
+ "Your guild and friends see you": "Вас видят гильдия и друзья",
+ "Your friends and guild members who use OpenMap can show on your map as a dot where they stand. Share where you are, so they see you on theirs?": "Друзья и члены гильдии, которые пользуются OpenMap, могут отображаться на вашей карте точкой там, где они стоят. Делиться своим местоположением, чтобы они видели вас на своей?",
+ "Share where I am": "Делиться местоположением",
+ "Not now": "Не сейчас",
+ "Only your guild and friends, never from a dungeon, raid or battleground. OpenMap's menu: More, Sharing.": "Только гильдии и друзьям, никогда изнутри подземелий, рейдов и полей боя. Меню OpenMap: Прочее, Обмен."
 }

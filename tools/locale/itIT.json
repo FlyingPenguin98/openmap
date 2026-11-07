@@ -481,5 +481,9 @@
  "Your guild, and your friends who use OpenMap, see you as a dot where you stand on their map, sent every few seconds while you move. Never from inside a dungeon, raid or battleground. Off, they see only your zone, as the friends list and guild roster show it.": "La tua gilda e i tuoi amici che usano OpenMap ti vedono come un punto sulla loro mappa, aggiornato ogni pochi secondi mentre ti muovi. Mai dall'interno di spedizioni, incursioni o campi di battaglia. Disattivato, vedono solo la tua zona, come la mostrano l'elenco amici e l'elenco della gilda.",
  "Friend": "Amico",
  "Updated %d s ago": "Aggiornato %d s fa",
- "Your guild and friends see you": "Gilda e amici ti vedono"
+ "Your guild and friends see you": "Gilda e amici ti vedono",
+ "Your friends and guild members who use OpenMap can show on your map as a dot where they stand. Share where you are, so they see you on theirs?": "I tuoi amici e i membri della gilda che usano OpenMap possono comparire sulla tua mappa come un punto dove si trovano. Condividere la tua posizione così ti vedono sulla loro?",
+ "Share where I am": "Condividi la mia posizione",
+ "Not now": "Non ora",
+ "Only your guild and friends, never from a dungeon, raid or battleground. OpenMap's menu: More, Sharing.": "Solo la tua gilda e i tuoi amici, mai da spedizioni, incursioni o campi di battaglia. Menu di OpenMap: Altro, Condivisione."
 }

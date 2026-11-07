@@ -25,11 +25,14 @@ local function Frame()
 	function f:Hide() self.shown = false end
 	function f:Show() self.shown = true end
 	function f:IsShown() return self.shown end
-	function f:CreateFontString() return { SetPoint = function() end, SetText = function(s, t) s.text = t end } end
+	function f:CreateFontString() return setmetatable({ SetText = function(s, t) s.text = t end }, NOOP) end
+	function f:SetText(t) self.text = t end
 	frames[#frames + 1] = f
-	return f
+	return setmetatable(f, NOOP)
 end
+NOOP = { __index = function(_, k) if k ~= "Count" then return function() end end end }
 CreateFrame = function() return Frame() end
+InCombatLockdown = function() return false end
 function Run(seconds)
 	-- every frame's OnUpdate, a tenth of a second at a time, and the timers due
 	for _ = 1, seconds * 10 do
@@ -100,6 +103,7 @@ mod = { defaults = {}, db = {} }
 function mod.IsStitched() return true end
 function mod.ToWorld(id, x, y) return x, y end
 ns = { MapStitch = S, L = setmetatable({}, { __index = function(_, k) return k end }) }
+ns.Look = { Window = function(_, f) askFrame = f return 20, nil, Frame() end }
 function ns:GetModule() return mod end
 function ns.RegisterEvent(_, event, fn) events[event] = fn end
 ns.Safe = {
@@ -195,6 +199,37 @@ class FriendsTests(unittest.TestCase):
         self.run_(160)
         self.assertEqual(self.lua.eval("#pins"), 0)
         self.assertIn("1429:1", self.lua.eval("(function() local t = {} for _, d in ipairs(badges) do t[#t + 1] = d.map .. ':' .. #d.people end return table.concat(t, ',') end)()"))
+
+    def ask(self):
+        # the open question's buttons: label -> click
+        return self.lua.eval("""(function()
+            local t = {}
+            for _, f in ipairs(frames) do if f.text and f.scripts.OnClick then t[f.text] = f.scripts.OnClick end end
+            return t
+        end)()""")
+
+    def test_asked_once_whether_to_share(self):
+        self.lua.execute("mod.enabled, mod.db.presetAsked = true, true worldMap.scripts.OnShow()")
+        self.run_(1)
+        buttons = self.ask()
+        self.assertIn("Share where I am", buttons)
+        buttons["Share where I am"]()
+        self.assertTrue(self.lua.eval("mod.db.friendsShare and mod.db.shareAsked"))
+        self.run_(1)
+        self.assertEqual(self.lua.eval("Sent('GUILD', 'L1')"), 1)
+
+    def test_not_asked_before_the_first_question_or_again(self):
+        self.lua.execute("mod.enabled, mod.db.presetAsked = true, false worldMap.scripts.OnShow()")
+        self.run_(1)
+        self.assertFalse(self.lua.eval("askFrame and askFrame.shown"))   # (the new install's own question first)
+        self.lua.execute("mod.db.presetAsked = true worldMap.scripts.OnShow()")
+        self.run_(1)
+        self.ask()["Not now"]()
+        self.assertFalse(self.lua.eval("mod.db.friendsShare"))
+        self.assertFalse(self.lua.eval("askFrame.shown"))
+        self.lua.execute("worldMap.scripts.OnShow()")
+        self.run_(1)
+        self.assertFalse(self.lua.eval("askFrame.shown"))   # (asked once)
 
     def test_turned_off_nothing_on_the_map(self):
         self.run_(8)
