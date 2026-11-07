@@ -31,8 +31,11 @@ local factionBit
 --------------------------------------------------------------------------------
 
 -- the flight masters the game says you've found (C_TaxiMap.GetTaxiNodesForMap: isUndiscovered false),
--- read afresh as the map opens: every one learned, before OpenMap was installed too, and named in any
--- language (the names seen at a flight master are the client's own, the tables' English)
+-- read afresh as the map opens: every one learned, before OpenMap was installed too. The same list
+-- names them in the client's own language, so the tables' English is replaced by it here (once the
+-- map opens: the tooltips, the route's caption, the search, the learned names and the measured times
+-- all read a node's name off this table, and in a client not in English the English ones matched
+-- none of the game's). Only Alterac Valley's pair, on neither continent's list, keeps the English.
 local found = {}
 local function ReadFound()
 	if not (C_TaxiMap and C_TaxiMap.GetTaxiNodesForMap) then return end
@@ -40,7 +43,11 @@ local function ReadFound()
 		local ok, list = pcall(C_TaxiMap.GetTaxiNodesForMap, mapID)
 		if ok and type(list) == "table" then
 			for _, info in ipairs(list) do
-				if type(info) == "table" and info.nodeID and info.isUndiscovered == false then found[info.nodeID] = true end
+				if type(info) == "table" and info.nodeID then
+					if info.isUndiscovered == false then found[info.nodeID] = true end
+					local n = F.nodes[info.nodeID]
+					if n and type(info.name) == "string" and info.name ~= "" then n[1] = info.name end
+				end
 			end
 		end
 	end
@@ -148,6 +155,15 @@ local function Clock(secs)
 	return ("%d:%02d"):format(math.floor(secs / 60), math.floor(secs % 60))
 end
 
+-- a node's name without its zone: "Stormwind, Elwynn", the client's own "暴风城，艾尔文森林" too.
+-- The full-width comma is searched as plain text: Lua patterns work on bytes, so a class holding it
+-- would cut at one of its three UTF-8 bytes, in the middle of a neighbouring character.
+local function Short(name)
+	local s = name:match("^[^,]+") or name
+	local i = s:find("，", 1, true)
+	return i and s:sub(1, i - 1) or s
+end
+
 -- each leg's time: measured, or estimated from its length
 local function LegTime(path)
 	local a, b = F.nodes[path[1]], F.nodes[path[2]]
@@ -208,7 +224,7 @@ local function ShowRoute(from, to)
 	local stops = #legs - 1
 	local L = ns.L
 	fs:SetText(("%s > %s  |cffffffff%s|r%s"):format(
-		F.nodes[from][1]:match("^[^,]+"), F.nodes[to][1]:match("^[^,]+"),
+		Short(F.nodes[from][1]), Short(F.nodes[to][1]),
 		measured and Clock(total) or L["about %s"]:format(Clock(total)),
 		stops > 0 and ("  |cffaaaaaa(" .. (stops == 1 and L["1 stop"] or L["%d stops"]:format(stops)) .. ")|r") or "")
 		.. (knownOnly and "" or ("\n|cffff8060" .. L["needs flight masters you haven't learned"] .. "|r")))
@@ -238,7 +254,7 @@ local function NodeEnter(pin)
 		if legs then
 			local total = 0
 			for _, path in ipairs(legs) do total = total + LegTime(path) end
-			GameTooltip:AddLine(ns.L["From %s: about %s"]:format(F.nodes[selected][1]:match("^[^,]+"), Clock(total)), 1, 1, 1)
+			GameTooltip:AddLine(ns.L["From %s: about %s"]:format(Short(F.nodes[selected][1]), Clock(total)), 1, 1, 1)
 		end
 		GameTooltip:AddLine(ns.L["Click: show the route"], 0.6, 0.6, 0.6)
 	else

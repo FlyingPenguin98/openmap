@@ -11,6 +11,10 @@
 
 ### Fixed
 
+- **Flight masters are named in your own language**: on a client that isn't English, the map's
+  flight masters kept the game's tables' English names (hovering one said "Stormwind, Elwynn" while
+  the flight master in game names it in your language). They're now named as the game names them,
+  and a flight's measured time is found again on a route (the times were keyed by the English names).
 - **The map opened inside a dungeon shows that dungeon's map** (Ragefire Chasm, Deadmines ...): it
   showed the world map with no one on it, as WoW Forever has no map of its dungeons. Its map only
   opened from the entrance on the world map.
