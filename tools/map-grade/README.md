@@ -1,15 +1,15 @@
 # Map colour matching
 
-Generates `OpenMap/Data/Grade.lua` and the per-zone masks in
-`OpenMap/Media/Textures/` (`MapBand`, `MapTerritory`, `MapCore`) for the stitched world
+Generates `OpenMap/Data/Forever/Grade.lua` and the per-zone masks in
+`OpenMap/Media/Textures/Forever/` (`MapBand`, `MapTerritory`, `MapCore`) for the stitched world
 map's border colour matching and blending.
 
 Needs Python with Pillow, numpy and scipy (`pip install pillow numpy scipy`).
 Keep the downloaded textures in a folder outside the repo.
 
 ```bash
-python -P tools/map-grade/fetch.py OpenMap/Data/Reveal.lua <tex dir>
-python -P tools/map-grade/grade.py OpenMap/Data/Reveal.lua <tex dir> OpenMap/Data/Grade.lua OpenMap/Media/Textures/MapBand <preview dir>
+python -P tools/map-grade/fetch.py OpenMap/Data/Forever/Reveal.lua <tex dir>
+python -P tools/map-grade/grade.py OpenMap/Data/Forever/Reveal.lua <tex dir> OpenMap/Data/Forever/Grade.lua OpenMap/Media/Textures/Forever/MapBand <preview dir>
 ```
 
 Then widen the territories to any land in each zone's rectangle (needs the map

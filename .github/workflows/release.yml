@@ -1,23 +1,76 @@
 name: release
+# A version tag (v0.8.0-beta ...) builds one zip per game client (tools/package/build.py: WoW Forever's and
+# retail's, each with only its own toc, data and textures) and makes the GitHub release with both.
+# CurseForge only gets them when the "curseforge" job is started by hand (Actions > release > Run
+# workflow, with the tag) and approved in the "curseforge" environment: a tag alone never reaches
+# CurseForge (docs/releasing.md).
 on:
   push:
     tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "The release's tag, already pushed (v0.8.0-beta): upload its zips to CurseForge"
+        required: true
 permissions:
-  contents: write                 # the GitHub release and its zip
+  contents: read
 jobs:
-  release:
+  build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write             # the GitHub release and its zips
     env:
-      CF_API_KEY: ${{ secrets.CF_API_KEY }}        # CurseForge: set in the repo's secrets (docs/releasing.md)
-      GITHUB_OAUTH: ${{ secrets.GITHUB_TOKEN }}
+      TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v7
         with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref }}
           fetch-depth: 0
       - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
       - run: pip install lupa
-      - run: python tools/offline-test/lint.py
-      - run: python tools/offline-test/run.py plain
-      - uses: BigWigsMods/packager@v2
+      # (each client's lint and offline tests run inside build.py, with its toc)
+      - run: python -P tools/package/build.py "$TAG" --client=forever
+      - run: python -P tools/package/build.py "$TAG" --client=retail
+      - name: GitHub release
+        if: github.event_name == 'push'
+        run: |
+          {
+            echo "## WoW Forever"; echo; cat "dist/OpenMap-$TAG-forever-changelog.md"; echo
+            echo "## Retail"; echo; cat "dist/OpenMap-$TAG-retail-changelog.md"
+          } > dist/notes.md
+          pre=""; case "$TAG" in *-alpha*|*-beta*) pre="--prerelease";; esac
+          gh release create "$TAG" $pre --title "$TAG" --notes-file dist/notes.md \
+            "dist/OpenMap-$TAG-forever.zip" "dist/OpenMap-$TAG-retail.zip"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+  curseforge:
+    # only by hand, and only once approved: the "curseforge" environment (Settings > Environments) must
+    # list the maintainer as a required reviewer
+    if: github.event_name == 'workflow_dispatch'
+    needs: build
+    runs-on: ubuntu-latest
+    environment: curseforge
+    env:
+      TAG: ${{ inputs.tag }}
+      CF_API_KEY: ${{ secrets.CF_API_KEY }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.tag }}
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - run: python -P tools/package/curseforge.py "$TAG" --client=forever --dry-run
+      - run: python -P tools/package/curseforge.py "$TAG" --client=retail --dry-run
+      - run: python -P tools/package/curseforge.py "$TAG" --client=forever
+      - run: python -P tools/package/curseforge.py "$TAG" --client=retail

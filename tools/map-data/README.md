@@ -1,7 +1,7 @@
 # Map data
 
-Builds `OpenMap/Data/Reveal.lua` (explored-area pieces per zone art) and
-`OpenMap/Data/Places.lua` (instance entrances, boats, zeppelins) from the game's own
+Builds `OpenMap/Data/Forever/Reveal.lua` (explored-area pieces per zone art) and
+`OpenMap/Data/Forever/Places.lua` (instance entrances, boats, zeppelins) from the game's own
 tables, fetched as CSV from wago.tools for the given build.
 
 ```bash

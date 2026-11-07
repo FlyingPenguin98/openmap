@@ -205,8 +205,10 @@ local function Rows()
 		optRow(L["Your arrow"], "playerArrow", { texture = "Interface\\Minimap\\MinimapArrow" }),
 		optRow(L["Party and raid members"], "group", Icon("Spell_Holy_PrayerOfFortitude")),
 		optRow(L["Your drawings"], "sketchShown", Icon("INV_Feather_04")),
-		optRow(L["Quests from every zone"], "allQuests", { atlas = "UI-QuestPoi-QuestNumber", texture = "Interface\\GossipFrame\\ActiveQuestIcon" }),
 	}
+	if mod.defaults.allQuests ~= nil then        -- (Quests.lua: WoW Forever's toc loads it, retail's doesn't)
+		rows[#rows + 1] = optRow(L["Quests from every zone"], "allQuests", { atlas = "UI-QuestPoi-QuestNumber", texture = "Interface\\GossipFrame\\ActiveQuestIcon" })
+	end
 	-- Questie's quest icons: its own "Enable Map Icons" setting, switched as its options do
 	if questie then
 		local function profile() return _G.Questie and Questie.db and Questie.db.profile end
@@ -237,16 +239,19 @@ local function Rows()
 			function(v) db.entranceClick = v and "journal" or "map" if ns.NotifyOptions then ns.NotifyOptions() end end)
 	end
 	-- (they all come from Questie's NPC database, or one like it another addon gives: without, only the
-	-- heading, saying so)
+	-- heading, saying so; a client may have none of it at all, retail: Client.lua)
+	local client = ns.ClientMaps or {}
 	local folkDB = mod.HasTownsfolk and mod.HasTownsfolk()
-	rows[#rows + 1] = { folkDB and L["Townsfolk"] or L["Townsfolk (needs Questie)"] }
+	if client.townsfolk ~= false then
+		rows[#rows + 1] = { folkDB and L["Townsfolk"] or L["Townsfolk (needs Questie)"] }
+	end
 	local kinds = {}
 	for _, k in ipairs(mod.TOWNSFOLK or {}) do kinds[k.key] = k end
 	local function folk(label, key)
 		return row(label, "townsfolk." .. key, kinds[key] and kinds[key].look or Icon("INV_Misc_QuestionMark"),
 			function() return db.townsfolk[key] end, function(v) db.townsfolk[key] = v mod:RefreshTownsfolk() end)
 	end
-	if folkDB then
+	if folkDB and client.townsfolk ~= false then
 		for _, k in ipairs(mod.TOWNSFOLK or {}) do
 			if not k.rare and k.key ~= "spirit" then rows[#rows + 1] = folk(k.name, k.key) end
 		end
@@ -254,17 +259,22 @@ local function Rows()
 		rows[#rows + 1] = folk(L["Rare mobs"], "rare")
 	end
 	-- the look
+	-- (darkened or hidden; neither ticked: shown as they are. Darkened takes the colour-matched zones' land
+	-- masks, which retail's data has none of: hidden only, there)
 	rows[#rows + 1] = { L["Unexplored areas"], tab = "look" }
-	-- (darkened or hidden; neither ticked: shown as they are)
 	for _, mode in ipairs({ { "dim", L["Darken unexplored areas"], "Spell_Shadow_Twilight" }, { "hide", L["Hide unexplored areas"], "Ability_Vanish" } }) do
-		rows[#rows + 1] = row(mode[2], "unexplored." .. mode[1], Icon(mode[3]), function() return mod.Unexplored() == mode[1] end,
-			function(v) mod.SetUnexplored(v and mode[1] or "show") end)
+		if mode[1] ~= "dim" or ns.MapGrade then   -- (darkening needs its zones' land masks: not retail's)
+			rows[#rows + 1] = row(mode[2], "unexplored." .. mode[1], Icon(mode[3]), function() return mod.Unexplored() == mode[1] end,
+				function(v) mod.SetUnexplored(v and mode[1] or "show") end)
+		end
 	end
 	-- (this character's own choice of the two, or every character's)
 	rows[#rows + 1] = row(L["Only for this character"], "unexploredOwn", Icon("INV_Misc_Head_Human_01"),
 		function() return mod.char and mod.char.unexploredOwn or false end, function(v) mod.SetUnexploredOwn(v) end)
 	rows[#rows + 1] = { L["The map"] }
-	rows[#rows + 1] = optRow(L["Responsive ocean & border"], "chart", Icon("INV_Misc_Map02"))
+	if ns.MapChart then                          -- (the sea chart is WoW Forever's: Data\Forever\Chart.lua)
+		rows[#rows + 1] = optRow(L["Responsive ocean & border"], "chart", Icon("INV_Misc_Map02"))
+	end
 	rows[#rows + 1] = optRow(L["Zone highlight on hover"], "hoverHighlight", Icon("Spell_Holy_MindVision"))
 	rows[#rows + 1] = optRow(L["Zone levels"], "zoneLevels", Icon("Spell_ChargePositive"))
 	rows[#rows + 1] = optRow(L["Coordinates"], "coords", Icon("INV_Misc_Spyglass_03"))
@@ -295,7 +305,9 @@ local function Rows()
 	rows[#rows + 1] = { L["Up close"] }
 	rows[#rows + 1] = optRow(L["Minimap detail"], "minimap", Icon("Spell_Nature_FarSight"))
 	rows[#rows + 1] = optRow(L["Minimap detail in major cities"], "cityMinimap", Icon("Spell_Arcane_TeleportStormWind"))
-	rows[#rows + 1] = optRow(L["Minimap in the gaps"], "gapMinimap", Icon("INV_Misc_Map_01"))
+	if ns.MapGaps then                           -- (a client with gaps between its zones)
+		rows[#rows + 1] = optRow(L["Minimap in the gaps"], "gapMinimap", Icon("INV_Misc_Map_01"))
+	end
 	rows[#rows + 1] = optRow(L["Soften and paper grain"], "soften", Icon("INV_Fabric_Linen_01"))
 	rows[#rows + 1] = optRow(L["Caves underground"], "underground", Icon("Trade_Mining"))
 	-- the rest

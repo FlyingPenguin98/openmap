@@ -23,8 +23,10 @@ here = os.path.dirname(os.path.abspath(__file__))
 root = os.path.abspath(os.path.join(here, "..", ".."))
 EDITED = os.path.join(root, "art", "drawn", "gaps")
 SRC = os.path.join(EDITED, "source")
-OUT = os.path.join(root, "OpenMap", "Media", "Textures", "MapGapFill")
-LUA = os.path.join(root, "OpenMap", "Data", "GapFills.lua")
+sys.path.insert(0, os.path.join(root, "tools"))
+import clients
+OUT = os.path.join(clients.tex("forever"), "MapGapFill")   # (Forever's own: art/drawn/gaps)
+LUA = os.path.join(clients.data("forever"), "GapFills.lua")
 TILE = 256
 FRAME_FADE = 40                 # region px a fill fades out over at its own edge (inside the region)
 BOX_FADE = 3                    # world units a fill fades out over towards its region's own edge (where the gap

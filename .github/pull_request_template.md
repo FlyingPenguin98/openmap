@@ -11,8 +11,8 @@
 ## Checklist
 
 - [ ] Generated files changed only through their script, committed with it
-- [ ] New textures are listed in `OpenMap/Media/Textures/NOTICE.md`
+- [ ] New textures are listed in their client's `OpenMap/Media/Textures/<client>/NOTICE.md`
 - [ ] No art or map content made up: art from the game files or a hand edit, facts from the game's tables or a cited source
 - [ ] My own work, or from an MIT-compatible source (named here)
-- [ ] User-visible changes noted under "Unreleased" in `CHANGELOG.md`
+- [ ] User-visible changes noted under "Unreleased" in `CHANGELOG.md` (WoW Forever) and/or `CHANGELOG-retail.md`
 - [ ] My line in `OpenMap/Credits.lua`, if I'd like to be named in game

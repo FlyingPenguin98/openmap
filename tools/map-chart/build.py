@@ -1,6 +1,6 @@
 # The sea chart (Options' Responsive ocean & border): Santiago Reyes's sea, ornaments and frame round the game's world map,
 # laid out for the window's shape. From his layers (art/drawn/chart/, tools/map-chart/export.py) into:
-#   OpenMap/Media/Textures/MapChart/
+#   OpenMap/Media/Textures/Forever/MapChart/
 #     Paper.blp        his sheet and sea (the chart is cut from it: Chart.lua)
 #     Backdrop.blp     the dark ground past the sheet's torn edge, made to tile
 #     Web.blp          his navigation lines, but each rose's own rays (they move with the rose)
@@ -11,7 +11,7 @@
 #     Middle.tga       (mask) the game's world map in the chart: its continents, islands and coasts whole, and the
 #                      sea between the continents; its sea fading out from there into his (in place of the world
 #                      map's own edge fade)
-#   OpenMap/Data/Chart.lua   where everything goes (tools/map-chart/layout.py), and each ornament's place
+#   OpenMap/Data/Forever/Chart.lua   where everything goes (tools/map-chart/layout.py), and each ornament's place
 #                            for each window shape
 #
 # usage: python -P tools/map-chart/build.py <db2 dir> <texture cache>   (as render.py, which fills the cache)
@@ -28,9 +28,11 @@ import blp
 import layout as LO
 
 SRC = os.path.join(REPO, "art", "drawn", "chart")
-TEX = os.path.join(REPO, "OpenMap", "Media", "Textures")
+sys.path.insert(0, os.path.join(REPO, "tools"))
+import clients   # (the sea chart is WoW Forever's)
+TEX = clients.tex("forever")
 OUT = os.path.join(TEX, "MapChart")
-DATA = os.path.join(REPO, "OpenMap", "Data", "Chart.lua")
+DATA = os.path.join(clients.data("forever"), "Chart.lua")
 WORLD = 947
 ROSES = [(740, 748), (3292, 2524)]   # where each compass rose's rays meet (his sheet px: found by voting, below)
 RAY_TOL = 7.0                   # sheet px off a ray through a rose's centre that still counts as on it

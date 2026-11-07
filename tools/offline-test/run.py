@@ -1,9 +1,10 @@
 """Offline load test: runs OpenMap's toc in a stubbed WoW environment (Lua 5.1).
 
 Usage:  python tools/offline-test/run.py [plain|combat|secret|pad|padmap]
+        (OPENMAP_CLIENT=retail for retail's toc; tools/clients.py)
 Needs:  pip install lupa
 
-Loads every toc file, fires ADDON_LOADED / PLAYER_LOGIN / combat events, runs
+Loads every file of the client's toc, fires ADDON_LOADED / PLAYER_LOGIN / combat events, runs
 timers, builds + validates the options table and calls every option getter,
 then runs the slash commands. "secret" makes combat values behave like the
 client's secret values; "pad" has the game's Gamepad UI on, where OpenMap must
@@ -18,10 +19,12 @@ import lupa.lua51 as lupa
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.normpath(os.path.join(HERE, "..", "..", "OpenMap"))
+sys.path.insert(0, os.path.join(HERE, ".."))
+import clients
 
 def toc_files():
     out = []
-    for line in open(os.path.join(ROOT, "OpenMap.toc"), encoding="utf-8"):
+    for line in open(clients.toc(), encoding="utf-8"):
         line = line.strip()
         if not line or line.startswith("#"):
             continue

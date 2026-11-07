@@ -45,7 +45,7 @@ exec(compile(src[:src.index("views = sys.argv[4:]")], "render", "exec"), g)
 
 if dungeon is not None:
     # the floors of that dungeon (Data/DungeonMaps.lua), each with its lines
-    data = open(os.path.join(here, "..", "..", "OpenMap", "Data", "DungeonMaps.lua"), encoding="utf-8").read()
+    data = open(os.path.join(g["WM"], "DungeonMaps.lua"), encoding="utf-8").read()
     block = re.search(r"\[%d\] = \{.*?\n(.*?)\n\t\},\n" % dungeon, data, re.S)
     floors = re.findall(r"tiles = \{ ([\d, ]+) \}", block.group(1)) if block else []
     shown = sorted({f for f, _ in floor_lines}) or [1]

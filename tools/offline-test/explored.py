@@ -98,7 +98,7 @@ class PlaceTests(unittest.TestCase):
             end
             ns = {}
         """)
-        data =(ADDON / "Data" / "GapPlaces.lua").read_text(encoding="utf-8")
+        data =(ADDON / "Data" / "Forever" / "GapPlaces.lua").read_text(encoding="utf-8")
         self.lua.eval("function(src) local fn = assert(loadstring(src)); fn('OpenMap', ns) end")(data)
         for name in ("Shade.Under", "Shade.Found", "Shade.Places.Build", "Shade.Places.Refresh",
                      "Shade.Places.Show", "Shade.Places.At"):
@@ -137,7 +137,7 @@ class PlaceTests(unittest.TestCase):
 
     def test_the_data(self):
         self.assertTrue(self.places, "Data/GapPlaces.lua lists a place")
-        notice = (ADDON / "Media" / "Textures" / "NOTICE.md").read_text(encoding="utf-8")
+        notice = (ADDON / "Media" / "Textures" / "Forever" / "NOTICE.md").read_text(encoding="utf-8")
         self.assertIn("MapGapPlace/", notice)
         for p in self.places:
             area, box, mid, cells = p[1], list(p[3].values()), list(p[4].values()), p[5]
@@ -145,7 +145,7 @@ class PlaceTests(unittest.TestCase):
             self.assertTrue(box[0] < mid[0] < box[2] and box[1] < mid[1] < box[3], (box, mid))
             self.assertRegex(cells, r"^[0-9a-f]{256}$")
             # its mask: a plain 32-bit TGA (no RLE), a power of two a side
-            tga = (ADDON / "Media" / "Textures" / "MapGapPlace" / ("%d.tga" % area)).read_bytes()
+            tga = (ADDON / "Media" / "Textures" / "Forever" / "MapGapPlace" / ("%d.tga" % area)).read_bytes()
             w, h = int.from_bytes(tga[12:14], "little"), int.from_bytes(tga[14:16], "little")
             self.assertEqual((tga[2], tga[16]), (2, 32), "uncompressed 32-bit")
             self.assertTrue(w & (w - 1) == 0 and h & (h - 1) == 0, (w, h))

@@ -7,11 +7,13 @@
 #   MapTooth.tga        fine paper tooth for the closest zoom
 # (Masks and grain only: map icons are Blizzard's own, never drawn here.)
 # usage: python -P tools/map-textures/make.py
-import os
+import os, sys
 import numpy as np
 from PIL import Image
 
-OUT = os.path.join(os.path.dirname(__file__), "..", "..", "OpenMap", "Media", "Textures")
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
+import clients   # the client the tools build for (OPENMAP_CLIENT)
+OUT = clients.TEX
 N = 256
 
 def periodic_noise(beta, seed):

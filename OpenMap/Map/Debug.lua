@@ -234,3 +234,56 @@ function mod:SetupDebug(worldMap)
 	Build()
 	panel:SetShown(mod.db.debugOverlay)
 end
+
+--------------------------------------------------------------------------------
+-- /openmap highlights: where the game draws each zone's highlight on its continent's map (the glow on
+-- the zone under the cursor, C_Map.GetMapHighlightInfoAtPosition: its texture, the part of it used and
+-- its rectangle on the continent), for tools/map-preview/territory.py: a zone's whole area, as its
+-- continent's map draws it. A client with a world of its own only (ns.MapWorld). A grid of points over
+-- each stitched continent, a few rows a frame; each different highlight once, as a line, kept in
+-- OpenMapDB (worldmap, highlights) once you /reload or log out: tools/map-preview/highlights.py reads it
+--------------------------------------------------------------------------------
+
+local HIGHLIGHT_GRID = 160      -- points across and down each continent
+function mod:Highlights()
+	local conts = ns.MapWorld and ns.MapWorld.continents
+	local at = C_Map.GetMapHighlightInfoAtPosition
+	if not conts or not at then
+		ns:Print(L["Nothing to record here: this client's map has no world of its own."])
+		return
+	end
+	local out, seen, jobs = {}, {}, {}
+	mod.db.highlights = out
+	for _, c in ipairs(conts) do
+		for j = 0, HIGHLIGHT_GRID - 1 do jobs[#jobs + 1] = { c, j } end
+	end
+	ns:Print(L["Recording the zones' highlights: a few seconds."])
+	local i, ticker = 0, nil
+	ticker = C_Timer.NewTicker(0, function()
+		for _ = 1, 4 do
+			i = i + 1
+			local job = jobs[i]
+			if not job then
+				ticker:Cancel()
+				ns:Print((L["%d highlights recorded: saved (OpenMapDB: worldmap, highlights) once you /reload or log out."]):format(#out))
+				return
+			end
+			local c, j = job[1], job[2]
+			for k = 0, HIGHLIGHT_GRID - 1 do
+				local x, y = (k + 0.5) / HIGHLIGHT_GRID, (j + 0.5) / HIGHLIGHT_GRID
+				local ok, fid, atlas, px, py, tx, ty, sx, sy = pcall(at, c, x, y)
+				fid, atlas = ok and ns.Safe.Value(fid), ok and ns.Safe.Value(atlas)
+				if (fid and fid ~= 0) or atlas then
+					local key = c .. ":" .. tostring(fid) .. ":" .. tostring(atlas)
+					if not seen[key] then
+						seen[key] = true
+						local info = C_Map.GetMapInfoAtPosition(c, x, y)
+						out[#out + 1] = ("%d %d %s %s %s %s %s %s %s %s"):format(c, info and info.mapID or 0, tostring(fid or 0),
+							tostring(atlas or 0), tostring(ns.Safe.Value(px)), tostring(ns.Safe.Value(py)), tostring(ns.Safe.Value(tx)),
+							tostring(ns.Safe.Value(ty)), tostring(ns.Safe.Value(sx)), tostring(ns.Safe.Value(sy)))
+					end
+				end
+			end
+		end
+	end)
+end

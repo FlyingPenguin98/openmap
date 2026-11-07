@@ -14,6 +14,7 @@ class CaveTests(unittest.TestCase):
         self.lua = LuaRuntime(unpack_returned_tuples=True)
         self.lua.execute("""
             wipe = function(t) for k in pairs(t) do t[k] = nil end return t end
+            tContains = function(t, v) for _, x in pairs(t) do if x == v then return true end end return false end
             tremove = table.remove
             GetTime = function() return 0 end
             errors = {}
@@ -59,12 +60,12 @@ class CaveTests(unittest.TestCase):
             setmetatable(S, { __index = function() return function() end end })
 
             mod = { defaults = {}, db = { underground = true } }
-            ns = { MapStitch = S, Media = { path = "Interface\\\\AddOns\\\\OpenMap\\\\Media\\\\" },
+            ns = { MapStitch = S, Media = { path = "Interface\\\\AddOns\\\\OpenMap\\\\Media\\\\", tex = "Interface\\\\AddOns\\\\OpenMap\\\\Media\\\\Textures\\\\Forever\\\\" }, Client = "Forever",
                 L = setmetatable({}, { __index = function(_, k) return k end }) }
             function ns:GetModule() return mod end
         """)
         g = self.lua.globals()
-        for rel in ("Data/Caves.lua", "Data/CaveMinimap.lua", "Map/Close.lua"):
+        for rel in ("Data/Forever/Caves.lua", "Data/Forever/CaveMinimap.lua", "Map/Close.lua"):
             fn = self.lua.execute("return function(src, name, ns) local f = assert(loadstring(src, '@' .. name)) return f('OpenMap', ns) end")
             fn((ROOT / rel).read_text(encoding="utf-8"), rel, g.ns)
         self.lua.execute("""

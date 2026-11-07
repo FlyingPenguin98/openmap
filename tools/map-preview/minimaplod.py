@@ -20,8 +20,8 @@ src = open(rp, encoding="utf-8").read()
 sys.argv = [rp, db2, cache, cache]
 g = {"__name__": "minimaplod", "__file__": rp}
 exec(compile(src[:src.index("views = sys.argv[4:]")], rp, "exec"), g)   # (its data and texture reading)
-OUT = os.path.join(root, "OpenMap", "Media", "Textures", "MapMiniLOD")
-LUA = os.path.join(root, "OpenMap", "Data", "MinimapLOD.lua")
+OUT = os.path.join(g["TEXDIR"], "MapMiniLOD")
+LUA = os.path.join(g["WM"], "MinimapLOD.lua")
 PIECE = 256
 LEVELS = ((4, 64), (16, 16))    # (tiles a piece, px a tile): a piece is PIECE px either way
 YARDS = 1600 / 3                # a tile's side
@@ -31,10 +31,10 @@ PAPER, TONE_SHARE, DEFAULT_TONE = (1, 0.93, 0.80), 0.25, (0.56, 0.45, 0.17)
 
 
 def minimap_tiles():
-    src_ = open(os.path.join(root, "OpenMap", "Data", "Minimap.lua"), encoding="utf-8").read()
+    src_ = open(os.path.join(g["WM"], "Minimap.lua"), encoding="utf-8").read()
     out, cur = {}, None
     for line in src_.split("\n"):
-        m_ = re.match(r"\s*\[(\d)\] = \{", line)
+        m_ = re.match(r"\s*\[(\d+)\] = \{$", line)          # (a game map's list: retail's are 530, 2444 ...)
         if m_: cur = out.setdefault(int(m_.group(1)), {}); continue
         if cur is not None:
             for k, v in re.findall(r"\[(\d+)\] = (\d+)", line): cur[int(k)] = int(v)
@@ -42,7 +42,7 @@ def minimap_tiles():
 
 
 def tones():
-    src_ = open(os.path.join(root, "OpenMap", "Data", "Tones.lua"), encoding="utf-8").read()
+    src_ = open(os.path.join(g["WM"], "Tones.lua"), encoding="utf-8").read()
     return {int(i): (float(r), float(g_), float(b)) for i, r, g_, b in re.findall(r"\[(\d+)\] = \{ ([\d.]+), ([\d.]+), ([\d.]+) \}", src_)}
 
 

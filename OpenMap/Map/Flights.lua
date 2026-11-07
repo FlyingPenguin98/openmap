@@ -39,7 +39,8 @@ local factionBit
 local found = {}
 local function ReadFound()
 	if not (C_TaxiMap and C_TaxiMap.GetTaxiNodesForMap) then return end
-	for _, mapID in ipairs({ 1414, 1415 }) do   -- (Kalimdor, the Eastern Kingdoms)
+	local continents = ns.MapWorld and ns.MapWorld.continents or { 1414, 1415 }   -- (Kalimdor, the Eastern Kingdoms; a client's own)
+	for _, mapID in ipairs(continents) do
 		local ok, list = pcall(C_TaxiMap.GetTaxiNodesForMap, mapID)
 		if ok and type(list) == "table" then
 			for _, info in ipairs(list) do
