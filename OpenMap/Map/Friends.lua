@@ -225,6 +225,7 @@ local function ScanGuild()
 end
 
 local function Friend(full, level, area, className, how)
+	if Short(full) == full and not roster[full] then return end   -- (a friend on another realm isn't on your map; a guild member is)
 	local r = roster[full] or { name = Shown(full), level = tonumber(Safe.Value(level)), area = Safe.Value(area),
 		class = ClassFile(Safe.Value(className)) }
 	r.friend = true

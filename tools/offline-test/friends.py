@@ -16,6 +16,7 @@ NOW, sent, events, frames, pins, badges = 1000, {}, {}, {}, {}, {}
 inInstance, inGuild, here, secretText = false, true, { 1429, 0.5, 0.5 }, nil
 guild = { { "Guildie-Forever", 30, "Elwynn Forest", true, "MAGE" }, { "Offline-Forever", 20, "Duskwood", false, "ROGUE" } }
 friendList = { { name = "Pal", connected = true, level = 40, area = "Westfall", className = "Hunter" },
+	{ name = "Far-OtherRealm", connected = true, level = 30, area = "Duskwood", className = "Mage" },
 	{ name = "Gone", connected = false, level = 10, area = "Westfall", className = "Hunter" } }
 
 local function Frame()
@@ -177,6 +178,13 @@ class FriendsTests(unittest.TestCase):
         self.lua.execute("here = { 1429, 0.7, 0.5 }")
         self.run_(12)
         self.assertEqual(self.lua.eval("Sent('WHISPER', 'L1', 'Pal')"), 1)
+
+    def test_a_friend_on_another_realm_isnt_on_the_map(self):
+        self.run_(8)
+        self.assertEqual(self.lua.eval("Sent('WHISPER', 'H1', 'Far-OtherRealm')"), 0)
+        self.lua.execute("Fire('CHAT_MSG_ADDON', 'OpenMapLoc', 'L1\\t1431\\t0.5\\t0.5\\tMAGE\\t30', 'WHISPER', 'Far-OtherRealm')")
+        self.run_(12)
+        self.assertEqual(self.lua.eval("#pins"), 0)
 
     def test_heard_places_and_badges(self):
         self.run_(8)

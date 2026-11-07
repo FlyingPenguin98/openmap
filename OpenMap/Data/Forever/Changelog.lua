@@ -5,7 +5,7 @@ local _, ns = ...
 
 ns.MapChangelog = {
 	{ version = "v0.8.0-beta", date = "2026-11-07", heads = { [1] = "New", [3] = "Improved", [5] = "Fixed", }, items = {
-		"|cff6e2c0aFriends and guild on the map|r (Options: Friends and guild): your friends and guild members who are online show on the stitched map, a badge on the zone each is in with who's there. Those who use OpenMap and turn on |cff6e2c0aShare where you are|r show as a class-coloured dot where they stand, updated every few seconds while they move. The map asks once whether to share; it's off unless you say yes, goes only to your guild and your friends, and never from inside a dungeon, raid or battleground.",
+		"|cff6e2c0aFriends and guild on the map|r (Options: Friends and guild): your guild members and friends on your realm who are online show on the stitched map, a badge on the zone each is in with who's there. Those who use OpenMap and turn on |cff6e2c0aShare where you are|r show as a class-coloured dot where they stand, updated every few seconds while they move. The map asks once whether to share; it's off unless you say yes, goes only to your guild and your friends, and never from inside a dungeon, raid or battleground.",
 		"|cff6e2c0aMaps of The Drowned City, Krol'dok Stronghold and Shaper's Terrace|r, drawn by Santiago Reyes and used with his permission (credited on the map, as his other dungeon maps are).",
 		"|cff6e2c0aA new OpenMap icon, drawn by zloyeb|r: a map scroll in a gold ring, in the AddOns list, on the minimap button, in the map's menu and its portrait (it borrowed the game's Eastern Kingdoms icon).",
 		"|cff6e2c0aOpenMap is back on GitHub|r, at github.com/openmap-world/openmap: Report a problem opens a report there again, and What's new and the AddOns list link to it.",
