@@ -65,7 +65,7 @@ class CaveTests(unittest.TestCase):
             function ns:GetModule() return mod end
         """)
         g = self.lua.globals()
-        for rel in ("Data/Forever/Caves.lua", "Data/Forever/CaveMinimap.lua", "Map/Close.lua"):
+        for rel in ("Data/Forever/Caves.lua", "Data/Forever/CaveMinimap.lua", "Data/Forever/Tiles.lua", "Map/Close.lua"):
             fn = self.lua.execute("return function(src, name, ns) local f = assert(loadstring(src, '@' .. name)) return f('OpenMap', ns) end")
             fn((ROOT / rel).read_text(encoding="utf-8"), rel, g.ns)
         self.lua.execute("""
@@ -162,6 +162,8 @@ class CaveTests(unittest.TestCase):
             local u0, v0, u1, v1 = S.CaveRectAt(u, v)
             assert(u0, 'its box')
             Look(u, v, (u1 - u0) * 1.2, 120)
+            -- (drawn from OpenMap's copy of the tile: Data/Forever/Tiles.lua; the game's is green on other languages' clients)
+            assert(c[11][1] == ns.Media.tex .. "MapTile\\\\603267", c[11][1])
             assert(Up(c[11][1]))
         """)
 

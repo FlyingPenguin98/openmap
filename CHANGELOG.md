@@ -1,5 +1,15 @@
 # OpenMap changelog
 
+## Unreleased
+
+### Fixed
+
+- **Dungeon and cave maps show in every language**: on the Latin American Spanish, Russian and
+  Italian clients every dungeon map and Blizzard cave map was solid green squares, as the game
+  doesn't have their art for those languages. OpenMap now brings that art itself. Found and
+  first fixed by RADD95 (OpenMap TextureFix): with this version that addon isn't needed.
+  (New textures: restart the game.)
+
 ## v0.8.0-beta (2026-11-07)
 
 ### New

@@ -4,6 +4,9 @@
 local _, ns = ...
 
 ns.MapChangelog = {
+	{ version = "Unreleased", date = "", heads = { [1] = "Fixed", }, items = {
+		"|cff6e2c0aDungeon and cave maps show in every language|r: on the Latin American Spanish, Russian and Italian clients every dungeon map and Blizzard cave map was solid green squares, as the game doesn't have their art for those languages. OpenMap now brings that art itself. Found and first fixed by RADD95 (OpenMap TextureFix): with this version that addon isn't needed. (New textures: restart the game.)",
+	} },
 	{ version = "v0.8.0-beta", date = "2026-11-07", heads = { [1] = "New", [3] = "Improved", [5] = "Fixed", }, items = {
 		"|cff6e2c0aFriends and guild on the map|r (Options: Friends and guild): your guild members and friends on your realm who are online show on the stitched map, a badge on the zone each is in with who's there. Those who use OpenMap and turn on |cff6e2c0aShare where you are|r show as a class-coloured dot where they stand, updated every few seconds while they move. The map asks once whether to share; it's off unless you say yes, goes only to your guild and your friends, and never from inside a dungeon, raid or battleground.",
 		"|cff6e2c0aMaps of The Drowned City, Krol'dok Stronghold and Shaper's Terrace|r, drawn by Santiago Reyes and used with his permission (credited on the map, as his other dungeon maps are).",
@@ -46,15 +49,5 @@ ns.MapChangelog = {
 		"|cff6e2c0aFade icons while zooming|r says |cff6e2c0aImproves performance|r under it in the map's menu, so it isn't turned off unawares.",
 		"|cff6e2c0aThe map loads the zone you pan or zoom to again|r: with an addon adding map icons (Questie, GatherLite ...), it could stay on the zone you started on, so the zone or continent you'd panned to showed none of their icons until you clicked it (a player's report from 0.6, and ours). Its setting, once Follow the view, is now |cff6e2c0aLoad the zone in view|r (the menu's More tab), saying what it does.",
 		"|cff6e2c0aThe map window drags and resizes with Move Any installed but turned off|r: OpenMap asked whether Move Any was on for a character named by your first name alone (WoW Forever gives a first and last name), which the game took as on, and left the window to it (a player's report, with the fix).",
-	} },
-	{ version = "v0.7.1-beta", date = "2026-10-21", heads = { [1] = "Improved", [5] = "Fixed", }, items = {
-		"|cff6e2c0aDarkened unexplored areas look better|r (Unexplored areas: Darken): a |cff6e2c0aDarkening|r slider (the menu's sliders, and Options) sets how dark they are, from a light shade to the full one; unfound land is greyed as well as darkened, so the lighter lines Blizzard paints along zones' borders no longer show bright through it; neighbouring zones you haven't found blend into one another, with no light seams between them, and the painted land between zones (north of the Plaguelands, Gilneas, round Ahn'Qiraj ...) darkens with them.",
-		"|cff6e2c0aOther addons' icons fade while you zoom|r (Questie's, RestedXP's ...), out as a zoom starts and back in after it, instead of blinking off and on. |cff6e2c0aFade icons while zooming|r, in the map's menu (the Show tab), turns it off.",
-		"|cff6e2c0aThe map window can go partly off the screen|r: drag it up until its title and the bar under it are past the top, for just the map (Options' Reset window brings it back), or past the sides and bottom while some of it stays on.",
-		"|cff6e2c0aWith Enhance QoL|r, OpenMap says once in chat to turn off its Mover > World Map: the two both size the map, and its scale goes wrong (a player's finding).",
-		"|cff6e2c0aOther addons' icons stay on the map|r (RestedXP's, Nauticus's, Questie's ...): they could flicker and go, as anything that set the map's scale counted as zooming. Now only your own zooming does, and never for more than a moment.",
-		"|cff6e2c0aFlight masters you've learned are in colour|r, all of them: OpenMap knew only the ones it had seen you visit since it was installed (and, on a client not in English, none). It now asks the game which you've found.",
-		"|cff6e2c0aFishing on the zone hover|r shows: OpenMap looked for your Fishing skill in a way WoW Forever no longer offers, and found none.",
-		"|cff6e2c0aZeppelin towers show for the Alliance too|r when Zeppelins is on: they were the Horde's only, though their routes showed for everyone and the goblins' zeppelins take anyone.",
 	} },
 }
