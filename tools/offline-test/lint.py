@@ -129,6 +129,7 @@ WOW_API = {
     "debugprofilestop", "GetFramerate", "IsAddOnLoaded", "GetUnitSpeed", "IsModifiedClick", "GetPhysicalScreenSize", "IsMouseButtonDown",
     "IsInGuild", "UnitIsPlayer", "GetUnitName", "UnitName", "Ambiguate", "ToggleWorldMap",
     "UnitRace", "GetLocale", "PlaySound",
+    "GetNormalizedRealmName", "GetRealmName", "IsInInstance", "GetNumGuildMembers", "GetGuildRosterInfo", "BNGetNumFriends",
 }
 
 

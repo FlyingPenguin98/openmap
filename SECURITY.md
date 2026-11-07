@@ -21,8 +21,9 @@ Not in scope: bugs in World of Warcraft itself, in other addons, or in wago.tool
 ## How the project keeps it safe
 
 - The addon has no network access (the game doesn't allow it), loads no code at run time
-  (no `loadstring` / `RunScript`), sends no chat or addon messages, and calls no
-  protected functions. It hooks Blizzard's map with `hooksecurefunc` and data providers.
+  (no `loadstring` / `RunScript`), sends addon messages only for what the player asks
+  (sharing map pins, and their place with their guild and friends when they turn that
+  on; what arrives is read as plain numbers and text), and calls no protected functions. It hooks Blizzard's map with `hooksecurefunc` and data providers.
 - Report codes (`OM1|...`) are parsed as plain numbers and text by `report.py`; nothing
   in them is executed.
 - The tools treat everything they download as data: tables are read as CSV, textures are

@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### New
+
+- **Friends and guild on the map** (Options: Friends and guild): your friends and guild members who
+  are online show on the stitched map, a badge on the zone each is in with who's there. Those who use
+  OpenMap and turn on **Share where you are** show as a class-coloured dot where they stand, updated
+  every few seconds while they move. Sharing is off unless you turn it on, goes only to your guild and
+  your friends, and never from inside a dungeon, raid or battleground.
+
 ### Improved
 
 - **A new OpenMap icon, drawn by zloyeb**: a map scroll in a gold ring, in the AddOns list, on the

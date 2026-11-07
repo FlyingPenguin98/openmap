@@ -474,5 +474,11 @@
  "To your group": "파티에",
  "To your guild": "길드에",
  "Minimap detail in major cities": "대도시의 미니맵 세부 묘사",
- "The minimap's detail over the six major cities' own maps, at half strength at most so the city's plan leads. Off: their own maps alone.": "여섯 대도시 자체 지도 위의 미니맵 세부 묘사입니다. 도시 지도가 앞서도록 최대 절반 강도로 표시합니다. 끄면 도시 자체 지도만 보입니다."
+ "The minimap's detail over the six major cities' own maps, at half strength at most so the city's plan leads. Off: their own maps alone.": "여섯 대도시 자체 지도 위의 미니맵 세부 묘사입니다. 도시 지도가 앞서도록 최대 절반 강도로 표시합니다. 끄면 도시 자체 지도만 보입니다.",
+ "Friends and guild": "친구 및 길드",
+ "Your friends and guild members who are online: a badge on the zone each is in, with who's there (as the friends list and guild roster show it), or a class-coloured dot where they stand for those who use OpenMap and share where they are.": "접속 중인 친구와 길드원: 각자 있는 지역에 배지로 누가 있는지 표시하거나(친구 목록과 길드 목록에 나오는 대로), OpenMap을 사용하며 위치를 공유하는 사람은 서 있는 곳에 직업 색상 점으로 표시합니다.",
+ "Share where you are": "내 위치 공유",
+ "Your guild, and your friends who use OpenMap, see you as a dot where you stand on their map, sent every few seconds while you move. Never from inside a dungeon, raid or battleground. Off, they see only your zone, as the friends list and guild roster show it.": "길드원과 OpenMap을 사용하는 친구들의 지도에 내 위치가 점으로 표시되며, 이동하는 동안 몇 초마다 갱신됩니다. 던전, 공격대, 전장 안에서는 절대 보내지 않습니다. 끄면 친구 목록과 길드 목록에 나오는 대로 지역만 보입니다.",
+ "Friend": "친구",
+ "Updated %d s ago": "%d초 전 갱신"
 }

@@ -96,6 +96,28 @@ steps = L.eval("""function(ns, scenario)
         if not ok5 then ERRORS[#ERRORS + 1] = "pins hidden: " .. tostring(e5) end
         if m.db.pinsHidden then ERRORS[#ERRORS + 1] = "pins hidden: they didn't come back" end
     end
+    -- friends and guild (Friends.lua): places heard from the guild, a stranger's whisper, a malformed
+    -- message, one with a secret text; sharing turned on and off again
+    if scenario ~= "pad" and scenario ~= "padmap" and ns.modules.worldmap.RefreshFriends then
+        local m = ns.modules.worldmap
+        local ok6, e6 = pcall(function()
+            IsInGuild = function() return true end
+            FireEvent("CHAT_MSG_ADDON", "OpenMapLoc", "L1\t1429\t0.5\t0.5\tMAGE\t20", "GUILD", "Guildie-Forever")
+            FireEvent("CHAT_MSG_ADDON", "OpenMapLoc", "L1\tnope", "GUILD", "Other-Forever")
+            FireEvent("CHAT_MSG_ADDON", "OpenMapLoc", "H1", "WHISPER", "Stranger-Forever")
+            FireEvent("CHAT_MSG_ADDON", "OpenMapLoc", Secret("L1\t1429\t0.5\t0.5"), "GUILD", "Hidden-Forever")
+            FireEvent("CHAT_MSG_ADDON", "OpenMapLoc", "L0", "GUILD", "Guildie-Forever")
+            FireEvent("GUILD_ROSTER_UPDATE")
+            FireEvent("FRIENDLIST_UPDATE")
+            m.db.friendsShare = true
+            m.RefreshFriends()
+            RunTimers(15)
+            m.db.friendsShare = false
+            m.RefreshFriends()
+            RunTimers(3)
+        end)
+        if not ok6 then ERRORS[#ERRORS + 1] = "friends: " .. tostring(e6) end
+    end
     if scenario == "pad" then
         -- (Setup never ran: it would have said the stub's map isn't the expected kind)
         local m = ns.modules.worldmap

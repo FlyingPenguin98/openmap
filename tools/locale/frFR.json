@@ -474,5 +474,11 @@
  "To your group": "À votre groupe",
  "To your guild": "À votre guilde",
  "Minimap detail in major cities": "Détail de la minicarte dans les capitales",
- "The minimap's detail over the six major cities' own maps, at half strength at most so the city's plan leads. Off: their own maps alone.": "Le détail de la minicarte sur les cartes propres des six capitales, à mi-intensité au plus pour que le plan de la ville domine. Désactivé : leurs propres cartes seules."
+ "The minimap's detail over the six major cities' own maps, at half strength at most so the city's plan leads. Off: their own maps alone.": "Le détail de la minicarte sur les cartes propres des six capitales, à mi-intensité au plus pour que le plan de la ville domine. Désactivé : leurs propres cartes seules.",
+ "Friends and guild": "Amis et guilde",
+ "Your friends and guild members who are online: a badge on the zone each is in, with who's there (as the friends list and guild roster show it), or a class-coloured dot where they stand for those who use OpenMap and share where they are.": "Vos amis et membres de guilde en ligne : un badge sur la zone où se trouve chacun, avec qui s'y trouve (comme le montrent la liste d'amis et la liste de guilde), ou un point aux couleurs de classe là où ils se tiennent pour ceux qui utilisent OpenMap et partagent leur position.",
+ "Share where you are": "Partager votre position",
+ "Your guild, and your friends who use OpenMap, see you as a dot where you stand on their map, sent every few seconds while you move. Never from inside a dungeon, raid or battleground. Off, they see only your zone, as the friends list and guild roster show it.": "Votre guilde et vos amis qui utilisent OpenMap vous voient comme un point sur leur carte, mis à jour toutes les quelques secondes quand vous vous déplacez. Jamais depuis un donjon, un raid ou un champ de bataille. Désactivé, ils ne voient que votre zone, comme la montrent la liste d'amis et la liste de guilde.",
+ "Friend": "Ami",
+ "Updated %d s ago": "Mis à jour il y a %d s"
 }

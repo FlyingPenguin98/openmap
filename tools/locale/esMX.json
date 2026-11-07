@@ -474,5 +474,11 @@
  "To your group": "A tu grupo",
  "To your guild": "A tu hermandad",
  "Minimap detail in major cities": "Detalle del minimapa en las capitales",
- "The minimap's detail over the six major cities' own maps, at half strength at most so the city's plan leads. Off: their own maps alone.": "El detalle del minimapa sobre los mapas propios de las seis capitales, a lo mucho a media intensidad para que domine el plano de la ciudad. Desactivado: solo sus propios mapas."
+ "The minimap's detail over the six major cities' own maps, at half strength at most so the city's plan leads. Off: their own maps alone.": "El detalle del minimapa sobre los mapas propios de las seis capitales, a lo mucho a media intensidad para que domine el plano de la ciudad. Desactivado: solo sus propios mapas.",
+ "Friends and guild": "Amigos y hermandad",
+ "Your friends and guild members who are online: a badge on the zone each is in, with who's there (as the friends list and guild roster show it), or a class-coloured dot where they stand for those who use OpenMap and share where they are.": "Tus amigos y miembros de la hermandad conectados: una insignia en la zona donde está cada uno, con quién está ahí (como lo muestran la lista de amigos y la de la hermandad), o un punto del color de su clase donde se encuentran para quienes usan OpenMap y comparten su ubicación.",
+ "Share where you are": "Compartir tu ubicación",
+ "Your guild, and your friends who use OpenMap, see you as a dot where you stand on their map, sent every few seconds while you move. Never from inside a dungeon, raid or battleground. Off, they see only your zone, as the friends list and guild roster show it.": "Tu hermandad y tus amigos que usan OpenMap te ven como un punto en su mapa, actualizado cada pocos segundos mientras te mueves. Nunca desde dentro de un calabozo, banda o campo de batalla. Desactivado, solo ven tu zona, como la muestran la lista de amigos y la de la hermandad.",
+ "Friend": "Amigo",
+ "Updated %d s ago": "Actualizado hace %d s"
 }
