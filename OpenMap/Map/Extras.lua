@@ -349,18 +349,20 @@ end
 --------------------------------------------------------------------------------
 
 local SHOW_CURRENT = 0                  -- HBD_PINS_WORLDMAP_SHOW_CURRENT: only on its own map
+local SHOW_CONTINENT = 2                -- HBD_PINS_WORLDMAP_SHOW_CONTINENT: on its continent's map too
 local QUESTIE_BASE = 2015               -- the fixed frame level Questie's map icons and lines start from
 
 -- Questie fixes its icons' frame levels from QUESTIE_BASE up (it expects Blizzard's map canvas
 -- near 2000), which is under the stitched map's upper art layers: lift them above the art,
 -- keeping their order among themselves (quest finishers in front ...)
-local function Lift(icon)
+-- (questie: Questie's own order kept, from QUESTIE_BASE; another copy's icon just over the art)
+local function Lift(icon, questie)
 	local top = S.artTop
 	if not top or not icon.GetFrameLevel or not icon.SetFixedFrameLevel then return end
 	local level = icon:GetFrameLevel()
 	if level > top then return end
 	icon:SetFixedFrameLevel(false)
-	icon:SetFrameLevel(level - QUESTIE_BASE + top + 1)
+	icon:SetFrameLevel(questie and level - QUESTIE_BASE + top + 1 or top + 1)
 	icon:SetFixedFrameLevel(true)
 end
 local NEAR = 0.5                        -- how far round the map underneath (its widths) pins are placed (each pin
@@ -456,6 +458,8 @@ local questie = { placed = 0, ours = 0, moved = 0 }   -- for /openmap status: si
 -- frame levels; the others use HereBeDragons' own template.
 local PIN_LIBS = {
 	["HereBeDragonsQuestie-Pins-2.0"] = { template = "HereBeDragonsPinsTemplateQuestie", questie = true },
+	-- Zygor's renamed copy (#20); its waypoint lifted over the art, as Questie's icons are
+	["HereBeDragons-Pins-ZGV"] = { template = "HereBeDragonsPinsTemplateZGV", lift = true },
 }
 local DEFAULT_TEMPLATE = "HereBeDragonsPinsTemplate"
 
@@ -517,7 +521,7 @@ local function SetUpPins(name, pins)
 		local holder = icon:GetParent()
 		local placed = holder and holder.icon == icon and holder.SetPosition and holder
 		if placed then count.placed = count.placed + 1 end
-		if placed and spec.questie and mod.IsStitched() then Lift(icon) end
+		if placed and (spec.questie or spec.lift) and mod.IsStitched() then Lift(icon, spec.questie) end
 		if not mod.IsStitched() then return end
 		local uiMapID, mx, my = data.uiMapID, data.mapX, data.mapY
 		if not (mx and my) and at[icon] and at[icon][1] == uiMapID then uiMapID, mx, my = at[icon][1], at[icon][2], at[icon][3] end
@@ -525,26 +529,38 @@ local function SetUpPins(name, pins)
 		if not (mx and my) and spec.questie and icon.UiMapID == uiMapID and type(icon.x) == "number" and type(icon.y) == "number" then
 			mx, my = icon.x / 100, icon.y / 100
 		end
-		if not uiMapID or not mx or not my then return end
 		local mapID = self:GetMap():GetMapID()
 		if mapID == S.WORLD and spec.questie then return end   -- (Questie's own Forever path: right there)
-		local l, r, t, b = S.Rect(uiMapID)
-		if not l then return end
-		local x, y = mod.FromWorld(mapID, l + mx * (r - l), t + my * (b - t))
+		local wu, wv
+		if uiMapID and mx and my then
+			local l, r, t, b = S.Rect(uiMapID)
+			if not l then return end
+			wu, wv = l + mx * (r - l), t + my * (b - t)
+		elseif not uiMapID and type(data.instanceID) == "number" and type(data.x) == "number" and type(data.y) == "number" then
+			-- placed by world position (AddWorldMapIconWorld: Zygor's waypoint, #20): the library's x, y are
+			-- the game's world Y, X (HereBeDragons reads a map's corner as top, left)
+			wu, wv = S.FromYards(data.instanceID, data.y, data.x)
+			if not wu then return end
+		else
+			return
+		end
+		local x, y = mod.FromWorld(mapID, wu, wv)
 		if placed then                                      -- placed, but from coordinates that are off here
 			placed:SetPosition(x, y)
 			count.moved = count.moved + 1
 			return
 		end
 		if mapID == S.WORLD then return end                -- (on the whole world, only what the library itself shows)
-		if (data.worldMapShowFlag or SHOW_CURRENT) == SHOW_CURRENT and uiMapID ~= mapID then return end
+		if uiMapID and (data.worldMapShowFlag or SHOW_CURRENT) == SHOW_CURRENT and uiMapID ~= mapID then return end
 		local info = C_Map.GetMapInfo(mapID)
 		if not info then return end
+		-- (one placed by world position on a continent only as the library would: shown on continents)
+		if not uiMapID and info.mapType == Enum.UIMapType.Continent and (data.worldMapShowFlag or SHOW_CURRENT) < SHOW_CONTINENT then return end
 		local profile = spec.questie and _G.Questie and Questie.db and Questie.db.profile
 		if profile and profile.hideIconsOnContinents and info.mapType == Enum.UIMapType.Continent then return end
-		if (x < -NEAR or x > 1 + NEAR or y < -NEAR or y > 1 + NEAR) and not InView(l + mx * (r - l), t + my * (b - t)) then return end
+		if (x < -NEAR or x > 1 + NEAR or y < -NEAR or y > 1 + NEAR) and not InView(wu, wv) then return end
 		self:GetMap():AcquirePin(template, icon, x, y, data.frameLevelType)
-		if spec.questie then Lift(icon) end
+		if spec.questie or spec.lift then Lift(icon, spec.questie) end
 		count.ours = count.ours + 1
 	end
 	-- (counted afresh each time the map changes: HereBeDragons rebuilds its pins then)
@@ -576,7 +592,7 @@ end
 local function SetUpAllPins(opening)
 	if not LibStub or not LibStub.IterateLibraries then return end
 	for name, lib in LibStub:IterateLibraries() do
-		if type(name) == "string" and name:match("^HereBeDragons.*%-Pins%-2%.0$") then
+		if type(name) == "string" and (name:match("^HereBeDragons.*%-Pins%-2%.0$") or PIN_LIBS[name]) then
 			local state = SetUpPins(name, lib)
 			if state == "unknown" then
 				Tell(name)
