@@ -52,6 +52,7 @@ local function Slash(msg)
 		status = "Diag", paint = "TogglePaint", notes = "TogglePaint", debug = "ToggleDebugOverlay",
 		bench = "Bench", pins = "TogglePins", news = "ToggleNews", entrance = "Entrance", draw = "ToggleSketch", dungeons = "DungeonDiag",
 		welcome = "ShowWelcome", highlights = "Highlights",
+		reset = "ResetWindow",   -- (reset: the windowed map's size and place, for one off the screen)
 	}
 	if run[msg] then
 		if mod.enabled and mod[run[msg]] then mod[run[msg]](mod, takes[msg] and rest or nil)

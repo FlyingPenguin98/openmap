@@ -38,20 +38,27 @@ local factionBit
 -- none of the game's). Only Alterac Valley's pair, on neither continent's list, keeps the English.
 local found = {}
 local function ReadFound()
+	wipe(found)
 	if not (C_TaxiMap and C_TaxiMap.GetTaxiNodesForMap) then return end
+	local seen, hidden = {}, 0
 	local continents = ns.MapWorld and ns.MapWorld.continents or { 1414, 1415 }   -- (Kalimdor, the Eastern Kingdoms; a client's own)
 	for _, mapID in ipairs(continents) do
 		local ok, list = pcall(C_TaxiMap.GetTaxiNodesForMap, mapID)
 		if ok and type(list) == "table" then
 			for _, info in ipairs(list) do
 				if type(info) == "table" and info.nodeID then
-					if info.isUndiscovered == false then found[info.nodeID] = true end
+					if info.isUndiscovered == false then seen[info.nodeID] = true
+					elseif info.isUndiscovered == true then hidden = hidden + 1 end
 					local n = F.nodes[info.nodeID]
 					if n and type(info.name) == "string" and info.name ~= "" then n[1] = info.name end
 				end
 			end
 		end
 	end
+	-- (none of them undiscovered: the game isn't saying. WoW Forever lists all 74 as found, learned or
+	-- not, and every flight master showed as learned. Then only the ones seen at a flight master count)
+	if hidden == 0 then return end
+	for id in pairs(seen) do found[id] = true end
 end
 
 local function Known(id)
@@ -73,12 +80,17 @@ end
 
 local taxi = {}                 -- the flight in progress: from, to, start
 
+-- the kinds of node a flight master lists that you've learned. DISTANT is one a flight passes through
+-- that you haven't (the game's own flight map shows it only on a route through it); 0.7.5 and before
+-- counted it, and every flight master showed as learned (players' reports)
+local LEARNED = { CURRENT = true, REACHABLE = true, UNREACHABLE = true }
+
 local function OnTaxiMap()
 	mod.char.flightsKnown = mod.char.flightsKnown or {}
 	local current
 	for i = 1, NumTaxiNodes() do
 		local name, kind = TaxiNodeName(i), TaxiNodeGetType(i)
-		if kind and kind ~= "NONE" then mod.char.flightsKnown[name] = true end
+		if LEARNED[kind] then mod.char.flightsKnown[name] = true end
 		if kind == "CURRENT" then current = name end
 	end
 	taxi.here = current
@@ -305,6 +317,10 @@ function mod:ClearFlightRoute() ClearRoute() end
 function mod.RefreshFlightsFound() if set then RefreshLook() end end
 
 function mod:SetupFlights()
+	-- (those remembered by 0.7.5 and before had DISTANT's unlearned ones in: forgotten once, and counted again at
+	-- the next flight master)
+	local c = mod.char
+	if c and c.flightsKnownV ~= 2 then c.flightsKnown, c.flightsKnownV = nil, 2 end
 	ns.RegisterEvent(mod, "TAXIMAP_OPENED", OnTaxiMap)
 	ns.RegisterEvent(mod, "TAXI_NODE_STATUS_CHANGED", function() if set then RefreshLook() end end)
 	if WorldMapFrame then WorldMapFrame:HookScript("OnShow", function() if set then RefreshLook() end end) end

@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+### New
+
+- **Friends and guild on the map** (Options: Friends and guild): your friends and guild members who
+  are online show on the stitched map, a badge on the zone each is in with who's there. Those who use
+  OpenMap and turn on **Share where you are** show as a class-coloured dot where they stand, updated
+  every few seconds while they move. The map asks once whether to share; it's off unless you say yes,
+  goes only to your guild and your friends, and never from inside a dungeon, raid or battleground.
+- **Maps of The Drowned City, Krol'dok Stronghold and Shaper's Terrace**, drawn by Santiago Reyes and
+  used with his permission (credited on the map, as his other dungeon maps are).
+
 ### Improved
 
 - **A new OpenMap icon, drawn by zloyeb**: a map scroll in a gold ring, in the AddOns list, on the
@@ -11,6 +21,19 @@
 
 ### Fixed
 
+- **The map closes in combat again**: with the map open as a fight started, neither Escape nor M
+  closed it (since 0.7.0). The windowed map no longer stays open beside an NPC's window, which is
+  what blocked it.
+- **Flight masters you haven't learned show as not learned**: every one showed as learned, as
+  WoW Forever reports them all as found. OpenMap now goes by the ones a flight master shows you've
+  learned: what it remembered is forgotten once and counted again at the next flight master you talk to.
+- **The map window can't go above the top of the screen**, where its title bar couldn't be
+  grabbed to bring it back. `/openmap reset` puts the window back to its size and place.
+- **Dun Morogh stays Dun Morogh near Ironforge**: around Kharanos, panning or zooming switched the map
+  to Ironforge's and a click zoomed into the city. A city's map now takes over only in its middle,
+  and its zone comes first when you click your way in.
+- **The OpenMap menu fits a short screen**: on a TV at a big UI scale the Look tab ran off the
+  bottom.
 - **Flight masters are named in your own language**: on a client that isn't English, the map's
   flight masters kept the game's tables' English names (hovering one said "Stormwind, Elwynn" while
   the flight master in game names it in your language). They're now named as the game names them,
