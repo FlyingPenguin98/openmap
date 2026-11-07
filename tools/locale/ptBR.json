@@ -480,5 +480,6 @@
  "Share where you are": "Compartilhar sua localização",
  "Your guild, and your friends who use OpenMap, see you as a dot where you stand on their map, sent every few seconds while you move. Never from inside a dungeon, raid or battleground. Off, they see only your zone, as the friends list and guild roster show it.": "Sua guilda e seus amigos que usam o OpenMap veem você como um ponto no mapa deles, atualizado a cada poucos segundos enquanto você se move. Nunca de dentro de masmorras, raides ou campos de batalha. Desligado, eles veem só a sua zona, como a lista de amigos e a lista da guilda mostram.",
  "Friend": "Amigo",
- "Updated %d s ago": "Atualizado há %d s"
+ "Updated %d s ago": "Atualizado há %d s",
+ "Your guild and friends see you": "Sua guilda e amigos veem você"
 }

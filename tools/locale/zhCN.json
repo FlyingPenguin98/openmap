@@ -480,5 +480,6 @@
  "Share where you are": "共享你的位置",
  "Your guild, and your friends who use OpenMap, see you as a dot where you stand on their map, sent every few seconds while you move. Never from inside a dungeon, raid or battleground. Off, they see only your zone, as the friends list and guild roster show it.": "你的公会和使用OpenMap的好友会在他们的地图上看到你的圆点，移动时每隔几秒更新一次。在地下城、团队副本或战场内绝不发送。关闭时，他们只能看到你所在的区域，与好友列表和公会名单一致。",
  "Friend": "好友",
- "Updated %d s ago": "%d秒前更新"
+ "Updated %d s ago": "%d秒前更新",
+ "Your guild and friends see you": "公会和好友可以看到你"
 }

@@ -480,5 +480,6 @@
  "Share where you are": "내 위치 공유",
  "Your guild, and your friends who use OpenMap, see you as a dot where you stand on their map, sent every few seconds while you move. Never from inside a dungeon, raid or battleground. Off, they see only your zone, as the friends list and guild roster show it.": "길드원과 OpenMap을 사용하는 친구들의 지도에 내 위치가 점으로 표시되며, 이동하는 동안 몇 초마다 갱신됩니다. 던전, 공격대, 전장 안에서는 절대 보내지 않습니다. 끄면 친구 목록과 길드 목록에 나오는 대로 지역만 보입니다.",
  "Friend": "친구",
- "Updated %d s ago": "%d초 전 갱신"
+ "Updated %d s ago": "%d초 전 갱신",
+ "Your guild and friends see you": "길드원과 친구에게 보임"
 }
