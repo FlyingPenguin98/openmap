@@ -4,9 +4,10 @@
 local _, ns = ...
 
 ns.MapChangelog = {
-	{ version = "Unreleased", date = "", heads = { [1] = "Improved", }, items = {
+	{ version = "Unreleased", date = "", heads = { [1] = "Improved", [3] = "Fixed", }, items = {
 		"|cff6e2c0aOpenMap has its own icon|r, a compass over a parchment map, in the AddOns list, on the minimap button and in the map's menu (it borrowed the game's Eastern Kingdoms icon).",
 		"|cff6e2c0aOpenMap is back on GitHub|r, at github.com/openmap-world/openmap: Report a problem opens a report there again, and What's new and the AddOns list link to it.",
+		"|cff6e2c0aThe map opened inside a dungeon shows that dungeon's map|r (Ragefire Chasm, Deadmines ...): it showed the world map with no one on it, as WoW Forever has no map of its dungeons. Its map only opened from the entrance on the world map.",
 	} },
 	{ version = "v0.7.5-beta", date = "2026-10-23", heads = { [1] = "Fixed", }, items = {
 		"|cff6e2c0aThe map's art is there at once when you open it|r: since 0.7.4 the zones showed blank parchment for a moment each time the map opened.",

@@ -128,7 +128,7 @@ WOW_API = {
     "GetAddOnMemoryUsage", "UpdateAddOnMemoryUsage", "UnitLevel", "GetQuestDifficultyColor", "GetSpellInfo", "GetNumSkillLines", "GetSkillLineInfo", "GetCVar", "GetCVarBool",
     "debugprofilestop", "GetFramerate", "IsAddOnLoaded", "GetUnitSpeed", "IsModifiedClick", "GetPhysicalScreenSize", "IsMouseButtonDown",
     "IsInGuild", "UnitIsPlayer", "GetUnitName", "UnitName", "Ambiguate", "ToggleWorldMap",
-    "UnitRace", "GetLocale", "PlaySound",
+    "UnitRace", "GetLocale", "PlaySound", "IsInInstance", "GetInstanceInfo",
 }
 
 
