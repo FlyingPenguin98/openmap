@@ -128,7 +128,6 @@ end
 local tiles, pool = {}, {}      -- cont * 4096 + index -> { texture }
 local TileKey = function(cont, tx, ty) return cont * 4096 + tx * 64 + ty end   -- (a number: no string a tile a frame)
 local wantedTiles, wantedGap = {}, {}   -- (reused each update)
-local TILE_IDLE = { 5, 64 }       -- seconds a tile not wanted keeps its file, and how many may (UpdateMinimap)
 
 -- a tile, through its continent's land (S.LandMask): the minimap's sea is left out
 local function Tile(layer, fid, cont)
@@ -256,10 +255,6 @@ local function UpdateMinimap(layer, conts, u, v, hu, hv, mix)
 							local key = TileKey(cont, tx, ty)
 							wanted[key] = true
 							local t = tiles[key]
-							if t and t.idle then         -- (one let go a moment ago: back as it was, its file still in)
-								t.idle = nil
-								for _, tex in ipairs(t) do tex:Show() end
-							end
 							if not t then
 								t = Tile(layer, fid, cont)
 								tiles[key] = t
@@ -276,25 +271,8 @@ local function UpdateMinimap(layer, conts, u, v, hu, hv, mix)
 			end
 		end
 	end
-	-- one not wanted is hidden, its file kept, for a few seconds before it goes back to the pool: the map
-	-- opening (a frame further out, then back), a zoom out and in, took them all and read each file
-	-- again, the minimap flicking on
-	local now, idle = GetTime(), 0
-	for key, t in pairs(tiles) do
-		if not wanted[key] then
-			if not t.idle then
-				t.idle = now
-				for _, tex in ipairs(t) do tex:Hide() end
-			end
-			idle = idle + 1
-		end
-	end
-	for key, t in pairs(tiles) do
-		if t.idle and (now - t.idle > TILE_IDLE[1] or idle > TILE_IDLE[2]) then
-			t.idle = nil
-			DropTile(key)
-			idle = idle - 1
-		end
+	for key in pairs(tiles) do
+		if not wanted[key] then DropTile(key) end
 	end
 	for key, t in pairs(lodPieces) do
 		if not wantedLOD[key] then
