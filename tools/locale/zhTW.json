@@ -490,5 +490,6 @@
  "Ctrl-click on the map drops a pin. Turn it off if another addon drops its own pin on Ctrl-click (Map Pin Enhanced): the menu's Drop a pin still works.": "CTRL+點擊地圖會放置地圖標記。若其他插件在CTRL+點擊時也會放置自己的標記（Map Pin Enhanced），請關閉此項：選單中的「放置標記」仍可使用。",
  "Darkening colour": "變暗顏色",
  "The colour unexplored areas are darkened with.": "未探索區域變暗時使用的顏色。",
- "Default colour": "預設顏色"
+ "Default colour": "預設顏色",
+ "dungeon and cave maps in every language (they showed green on some languages' clients)": "所有語言下的地城和洞穴地圖（部分語言的用戶端上曾顯示為綠色）"
 }

@@ -204,6 +204,15 @@ for _name in changelog.stale():
 sys.path.insert(0, os.path.join(ROOT, "..", "tools", "locale"))
 import translate
 problems += translate.problems()
+# WoW Forever's cave and dungeon tiles are drawn from OpenMap's own copies (Data/Forever/Tiles.lua):
+# one not copied is a missing texture in game (green) on every client
+import importlib.util
+_spec = importlib.util.spec_from_file_location("map_tiles", os.path.join(ROOT, "..", "tools", "map-tiles", "build.py"))
+map_tiles = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(map_tiles)
+for _fid in map_tiles.tile_ids():
+    if not os.path.exists(os.path.join(map_tiles.OUT, "%d.blp" % _fid)):
+        problems.append("Media/Textures/Forever/MapTile/%d.blp is missing: run python -P tools/map-tiles/build.py" % _fid)
 for p in problems:
     print(p)
 print(f"lint: {len(problems)} problem(s)")

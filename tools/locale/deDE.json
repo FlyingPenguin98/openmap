@@ -490,5 +490,6 @@
  "Ctrl-click on the map drops a pin. Turn it off if another addon drops its own pin on Ctrl-click (Map Pin Enhanced): the menu's Drop a pin still works.": "STRG-Klick auf die Karte setzt eine Markierung. Schaltet es aus, wenn ein anderes Addon bei STRG-Klick seine eigene setzt (Map Pin Enhanced): „Markierung setzen“ im Menü funktioniert weiterhin.",
  "Darkening colour": "Farbe der Abdunklung",
  "The colour unexplored areas are darkened with.": "Die Farbe, mit der unerforschte Gebiete abgedunkelt werden.",
- "Default colour": "Standardfarbe"
+ "Default colour": "Standardfarbe",
+ "dungeon and cave maps in every language (they showed green on some languages' clients)": "Dungeon- und Höhlenkarten in jeder Sprache (auf den Clients mancher Sprachen waren sie grün)"
 }

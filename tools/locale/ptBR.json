@@ -490,5 +490,6 @@
  "Ctrl-click on the map drops a pin. Turn it off if another addon drops its own pin on Ctrl-click (Map Pin Enhanced): the menu's Drop a pin still works.": "Ctrl+clique no mapa coloca um marcador. Desative se outro addon coloca o próprio marcador com Ctrl+clique (Map Pin Enhanced): Colocar marcador no menu continua funcionando.",
  "Darkening colour": "Cor do escurecimento",
  "The colour unexplored areas are darkened with.": "A cor usada para escurecer as áreas inexploradas.",
- "Default colour": "Cor padrão"
+ "Default colour": "Cor padrão",
+ "dungeon and cave maps in every language (they showed green on some languages' clients)": "mapas de masmorras e cavernas em todos os idiomas (apareciam verdes nos clientes de alguns idiomas)"
 }

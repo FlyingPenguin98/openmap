@@ -490,5 +490,6 @@
  "Ctrl-click on the map drops a pin. Turn it off if another addon drops its own pin on Ctrl-click (Map Pin Enhanced): the menu's Drop a pin still works.": "지도를 Ctrl 클릭하면 핀을 꽂습니다. 다른 애드온이 Ctrl 클릭으로 자체 핀을 꽂는다면(Map Pin Enhanced) 끄십시오. 메뉴의 '핀 꽂기'는 계속 사용할 수 있습니다.",
  "Darkening colour": "어둡게 하기 색상",
  "The colour unexplored areas are darkened with.": "탐험하지 않은 지역을 어둡게 할 때 쓰는 색상입니다.",
- "Default colour": "기본 색상"
+ "Default colour": "기본 색상",
+ "dungeon and cave maps in every language (they showed green on some languages' clients)": "모든 언어에서 던전과 동굴 지도 표시 (일부 언어 클라이언트에서 녹색으로 보이던 문제)"
 }
