@@ -74,6 +74,10 @@ local function Short(full)
 	return full
 end
 
+-- the name shown on the map: never the realm (WoW Forever's realm names read "CAMWOWUS1Realm2PvP",
+-- and a friend's came with it whether or not it's yours)
+local function Shown(full) return (full:match("^[^%-]+")) or full end
+
 local function Me() return Full(Safe.Call(UnitName, "player")) end
 
 local function InGroup(full)
@@ -210,14 +214,14 @@ local function ScanGuild()
 		local name, _, _, level, _, area, _, _, online, _, class = GetGuildRosterInfo(i)
 		local full = Safe.Value(online) and Full(name)
 		if full then
-			roster[full] = { name = Short(full), class = Safe.Value(class), level = tonumber(Safe.Value(level)),
+			roster[full] = { name = Shown(full), class = Safe.Value(class), level = tonumber(Safe.Value(level)),
 				area = Safe.Value(area), guild = true }
 		end
 	end
 end
 
 local function Friend(full, level, area, className, how)
-	local r = roster[full] or { name = Short(full), level = tonumber(Safe.Value(level)), area = Safe.Value(area),
+	local r = roster[full] or { name = Shown(full), level = tonumber(Safe.Value(level)), area = Safe.Value(area),
 		class = ClassFile(Safe.Value(className)) }
 	r.friend = true
 	roster[full] = r
@@ -344,7 +348,7 @@ local function DotEnter(pin)
 	local d = pin.data
 	local r = roster[d.full]
 	GameTooltip:SetOwner(pin, "ANCHOR_RIGHT")
-	GameTooltip:AddLine(Short(d.full), ClassColor(d.p.class or (r and r.class)))
+	GameTooltip:AddLine(Shown(d.full), ClassColor(d.p.class or (r and r.class)))
 	local level = d.p.level or (r and r.level)
 	if level and level > 0 then GameTooltip:AddLine((LEVEL or "Level") .. " " .. level, 1, 1, 1) end
 	GameTooltip:AddLine(("%s  %.1f, %.1f"):format(ZoneName(d.p.map), d.p.x * 100, d.p.y * 100), 1, 1, 1)
