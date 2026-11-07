@@ -188,9 +188,12 @@ local function Atlas(tex, name, turn, ownSize)
 	return true
 end
 
--- Blizzard's map of it, else one drawn for WoW Forever's own dungeons (Data/DungeonDrawn.lua)
+-- Blizzard's map of it, else one drawn for WoW Forever's own dungeons (Data/DungeonDrawn.lua: by
+-- mapID, or by name for one the game's tables have no mapID for yet, Places.lua's 0)
 local function FloorsOf(inst)
-	return ns.MapDungeonMaps and ns.MapDungeonMaps[inst[1]] or ns.MapDungeonDrawn and ns.MapDungeonDrawn[inst[1]]
+	local drawn = ns.MapDungeonDrawn
+	return ns.MapDungeonMaps and ns.MapDungeonMaps[inst[1]]
+		or drawn and (drawn[inst[1]] or inst[1] == 0 and drawn[inst[2]] or nil)
 end
 local BLANK = { { blank = true } }    -- (the floors of a dungeon the client has no map of: one blank page)
 
