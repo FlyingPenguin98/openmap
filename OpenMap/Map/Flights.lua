@@ -35,26 +35,23 @@ local factionBit
 -- language (the names seen at a flight master are the client's own, the tables' English)
 local found = {}
 local function ReadFound()
+	wipe(found)
 	if not (C_TaxiMap and C_TaxiMap.GetTaxiNodesForMap) then return end
-	local seen, mine, all = {}, 0, 0
+	local seen, hidden = {}, 0
 	for _, mapID in ipairs({ 1414, 1415 }) do   -- (Kalimdor, the Eastern Kingdoms)
 		local ok, list = pcall(C_TaxiMap.GetTaxiNodesForMap, mapID)
 		if ok and type(list) == "table" then
 			for _, info in ipairs(list) do
-				if type(info) == "table" and info.nodeID and info.isUndiscovered == false then seen[info.nodeID] = true end
+				if type(info) == "table" and info.nodeID then
+					if info.isUndiscovered == false then seen[info.nodeID] = true
+					elseif info.isUndiscovered == true then hidden = hidden + 1 end
+				end
 			end
 		end
 	end
-	-- (every one of your faction's read as found is taken as the game not saying: players saw every flight
-	-- master as learned. The ones seen at a flight master are counted then)
-	if not factionBit then return end
-	for id, n in pairs(F.nodes) do
-		if bit.band(n[5], factionBit) ~= 0 then
-			all = all + 1
-			if seen[id] then mine = mine + 1 end
-		end
-	end
-	if all > 0 and mine >= all then return end
+	-- (none of them undiscovered: the game isn't saying. WoW Forever lists all 74 as found, learned or
+	-- not, and every flight master showed as learned. Then only the ones seen at a flight master count)
+	if hidden == 0 then return end
 	for id in pairs(seen) do found[id] = true end
 end
 
