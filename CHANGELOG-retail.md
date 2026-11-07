@@ -1,5 +1,12 @@
 # OpenMap changelog
 
+## Unreleased
+
+### Improved
+
+- **Flight masters are easier to see on the map**: bigger, with a dark outline, and the ones you
+  haven't learned are no longer half see-through (they were lost on the parchment).
+
 ## v0.8.0-beta (2026-11-07)
 
 ### New
