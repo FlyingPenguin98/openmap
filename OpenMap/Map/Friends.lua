@@ -74,9 +74,13 @@ local function Short(full)
 	return full
 end
 
--- the name shown on the map: never the realm (WoW Forever's realm names read "CAMWOWUS1Realm2PvP",
--- and a friend's came with it whether or not it's yours)
-local function Shown(full) return (full:match("^[^%-]+")) or full end
+-- the name shown on the map: never the realm (WoW Forever's realm names read "CAMWOWUS1Realm2PvP"),
+-- one from another realm marked " (*)" as the game's own lists do
+local function Shown(full)
+	local name = full:match("^[^%-]+") or full
+	if Short(full) ~= full then name = name .. (FOREIGN_SERVER_LABEL or " (*)") end
+	return name
+end
 
 local function Me() return Full(Safe.Call(UnitName, "player")) end
 
@@ -225,7 +229,8 @@ local function Friend(full, level, area, className, how)
 		class = ClassFile(Safe.Value(className)) }
 	r.friend = true
 	roster[full] = r
-	friends[full] = friends[full] or how
+	-- (Battle.net reaches any realm, a whisper not every one: it's used when both are there)
+	if how.bn or not friends[full] then friends[full] = how end
 end
 
 local function ScanFriends()
