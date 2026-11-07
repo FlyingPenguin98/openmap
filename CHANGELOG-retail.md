@@ -19,6 +19,9 @@
 
 ### Fixed
 
+- **The map opens with its art already there**: the game let go of the map's art while it was
+  closed, and each opening loaded it again (blank parchment for a moment). OpenMap now keeps it
+  loaded while the map is closed; `/openmap warm` turns that off.
 - **The map closes in combat again**: with the map open as a fight started, neither Escape nor M
   closed it (since 0.7.0). The windowed map no longer stays open beside an NPC's window, which is
   what blocked it.
