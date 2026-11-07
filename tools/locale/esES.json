@@ -485,5 +485,8 @@
  "Your friends and guild members who use OpenMap can show on your map as a dot where they stand. Share where you are, so they see you on theirs?": "Tus amigos y miembros de la hermandad que usan OpenMap pueden aparecer en tu mapa como un punto donde están. ¿Compartir tu ubicación para que te vean en el suyo?",
  "Share where I am": "Compartir mi ubicación",
  "Not now": "Ahora no",
- "Only your guild and friends, never from a dungeon, raid or battleground. OpenMap's menu: More, Sharing.": "Solo tu hermandad y tus amigos, nunca desde mazmorras, bandas o campos de batalla. Menú de OpenMap: Más, Compartir."
+ "Only your guild and friends, never from a dungeon, raid or battleground. OpenMap's menu: More, Sharing.": "Solo tu hermandad y tus amigos, nunca desde mazmorras, bandas o campos de batalla. Menú de OpenMap: Más, Compartir.",
+ "Darkening colour": "Color del oscurecimiento",
+ "The colour unexplored areas are darkened with.": "El color con el que se oscurecen las áreas sin explorar.",
+ "Default colour": "Color predeterminado"
 }
