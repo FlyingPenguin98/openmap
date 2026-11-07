@@ -647,10 +647,79 @@ local function ApplyExtras()
 	if (mod.db.moveFade or 0) == 0 then map:SetAlpha(1) end
 end
 
+--------------------------------------------------------------------------------
+-- Keep the map's art warm: the game lets go of the files of a map that's closed, and every opening
+-- read them again (blank parchment, the minimap fading in, a moment each time). As the map closes,
+-- each file shown on it is drawn on a frame that stays shown, a pixel across at almost no alpha, out
+-- of sight, till the map opens again (/openmap warm turns it off and on)
+--------------------------------------------------------------------------------
+
+local WARM_MOST = 1200          -- files kept at the most (the view's: a few hundred)
+local warmFrame, warmTex, warmN = nil, {}, 0
+local function WarmCollect(f, files, seen)
+	for _, r in ipairs({ f:GetRegions() }) do
+		if #files >= WARM_MOST then return end
+		if r:IsObjectType("Texture") and r:IsShown() and (r:GetAlpha() or 0) > 0 then
+			local file = r:GetTexture()
+			if file and not seen[file] then seen[file] = true files[#files + 1] = file end
+		end
+	end
+	for _, c in ipairs({ f:GetChildren() }) do
+		if #files >= WARM_MOST then return end
+		if c:IsShown() and (c:GetAlpha() or 0) > 0 then WarmCollect(c, files, seen) end
+	end
+end
+local function WarmHold()
+	if mod.db.keepWarm == false or not ns.MapStitch.IsBuilt() then return end
+	local root = ns.MapStitch.Root()
+	if not root then return end
+	local files = {}
+	local ok, err = pcall(WarmCollect, root, files, {})
+	if not ok then geterrorhandler()(err) return end
+	if not warmFrame then
+		warmFrame = CreateFrame("Frame")
+		warmFrame:SetFrameStrata("BACKGROUND")
+		warmFrame:SetSize(1, 1)
+		warmFrame:SetPoint("BOTTOMLEFT", 0, 0)
+	end
+	for i, file in ipairs(files) do
+		local t = warmTex[i]
+		if not t then
+			t = warmFrame:CreateTexture(nil, "BACKGROUND")
+			t:SetAllPoints(warmFrame)
+			t:SetAlpha(0.01)
+			warmTex[i] = t
+		end
+		t:SetTexture(file)
+		t:Show()
+	end
+	for i = #files + 1, warmN do warmTex[i]:SetTexture(nil) warmTex[i]:Hide() end
+	warmN = #files
+	warmFrame:Show()
+end
+local function WarmLetGo()
+	if not warmFrame then return end
+	-- (a moment into the opening: the map's own textures drawn by then, holding the files themselves)
+	C_Timer.After(1, function()
+		if map:IsShown() and warmFrame then warmFrame:Hide() end
+	end)
+end
+function mod:ToggleWarm()
+	mod.db.keepWarm = mod.db.keepWarm == false
+	if not mod.db.keepWarm and warmFrame then
+		for i = 1, warmN do warmTex[i]:SetTexture(nil) warmTex[i]:Hide() end
+		warmN = 0
+		warmFrame:Hide()
+	end
+	ns:Print(("Keep the map's art warm: %s"):format(mod.db.keepWarm and "on" or "off"))
+end
+
 function mod:SetupExtras(worldMap)
 	map, sc = worldMap, worldMap.ScrollContainer
 	map:HookScript("OnShow", function() fader:SetShown((mod.db.moveFade or 0) > 0) ApplyFpsCap() end)
 	map:HookScript("OnHide", function() fader:Hide() faded = 1 SetFade(1) ApplyFpsCap() end)
+	map:HookScript("OnHide", WarmHold)
+	map:HookScript("OnShow", WarmLetGo)
 	hooksecurefunc(map, "SetAlpha", KeepFade)
 	SetUpAllPins()
 	map:HookScript("OnShow", SetUpAllPins)            -- (a copy an addon loaded since brought)

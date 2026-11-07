@@ -1478,6 +1478,7 @@ function S.Build(parent, artLevel, range, iconLevel)
 end
 
 function S.IsBuilt() return root ~= nil end
+function S.Root() return root end   -- (Extras.lua's keep-warm: the files shown on it)
 
 -- how much an underground city's own map covers the point (u, v) (0..1): Close.lua keeps
 -- the minimap off it, as the minimap there shows the surface (the ruins above the Undercity,
