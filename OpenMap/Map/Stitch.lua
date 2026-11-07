@@ -1085,6 +1085,7 @@ LOOK.airship = LOOK.boat         -- (the flying boats to Zephras Isle: a boat's 
 -- continents off the stitched world a dock sails to: the map its icon opens instead of going there.
 -- Zephras Isle is its own continent (Map 2991), whose map is UiMap 2521 (UiMapAssignment)
 local AWAY_MAP = { [2991] = 2521 }
+S.AWAY_MAP = AWAY_MAP              -- (Dungeons.lua: the map opened while you stand on one)
 
 -- an instance's name in the player's language (the game's own), else the data's English. A wing
 -- (the group finder's name for part of a dungeon, "Dire Maul - East") keeps its own name in English,
