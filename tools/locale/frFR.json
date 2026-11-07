@@ -487,5 +487,8 @@
  "Not now": "Pas maintenant",
  "Only your guild and friends, never from a dungeon, raid or battleground. OpenMap's menu: More, Sharing.": "Seulement votre guilde et vos amis, jamais depuis un donjon, un raid ou un champ de bataille. Menu d'OpenMap : Plus, Partage.",
  "Ctrl-click drops a pin": "Ctrl+clic pose un repère",
- "Ctrl-click on the map drops a pin. Turn it off if another addon drops its own pin on Ctrl-click (Map Pin Enhanced): the menu's Drop a pin still works.": "Ctrl+clic sur la carte pose un repère. Désactivez-le si un autre addon pose son propre repère au Ctrl+clic (Map Pin Enhanced) : Poser un repère dans le menu fonctionne toujours."
+ "Ctrl-click on the map drops a pin. Turn it off if another addon drops its own pin on Ctrl-click (Map Pin Enhanced): the menu's Drop a pin still works.": "Ctrl+clic sur la carte pose un repère. Désactivez-le si un autre addon pose son propre repère au Ctrl+clic (Map Pin Enhanced) : Poser un repère dans le menu fonctionne toujours.",
+ "Darkening colour": "Couleur de l'assombrissement",
+ "The colour unexplored areas are darkened with.": "La couleur utilisée pour assombrir les zones inexplorées.",
+ "Default colour": "Couleur par défaut"
 }

@@ -2199,10 +2199,19 @@ function Shade.Tint(tex)
 	Shade.tinted[#Shade.tinted + 1] = tex
 	tex:SetColorTexture(UNDISCOVERED[1], UNDISCOVERED[2], UNDISCOVERED[3], UNDISCOVERED[4] * Shade.k)
 end
-function S.SetDarkening(k)
+-- color: the shade's colour ({ r, g, b }: Options' Darkening colour, #9), or nil for the game-like
+-- dark one; an unexplored piece's colour (DIM) follows it, as the shade at its alpha over white
+Shade.UNDISC0, Shade.DIM0 = { UNDISCOVERED[1], UNDISCOVERED[2], UNDISCOVERED[3] }, { Shade.DIM[1], Shade.DIM[2], Shade.DIM[3] }
+function S.SetDarkening(k, color)
 	k = math.max(0, math.min(1, tonumber(k) or 1))
-	if k == Shade.k then return end
-	Shade.k = k
+	local c = type(color) == "table" and tonumber(color[1]) and tonumber(color[2]) and tonumber(color[3]) and color or nil
+	local key = c and ("%.3f %.3f %.3f"):format(c[1], c[2], c[3]) or ""
+	if k == Shade.k and key == (Shade.colorKey or "") then return end
+	Shade.k, Shade.colorKey = k, key
+	for i = 1, 3 do
+		UNDISCOVERED[i] = c and math.max(0, math.min(1, c[i])) or Shade.UNDISC0[i]
+		Shade.DIM[i] = c and (1 - UNDISCOVERED[4]) + UNDISCOVERED[4] * UNDISCOVERED[i] or Shade.DIM0[i]
+	end
 	for i = 1, 3 do Shade.DIMK[i] = 1 - (1 - Shade.DIM[i]) * k end
 	Shade.DIMK[4] = Shade.DIM[4] * k
 	S.greyD = Shade.DIMK[4]

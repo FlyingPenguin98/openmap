@@ -487,5 +487,8 @@
  "Not now": "暂不",
  "Only your guild and friends, never from a dungeon, raid or battleground. OpenMap's menu: More, Sharing.": "仅限你的公会和好友，在地下城、团队副本或战场内绝不发送。OpenMap菜单：更多，分享。",
  "Ctrl-click drops a pin": "按住Ctrl点击放置标记",
- "Ctrl-click on the map drops a pin. Turn it off if another addon drops its own pin on Ctrl-click (Map Pin Enhanced): the menu's Drop a pin still works.": "按住Ctrl点击地图会放置标记。如果其他插件在Ctrl点击时也放置自己的标记（Map Pin Enhanced），请关闭此项：菜单中的“放置标记”仍然可用。"
+ "Ctrl-click on the map drops a pin. Turn it off if another addon drops its own pin on Ctrl-click (Map Pin Enhanced): the menu's Drop a pin still works.": "按住Ctrl点击地图会放置标记。如果其他插件在Ctrl点击时也放置自己的标记（Map Pin Enhanced），请关闭此项：菜单中的“放置标记”仍然可用。",
+ "Darkening colour": "变暗颜色",
+ "The colour unexplored areas are darkened with.": "未探索区域变暗时使用的颜色。",
+ "Default colour": "默认颜色"
 }
