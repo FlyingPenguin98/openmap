@@ -485,5 +485,7 @@
  "Your friends and guild members who use OpenMap can show on your map as a dot where they stand. Share where you are, so they see you on theirs?": "使用OpenMap的好友和公會成員可以在你的地圖上以圓點顯示其所在位置。要分享你的位置，讓他們在自己的地圖上看到你嗎？",
  "Share where I am": "分享我的位置",
  "Not now": "暫不",
- "Only your guild and friends, never from a dungeon, raid or battleground. OpenMap's menu: More, Sharing.": "僅限你的公會和好友，在地城、團隊副本或戰場內絕不傳送。OpenMap選單：更多，分享。"
+ "Only your guild and friends, never from a dungeon, raid or battleground. OpenMap's menu: More, Sharing.": "僅限你的公會和好友，在地城、團隊副本或戰場內絕不傳送。OpenMap選單：更多，分享。",
+ "Ctrl-click drops a pin": "CTRL+點擊放置標記",
+ "Ctrl-click on the map drops a pin. Turn it off if another addon drops its own pin on Ctrl-click (Map Pin Enhanced): the menu's Drop a pin still works.": "CTRL+點擊地圖會放置地圖標記。若其他插件在CTRL+點擊時也會放置自己的標記（Map Pin Enhanced），請關閉此項：選單中的「放置標記」仍可使用。"
 }

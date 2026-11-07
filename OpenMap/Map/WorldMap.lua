@@ -816,9 +816,11 @@ local function OnMouseWheel(_, delta)
 	ZoomAtCursor(delta > 0 and ZOOM_STEP or 1 / ZOOM_STEP)
 end
 
--- a left click drops a pin under the cursor when the menu's pin button is on, or with Ctrl
+-- a left click drops a pin under the cursor when the menu's pin button is on, or with Ctrl (unless
+-- that's turned off: ctrlClickPin)
 local function Dropping(button)
-	return active and button == "LeftButton" and mod.DropWaypoint and (IsControlKeyDown() or (mod.PinMode and mod.PinMode()))
+	return active and button == "LeftButton" and mod.DropWaypoint
+		and ((IsControlKeyDown() and mod.db.ctrlClickPin ~= false) or (mod.PinMode and mod.PinMode()))
 end
 
 local function DropAtCursor()

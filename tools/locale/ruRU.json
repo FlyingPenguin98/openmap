@@ -485,5 +485,7 @@
  "Your friends and guild members who use OpenMap can show on your map as a dot where they stand. Share where you are, so they see you on theirs?": "Друзья и члены гильдии, которые пользуются OpenMap, могут отображаться на вашей карте точкой там, где они стоят. Делиться своим местоположением, чтобы они видели вас на своей?",
  "Share where I am": "Делиться местоположением",
  "Not now": "Не сейчас",
- "Only your guild and friends, never from a dungeon, raid or battleground. OpenMap's menu: More, Sharing.": "Только гильдии и друзьям, никогда изнутри подземелий, рейдов и полей боя. Меню OpenMap: Прочее, Обмен."
+ "Only your guild and friends, never from a dungeon, raid or battleground. OpenMap's menu: More, Sharing.": "Только гильдии и друзьям, никогда изнутри подземелий, рейдов и полей боя. Меню OpenMap: Прочее, Обмен.",
+ "Ctrl-click drops a pin": "Ctrl+щелчок ставит метку",
+ "Ctrl-click on the map drops a pin. Turn it off if another addon drops its own pin on Ctrl-click (Map Pin Enhanced): the menu's Drop a pin still works.": "Ctrl+щелчок по карте ставит метку. Отключите, если другая модификация ставит свою метку по Ctrl+щелчку (Map Pin Enhanced): «Поставить метку» в меню по-прежнему работает."
 }
