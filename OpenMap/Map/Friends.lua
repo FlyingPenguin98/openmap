@@ -50,14 +50,26 @@ local sharing = false               -- (a place sent since sharing began: they'r
 -- Names
 --------------------------------------------------------------------------------
 
+-- your realm as UnitFullName gives it
+local function ApiRealm()
+	if not UnitFullName then return end
+	local ok, _, r = pcall(UnitFullName, "player")
+	if ok and not Safe.IsSecret(r) and type(r) == "string" and r ~= "" then return r end
+end
+
 local function Realm()
 	if not realm then
-		local r = GetNormalizedRealmName and GetNormalizedRealmName()
-		if type(r) ~= "string" or r == "" then r = (GetRealmName() or ""):gsub("[%s%-]", "") end
+		local r = Safe.Call(GetNormalizedRealmName)
+		if type(r) ~= "string" or r == "" then r = ApiRealm() end
+		if type(r) ~= "string" or r == "" then r = (Safe.Call(GetRealmName) or ""):gsub("[%s%-]", "") end
+		if r == "" then return "" end   -- (not known yet, early in a login: asked again later)
 		realm = r
 	end
 	return realm
 end
+
+-- a realm as compared: no spaces, hyphens or apostrophes, any case
+local function Plain(rlm) return (rlm:gsub("[%s%-']", "")):lower() end
 
 -- "Name-Realm" for a name as the game gives it (on your own realm it comes without one)
 local function Full(name, rlm)
@@ -69,8 +81,8 @@ end
 
 -- the name to show: without the realm when it's yours
 local function Short(full)
-	local suffix = "-" .. Realm()
-	if full:sub(-#suffix) == suffix then return full:sub(1, -#suffix - 1) end
+	local name, rlm = full:match("^([^%-]+)%-(.+)$")
+	if rlm and Realm() ~= "" and Plain(rlm) == Plain(Realm()) then return name end
 	return full
 end
 
@@ -83,6 +95,24 @@ local function Shown(full)
 end
 
 local function Me() return Full(Safe.Call(UnitName, "player")) end
+
+-- you, however the game writes your realm (a guild message or roster name may not match your own API's
+-- spelling of it): your name and a realm the game calls yours, or the roster entry with your GUID
+local selfFull
+local function IsMe(full)
+	if type(full) ~= "string" then return false end
+	if full == selfFull or full == Me() then return true end
+	local me = Safe.Call(UnitName, "player")
+	if Safe.IsSecret(me) or type(me) ~= "string" then return false end
+	local name, rlm = full:match("^([^%-]+)%-?(.*)$")
+	if name ~= me then return false end
+	if rlm == "" then return true end
+	rlm = Plain(rlm)
+	for _, mine in ipairs({ Realm(), Safe.Call(GetNormalizedRealmName) or "", Safe.Call(GetRealmName) or "", ApiRealm() or "" }) do
+		if type(mine) == "string" and not Safe.IsSecret(mine) and mine ~= "" and Plain(mine) == rlm then return true end
+	end
+	return false
+end
 
 local function InGroup(full)
 	if not IsInGroup() then return false end
@@ -215,9 +245,12 @@ end
 local function ScanGuild()
 	if not IsInGuild() or not GetGuildRosterInfo then return end
 	for i = 1, tonumber(Safe.Value(GetNumGuildMembers())) or 0 do
-		local name, _, _, level, _, area, _, _, online, _, class = GetGuildRosterInfo(i)
+		local name, _, _, level, _, area, _, _, online, _, class, _, _, _, _, _, guid = GetGuildRosterInfo(i)
 		local full = Safe.Value(online) and Full(name)
-		if full then
+		if full and guid ~= nil and not Safe.IsSecret(guid) and guid == Safe.Call(UnitGUID, "player") then
+			selfFull = full   -- (you, as the guild writes you: your realm spelled that way from now on)
+			realm = full:match("%-(.+)$") or realm
+		elseif full and not IsMe(full) then
 			roster[full] = { name = Shown(full), class = Safe.Value(class), level = tonumber(Safe.Value(level)),
 				area = Safe.Value(area), guild = true }
 		end
@@ -265,8 +298,9 @@ local function Scan()
 		local ok, err = pcall(scan)
 		if not ok then geterrorhandler()(err) end
 	end
-	local self = Me()
-	if self then roster[self], friends[self] = nil, nil end
+	for _, t in ipairs({ roster, friends, live }) do
+		for full in pairs(t) do if IsMe(full) then t[full] = nil end end
+	end
 	-- a friend just online: a hello, to learn whether they use OpenMap (they learn you do)
 	if mod.db.friends or mod.db.friendsShare then
 		for full in pairs(friends) do
@@ -319,7 +353,7 @@ local function OnAddonMessage(_, _, prefix, text, channel, from)
 	if Safe.IsSecret(text) or Safe.IsSecret(from) or Safe.IsSecret(channel) or type(text) ~= "string" then return end
 	if channel ~= "GUILD" and channel ~= "WHISPER" then return end
 	local full = Full(from)
-	if not full or full == Me() then return end   -- (your own, sent to your guild)
+	if not full or IsMe(full) then return end   -- (your own, sent to your guild)
 	Heard(full, text, channel == "GUILD")
 end
 
@@ -328,7 +362,7 @@ local function OnBattleNetMessage(_, _, prefix, text, _, id)
 	if Safe.IsSecret(text) or Safe.IsSecret(id) or type(text) ~= "string" or type(id) ~= "number" then return end
 	local g = C_BattleNet and C_BattleNet.GetGameAccountInfoByID and C_BattleNet.GetGameAccountInfoByID(id)
 	local full = type(g) == "table" and Full(g.characterName, g.realmName)
-	if not full or full == Me() then return end
+	if not full or IsMe(full) or (g.playerGuid and g.playerGuid == Safe.Call(UnitGUID, "player")) then return end
 	friends[full] = friends[full] or { bn = id }     -- (a Battle.net friend, whatever the last scan saw)
 	Heard(full, text, false)
 end
@@ -392,7 +426,7 @@ local function Redraw()
 	if not mod.db.friends or not mod.IsStitched() then return end
 	local now, zones = GetTime(), {}
 	for full, p in pairs(live) do
-		if now - p.at > GONE_AFTER then
+		if now - p.at > GONE_AFTER or IsMe(full) then
 			live[full] = nil
 		elseif not InGroup(full) then
 			local u, v = mod.ToWorld(p.map, p.x, p.y)

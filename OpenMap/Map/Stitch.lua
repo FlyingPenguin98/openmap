@@ -159,8 +159,10 @@ end
 -- the first of their files to arrive, showed for a moment between the two
 -- desat: the tiles' own desaturation, the rest of the way from what they're baked at to the setting
 -- (desaturating twice is desaturating once by 1 - (1 - a)(1 - b)), so they serve any Take colour out
+-- english: the tiles are baked from the English client's files, names lettered on the art and all; any
+-- other language draws the zones live, from the client's own art in its language
 local Baked = { FADE = { 1.2, 1.6 }, WARM = 0.85, tiles = {}, use = false, live = 1, warm = false, busy = false, holding = false,
-	path = TEX .. "MapZones\\", desat = 0 }
+	path = TEX .. "MapZones\\", desat = 0, english = not GetLocale or GetLocale():sub(1, 2) == "en" }
 
 -- The live zone layers' regions (tilesRoot, overlayRoot, coreRoot: thousands of textures and their
 -- masks) are anchored only while they can show. Every region is placed on root, and each frame of a
@@ -716,6 +718,7 @@ end
 local function Anchor(u, v)
 	local a = tremove(anchorPool) or root:CreateTexture(nil, "BACKGROUND")
 	a:SetAlpha(0)
+	a:Hide()        -- (hidden, not only see-through: a shown one is laid out and drawn on every zoom frame)
 	local rec = { a, u, v, 0.01, 0.01 }
 	dynamic[a] = rec
 	PlaceRecord(rec)
@@ -1085,6 +1088,7 @@ LOOK.airship = LOOK.boat         -- (the flying boats to Zephras Isle: a boat's 
 -- continents off the stitched world a dock sails to: the map its icon opens instead of going there.
 -- Zephras Isle is its own continent (Map 2991), whose map is UiMap 2521 (UiMapAssignment)
 local AWAY_MAP = { [2991] = 2521 }
+S.AWAY_MAP = AWAY_MAP              -- (Dungeons.lua: the map opened while you stand on one)
 
 -- an instance's name in the player's language (the game's own), else the data's English. A wing
 -- (the group finder's name for part of a dungeon, "Dire Maul - East") keeps its own name in English,
@@ -2195,10 +2199,19 @@ function Shade.Tint(tex)
 	Shade.tinted[#Shade.tinted + 1] = tex
 	tex:SetColorTexture(UNDISCOVERED[1], UNDISCOVERED[2], UNDISCOVERED[3], UNDISCOVERED[4] * Shade.k)
 end
-function S.SetDarkening(k)
+-- color: the shade's colour ({ r, g, b }: Options' Darkening colour, #9), or nil for the game-like
+-- dark one; an unexplored piece's colour (DIM) follows it, as the shade at its alpha over white
+Shade.UNDISC0, Shade.DIM0 = { UNDISCOVERED[1], UNDISCOVERED[2], UNDISCOVERED[3] }, { Shade.DIM[1], Shade.DIM[2], Shade.DIM[3] }
+function S.SetDarkening(k, color)
 	k = math.max(0, math.min(1, tonumber(k) or 1))
-	if k == Shade.k then return end
-	Shade.k = k
+	local c = type(color) == "table" and tonumber(color[1]) and tonumber(color[2]) and tonumber(color[3]) and color or nil
+	local key = c and ("%.3f %.3f %.3f"):format(c[1], c[2], c[3]) or ""
+	if k == Shade.k and key == (Shade.colorKey or "") then return end
+	Shade.k, Shade.colorKey = k, key
+	for i = 1, 3 do
+		UNDISCOVERED[i] = c and math.max(0, math.min(1, c[i])) or Shade.UNDISC0[i]
+		Shade.DIM[i] = c and (1 - UNDISCOVERED[4]) + UNDISCOVERED[4] * UNDISCOVERED[i] or Shade.DIM0[i]
+	end
 	for i = 1, 3 do Shade.DIMK[i] = 1 - (1 - Shade.DIM[i]) * k end
 	Shade.DIMK[4] = Shade.DIM[4] * k
 	S.greyD = Shade.DIMK[4]
@@ -2740,10 +2753,11 @@ function S.ApplyGrade(strength, desat, unexplored)
 		cities.Dim()
 		cities.Banners()
 	end
-	-- the baked art only at the settings it was baked at (unexplored areas hidden: live, piece by piece)
+	-- the baked art only at the settings it was baked at (unexplored areas hidden: live, piece by piece),
+	-- and on an English client (Baked.english)
 	local art = ns.MapZoneArt
 	Baked.use = (art and Baked.frame and strength == art.colorMatch and desat >= art.desaturate - 0.001
-		and unexplored ~= "hide" and not Baked.noFills) and true or false
+		and unexplored ~= "hide" and not Baked.noFills and Baked.english) and true or false
 	local bd = art and math.max(0, (desat - art.desaturate) / (1 - art.desaturate)) or 0
 	if Baked.use and math.abs(bd - Baked.desat) > 0.001 then
 		Baked.desat = bd

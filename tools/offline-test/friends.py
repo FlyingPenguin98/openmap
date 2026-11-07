@@ -60,6 +60,7 @@ end
 tinsert, tremove, wipe = table.insert, table.remove, function(t) for k in pairs(t) do t[k] = nil end return t end
 GetNormalizedRealmName = function() return "Forever" end
 UnitName = function() return "Me" end
+UnitGUID = function() return "Player-1-0001" end
 UnitClass = function() return "Warrior", "WARRIOR" end
 UnitLevel = function() return 25 end
 IsInGroup = function() return false end
@@ -68,7 +69,7 @@ IsInGuild = function() return inGuild end
 GetNumGuildMembers = function() return #guild end
 GetGuildRosterInfo = function(i)
 	local g = guild[i]
-	return g[1], "", 0, g[2], "", g[3], "", "", g[4], 0, g[5]
+	return g[1], "", 0, g[2], "", g[3], "", "", g[4], 0, g[5], 0, false, 0, false, 0, g[6]
 end
 C_FriendList = { GetNumFriends = function() return #friendList end, GetFriendInfoByIndex = function(i) return friendList[i] end }
 LOCALIZED_CLASS_NAMES_MALE = { HUNTER = "Hunter", MAGE = "Mage" }
@@ -207,6 +208,25 @@ class FriendsTests(unittest.TestCase):
         self.run_(160)
         self.assertEqual(self.lua.eval("#pins"), 0)
         self.assertIn("1429:1", self.lua.eval("(function() local t = {} for _, d in ipairs(badges) do t[#t + 1] = d.map .. ':' .. #d.people end return table.concat(t, ',') end)()"))
+
+    def test_no_dot_or_badge_for_yourself_however_your_realm_is_written(self):
+        # the guild writes your realm its own way (WoW Forever: "CAMWOWUS1Realm2PvP"); your entry has your GUID
+        self.lua.execute("""
+            table.insert(guild, { "Me-CAMWOWUS1Realm2PvP", 25, "Elwynn Forest", true, "WARRIOR", "Player-1-0001" })
+            Fire('GUILD_ROSTER_UPDATE')
+        """)
+        self.run_(8)
+        self.lua.execute("""
+            Fire('CHAT_MSG_ADDON', 'OpenMapLoc', 'L1\\t1429\\t0.5\\t0.5\\tWARRIOR\\t25', 'GUILD', 'Me-CAMWOWUS1Realm2PvP')
+            Fire('CHAT_MSG_ADDON', 'OpenMapLoc', 'L1\\t1429\\t0.5\\t0.5\\tWARRIOR\\t25', 'GUILD', 'Me-forever')
+            Fire('CHAT_MSG_ADDON', 'OpenMapLoc', 'L1\\t1429\\t0.3\\t0.4\\tMAGE\\t30', 'GUILD', 'Guildie-Forever')
+            worldMap:Show()
+        """)
+        self.run_(2)
+        dots = self.lua.eval("(function() local t = {} for _, d in ipairs(pins) do t[#t + 1] = d.full end return table.concat(t, ',') end)()")
+        self.assertEqual(dots, "Guildie-Forever")
+        people = self.lua.eval("(function() local t = {} for _, d in ipairs(badges) do for _, r in ipairs(d.people) do t[#t + 1] = r.name end end return table.concat(t, ',') end)()")
+        self.assertNotIn("Me", people.split(","))
 
     def ask(self):
         # the open question's buttons: label -> click

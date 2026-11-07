@@ -35,6 +35,7 @@ shrunk from `art/icon/openmap.png` by `tools/icon/build.py`.
 | `MapMiniLOD/` | the game's minimap tiles, shrunk and laid side by side (16 and 64 px a tile), tinted as the close-up minimap is | `tools/map-preview/minimaplod.py` |
 | `MapZones/` | every zone map composited onto the world as the map draws it at full detail (each zone's base art and overlays through its masks, the colour-match copies, the interiors, the gaps' finer maps), in 512-px tiles, BLP with DXT5 compression | `tools/map-preview/render.py --bake-zones` |
 | `MapArt/` | world and continent map tiles with their sea and continent names painted out (by hand) | `tools/map-art/import.py` |
+| `MapTile/` | the game's own cave and dungeon map tiles, copied as they are (`<file ID>.blp`): WoW Forever doesn't list them for every language, so some clients (esMX, ruRU, itIT) drew them green. RADD95's OpenMap TextureFix (MIT) found this and fixed it first | `tools/map-tiles/build.py` |
 
 **Drawn for WoW Forever's own dungeons** (the game has no map of them), used with the artist's
 permission, credited on the map in game, and not covered by OpenMap's MIT licence:

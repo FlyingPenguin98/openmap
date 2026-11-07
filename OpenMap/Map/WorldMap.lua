@@ -31,6 +31,7 @@ local mod = ns:NewModule("worldmap", {
 		iconsFrom = 0,          -- the places' icons from this zoom (ICONS_FROM; 1: the whole world); 0: each from its own (Auto)
 		iconScale = 1,          -- OpenMap's icons at this times their own size (ICON_SCALE)
 		darkening = 1,          -- how dark darkened unexplored areas are (0..1 of the full shade)
+		darkenColor = false,    -- their shade's colour, { r, g, b } (false: the game-like dark one)
 		routes = false,         -- boat and zeppelin routes
 		foundOnly = false,      -- dungeons, docks and towers only once explored there; flight masters once learned
 		colorMatch = 1,         -- how far zone borders move to the shared palette
@@ -816,9 +817,11 @@ local function OnMouseWheel(_, delta)
 	ZoomAtCursor(delta > 0 and ZOOM_STEP or 1 / ZOOM_STEP)
 end
 
--- a left click drops a pin under the cursor when the menu's pin button is on, or with Ctrl
+-- a left click drops a pin under the cursor when the menu's pin button is on, or with Ctrl (unless
+-- that's turned off: ctrlClickPin)
 local function Dropping(button)
-	return active and button == "LeftButton" and mod.DropWaypoint and (IsControlKeyDown() or (mod.PinMode and mod.PinMode()))
+	return active and button == "LeftButton" and mod.DropWaypoint
+		and ((IsControlKeyDown() and mod.db.ctrlClickPin ~= false) or (mod.PinMode and mod.PinMode()))
 end
 
 local function DropAtCursor()
@@ -1283,7 +1286,7 @@ function mod:Refresh()
 	if self.RefreshFlightsFound then self.RefreshFlightsFound() end
 	S.SetIconScale(self.db.iconScale or 1)
 	S.SetGapFillsShown(self.db.gapFills ~= false)       -- (before the grade: it decides on the baked tiles)
-	if S.SetDarkening then S.SetDarkening(self.db.darkening or 1) end
+	if S.SetDarkening then S.SetDarkening(self.db.darkening or 1, self.db.darkenColor or nil) end
 	S.ApplyGrade(self.db.colorMatch, self.db.desaturate, mod.Unexplored())
 	ApplyZoom()
 	if self.RefreshExtras then self.RefreshExtras() end
@@ -1412,6 +1415,18 @@ function mod:Options()
 		darkening = { type = "range", name = ns.L["Darkening"], order = 23.5, min = 0.2, max = 1, step = 0.05, isPercent = true,
 			get = get, set = set, disabled = function() return off() or mod.Unexplored() ~= "dim" end,
 			desc = ns.L["How dark unexplored areas are when they're darkened."] },
+		darkenColor = { type = "color", name = ns.L["Darkening colour"], order = 23.55, hasAlpha = false,
+			get = function()
+				local c = mod.db.darkenColor
+				if type(c) == "table" then return c[1], c[2], c[3] end
+				return 0.05, 0.06, 0.08              -- (Stitch.lua's UNDISCOVERED)
+			end,
+			set = function(_, r, g, b) mod.db.darkenColor = { r, g, b } mod:Refresh() end,
+			disabled = function() return off() or mod.Unexplored() ~= "dim" end,
+			desc = ns.L["The colour unexplored areas are darkened with."] },
+		darkenColorReset = { type = "execute", name = ns.L["Default colour"], order = 23.56, width = "half",
+			func = function() mod.db.darkenColor = false mod:Refresh() end,
+			disabled = function() return off() or mod.Unexplored() ~= "dim" or not mod.db.darkenColor end },
 		maxZoom = { type = "range", name = ns.L["Deepest zoom"], order = 24, min = MAX_ZOOM[1], max = MAX_ZOOM[2], step = MAX_ZOOM[3],
 			get = get, set = function(_, v) mod.SetMaxZoom(v) if mod.RefreshPanel then mod:RefreshPanel() end end, disabled = off,
 			desc = ns.L["How far in the map zooms, in times the whole-world view (cities go half as far again). Past about 48 the art is only enlarged."] },
@@ -1459,6 +1474,7 @@ function mod:Options()
 	if not ns.MapGrade then
 		opts.colorMatch = nil
 		opts.darkening = nil
+		opts.darkenColor, opts.darkenColorReset = nil, nil
 		opts.unexplored.values, opts.unexplored.sorting = { show = ns.L["Show"], hide = ns.L["Hide"] }, { "show", "hide" }
 		opts.unexplored.desc = ns.L["Areas you haven't explored yet: shown as they are, or hidden like Blizzard's own map (blank parchment until you get there)."]
 	end

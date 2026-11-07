@@ -151,6 +151,7 @@ function mod.OnStitchedChanged(on)
 	if not map then return end
 	if on then HoldAll() else Release() end
 	if on and booksLoaded then QueueBooks(true) end   -- (stitched with the window open: no map change of its own)
+	if mod.DrawQuestiePaths then mod.DrawQuestiePaths() end   -- (Questie's mob paths: ours while stitched, Extras.lua)
 end
 
 -- (their art comes back as the map changes underneath, from their own map-change hooks: once

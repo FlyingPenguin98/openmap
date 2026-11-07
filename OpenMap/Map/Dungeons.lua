@@ -1983,7 +1983,22 @@ function mod:SetupDungeons(worldMap)
 	-- map, as its entrance would open it, not the world with no one on it
 	map:HookScript("OnShow", function()
 		C_Timer.After(0.1, function()
-			if not map:IsShown() or (view and view:IsShown()) or not IsInInstance or not IsInInstance() then return end
+			if not map:IsShown() or (view and view:IsShown()) then return end
+			-- on a map off the stitched world (Zephras Isle): its own map, as its airship opens it, not
+			-- the world with no one on it
+			local here = Safe.Call(C_Map.GetBestMapForUnit, "player")
+			for _ = 1, 8 do
+				local info = here and C_Map.GetMapInfo(here)
+				if not info then break end
+				for _, awayID in pairs(S.AWAY_MAP or {}) do
+					if here == awayID then
+						if map:GetMapID() ~= awayID then mod.OpenAwayMap(awayID) end
+						return
+					end
+				end
+				here = info.parentMapID
+			end
+			if not IsInInstance or not IsInInstance() then return end
 			local instID = select(8, GetInstanceInfo())
 			if not instID then return end
 			for _, g in ipairs(Places().instances or {}) do

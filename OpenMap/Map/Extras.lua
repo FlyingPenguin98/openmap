@@ -349,18 +349,20 @@ end
 --------------------------------------------------------------------------------
 
 local SHOW_CURRENT = 0                  -- HBD_PINS_WORLDMAP_SHOW_CURRENT: only on its own map
+local SHOW_CONTINENT = 2                -- HBD_PINS_WORLDMAP_SHOW_CONTINENT: on its continent's map too
 local QUESTIE_BASE = 2015               -- the fixed frame level Questie's map icons and lines start from
 
 -- Questie fixes its icons' frame levels from QUESTIE_BASE up (it expects Blizzard's map canvas
 -- near 2000), which is under the stitched map's upper art layers: lift them above the art,
 -- keeping their order among themselves (quest finishers in front ...)
-local function Lift(icon)
+-- (questie: Questie's own order kept, from QUESTIE_BASE; another copy's icon just over the art)
+local function Lift(icon, questie)
 	local top = S.artTop
 	if not top or not icon.GetFrameLevel or not icon.SetFixedFrameLevel then return end
 	local level = icon:GetFrameLevel()
 	if level > top then return end
 	icon:SetFixedFrameLevel(false)
-	icon:SetFrameLevel(level - QUESTIE_BASE + top + 1)
+	icon:SetFrameLevel(questie and level - QUESTIE_BASE + top + 1 or top + 1)
 	icon:SetFixedFrameLevel(true)
 end
 local NEAR = 0.5                        -- how far round the map underneath (its widths) pins are placed (each pin
@@ -456,6 +458,8 @@ local questie = { placed = 0, ours = 0, moved = 0 }   -- for /openmap status: si
 -- frame levels; the others use HereBeDragons' own template.
 local PIN_LIBS = {
 	["HereBeDragonsQuestie-Pins-2.0"] = { template = "HereBeDragonsPinsTemplateQuestie", questie = true },
+	-- Zygor's renamed copy (#20); its waypoint lifted over the art, as Questie's icons are
+	["HereBeDragons-Pins-ZGV"] = { template = "HereBeDragonsPinsTemplateZGV", lift = true },
 }
 local DEFAULT_TEMPLATE = "HereBeDragonsPinsTemplate"
 
@@ -474,22 +478,15 @@ local function PoolTemplate(spec)
 	end
 end
 
--- a copy taken over: "done"; its pool not there yet: "waiting" (tried again as the map opens); a copy
--- of a shape this can't take over: "unknown"
-local function SetUpPins(name, pins)
-	local spec = PIN_LIBS[name] or { template = DEFAULT_TEMPLATE }
-	local provider = pins and pins.worldmapProvider
-	if type(provider) ~= "table" or type(provider.HandlePin) ~= "function" then return "unknown" end
-	if provider.openmapPins then return "done" end
-	local template = PoolTemplate(spec)
-	if not template then return "waiting" end
-	provider.openmapPins = true
-	pinTemplates[template] = true
-	local count = spec.questie and questie or { placed = 0, ours = 0, moved = 0 }
-	if spec.questie then questie.pins = pins end
-	-- each icon's map point as it was added (the library keeps only its world position and uiMapID;
-	-- Questie's copy also keeps mapX, mapY)
+-- each copy's icons' map points as they were added: [pins] = { [icon] = { uiMapID, x, y } } (the
+-- library keeps only an icon's world position and uiMapID; Questie's copy no mapX, mapY either).
+-- Noted from the moment the copy is seen, before its pool is there to take it over: Questie draws
+-- its icons at login, before the map first opens (#10)
+local atOf = setmetatable({}, { __mode = "k" })
+local function NoteAdds(pins)
+	if atOf[pins] then return atOf[pins] end
 	local at = setmetatable({}, { __mode = "k" })
+	atOf[pins] = at
 	-- (noted before the library places it: it may place the icon straight away)
 	local add = pins.AddWorldMapIconMap
 	if type(add) == "function" then
@@ -498,36 +495,72 @@ local function SetUpPins(name, pins)
 			return add(lib, ref, icon, uiMapID, x, y, ...)
 		end
 	end
+	return at
+end
+
+-- a copy taken over: "done"; its pool not there yet: "waiting" (tried again, PinRetry); a copy of a
+-- shape this can't take over: "unknown"
+local function SetUpPins(name, pins)
+	local spec = PIN_LIBS[name] or { template = DEFAULT_TEMPLATE }
+	local provider = pins and pins.worldmapProvider
+	if type(provider) ~= "table" or type(provider.HandlePin) ~= "function" then return "unknown" end
+	if provider.openmapPins then return "done" end
+	local at = NoteAdds(pins)
+	local template = PoolTemplate(spec)
+	if not template then return "waiting" end
+	provider.openmapPins = true
+	pinTemplates[template] = true
+	local count = spec.questie and questie or { placed = 0, ours = 0, moved = 0 }
+	if spec.questie then questie.pins = pins end
 	local HandlePin = provider.HandlePin
 	provider.HandlePin = function(self, icon, data, ...)
+		-- (an older Questie's path stretch: not put on the stitched map at all, OpenMap draws the paths
+		-- there, as Questie's would be out of place and size; DrawQuestiePaths)
+		if spec.questie and icon.type == "line" and mod.IsStitched() then return end
 		HandlePin(self, icon, data, ...)
 		local holder = icon:GetParent()
 		local placed = holder and holder.icon == icon and holder.SetPosition and holder
 		if placed then count.placed = count.placed + 1 end
-		if placed and spec.questie and mod.IsStitched() then Lift(icon) end
+		if placed and (spec.questie or spec.lift) and mod.IsStitched() then Lift(icon, spec.questie) end
 		if not mod.IsStitched() then return end
 		local uiMapID, mx, my = data.uiMapID, data.mapX, data.mapY
 		if not (mx and my) and at[icon] and at[icon][1] == uiMapID then uiMapID, mx, my = at[icon][1], at[icon][2], at[icon][3] end
-		if not uiMapID or not mx or not my then return end
+		-- (a Questie icon added before anything noted it: Questie keeps its map point on the icon, in percent)
+		if not (mx and my) and spec.questie and icon.UiMapID == uiMapID and type(icon.x) == "number" and type(icon.y) == "number" then
+			mx, my = icon.x / 100, icon.y / 100
+		end
 		local mapID = self:GetMap():GetMapID()
 		if mapID == S.WORLD and spec.questie then return end   -- (Questie's own Forever path: right there)
-		local l, r, t, b = S.Rect(uiMapID)
-		if not l then return end
-		local x, y = mod.FromWorld(mapID, l + mx * (r - l), t + my * (b - t))
+		local wu, wv
+		if uiMapID and mx and my then
+			local l, r, t, b = S.Rect(uiMapID)
+			if not l then return end
+			wu, wv = l + mx * (r - l), t + my * (b - t)
+		elseif not uiMapID and type(data.instanceID) == "number" and type(data.x) == "number" and type(data.y) == "number" then
+			-- placed by world position (AddWorldMapIconWorld: Zygor's waypoint, #20): the library's x, y are
+			-- the game's world Y, X (HereBeDragons reads a map's corner as top, left)
+			wu, wv = S.FromYards(data.instanceID, data.y, data.x)
+			if not wu then return end
+		else
+			return
+		end
+		local x, y = mod.FromWorld(mapID, wu, wv)
 		if placed then                                      -- placed, but from coordinates that are off here
 			placed:SetPosition(x, y)
 			count.moved = count.moved + 1
 			return
 		end
 		if mapID == S.WORLD then return end                -- (on the whole world, only what the library itself shows)
-		if (data.worldMapShowFlag or SHOW_CURRENT) == SHOW_CURRENT and uiMapID ~= mapID then return end
+		if uiMapID and (data.worldMapShowFlag or SHOW_CURRENT) == SHOW_CURRENT and uiMapID ~= mapID then return end
 		local info = C_Map.GetMapInfo(mapID)
 		if not info then return end
+		-- (one placed by world position on a continent only as the library would: shown on continents)
+		if not uiMapID and info.mapType == Enum.UIMapType.Continent and (data.worldMapShowFlag or SHOW_CURRENT) < SHOW_CONTINENT then return end
 		local profile = spec.questie and _G.Questie and Questie.db and Questie.db.profile
 		if profile and profile.hideIconsOnContinents and info.mapType == Enum.UIMapType.Continent then return end
-		if (x < -NEAR or x > 1 + NEAR or y < -NEAR or y > 1 + NEAR) and not InView(l + mx * (r - l), t + my * (b - t)) then return end
+		if (x < -NEAR or x > 1 + NEAR or y < -NEAR or y > 1 + NEAR) and not InView(wu, wv) then return end
 		self:GetMap():AcquirePin(template, icon, x, y, data.frameLevelType)
-		if spec.questie then Lift(icon) end
+		if spec.questie or spec.lift then Lift(icon, spec.questie) end
 		count.ours = count.ours + 1
 	end
 	-- (counted afresh each time the map changes: HereBeDragons rebuilds its pins then)
@@ -539,6 +572,8 @@ local function SetUpPins(name, pins)
 			return Refresh(self, ...)
 		end
 	end
+	-- (taken over with the map open, after the library placed its icons the game's way: again, ours)
+	if map:IsShown() and type(provider.RefreshAllData) == "function" then provider:RefreshAllData() end
 	return "done"
 end
 
@@ -552,22 +587,40 @@ local function Tell(name)
 	ns:Print(ns.L["A map addon brings its own HereBeDragons (%s), which OpenMap doesn't know: its pins keep the game's own placement."], name)
 end
 
--- every copy of the pins library loaded so far (an addon loaded later: next time the map opens)
-local function SetUpAllPins()
+-- every copy of the pins library loaded so far (an addon loaded later: as it loads, or as the map opens).
+-- opening: a map opening, counted for one whose pool never comes (OPEN_TRIES)
+local function SetUpAllPins(opening)
 	if not LibStub or not LibStub.IterateLibraries then return end
 	for name, lib in LibStub:IterateLibraries() do
-		if type(name) == "string" and name:match("^HereBeDragons.*%-Pins%-2%.0$") then
+		if type(name) == "string" and (name:match("^HereBeDragons.*%-Pins%-2%.0$") or PIN_LIBS[name]) then
 			local state = SetUpPins(name, lib)
 			if state == "unknown" then
 				Tell(name)
 			elseif state == "waiting" then
-				pending[name] = (pending[name] or 0) + 1
+				pending[name] = (pending[name] or 0) + (opening == true and 1 or 0)
 				if pending[name] > OPEN_TRIES then Tell(name) end
 			else
 				pending[name] = nil
 			end
 		end
 	end
+end
+
+-- a copy still waiting for its pool (Questie still setting up as the map first opened after a login,
+-- #7): tried again every half second while the map is open, not only at the next opening
+local PinRetry = CreateFrame("Frame")
+PinRetry.at = 0
+PinRetry:Hide()
+PinRetry:SetScript("OnUpdate", function(self)
+	local now = GetTime()
+	if now - self.at < 0.5 then return end
+	self.at = now
+	if not map or not map:IsShown() or not next(pending) then self:Hide() return end
+	SetUpAllPins()
+end)
+local function SetUpAllPinsAndWait()
+	SetUpAllPins(true)
+	if next(pending) then PinRetry.at = GetTime() PinRetry:Show() end
 end
 
 -- for /openmap status: Questie's pins, and how many are on the map now
@@ -714,6 +767,153 @@ function mod:ToggleWarm()
 	ns:Print(("Keep the map's art warm: %s"):format(mod.db.keepWarm and "on" or "off"))
 end
 
+--------------------------------------------------------------------------------
+-- Questie's mob paths (its WaypointMap, since Questie 12.2): Questie draws them on the map's canvas
+-- itself, only on the path's own zone map and scaled to that map's size, under OpenMap's art (its
+-- fixed frame level). On the stitched map they're drawn here instead, each through its zone's
+-- rectangle, over the art, in Questie's colours, as Questie picks them (a route once: its
+-- highlighted copy, else its most visible), redrawn whenever Questie redraws its own
+--------------------------------------------------------------------------------
+
+local QPATH = { width = 2.5, zones = {}, key = "", dirty = true, at = 0 }   -- set: OpenMap's pin set for them
+local QPATH_MOST_ZONES = 4      -- drawn only zoomed in this far: no more zones than this in view (Questie draws one)
+local QPATH_EVERY = 0.5         -- seconds between redraws at the most (Questie changes its icons in bursts)
+local function QuestiePaths()
+	local Q = _G.QuestieLoader
+	if type(Q) ~= "table" or type(Q.ImportModule) ~= "function" then return end
+	local ok, W = pcall(Q.ImportModule, Q, "QuestieWaypoints")
+	if not ok or type(W) ~= "table" or type(W.paths) ~= "table" or type(W.WorldMapAlpha) ~= "function" then return end
+	return W
+end
+-- the zones near the view (S.Rect over the view, a little round it): a path is drawn only in one of these
+local function QuestieZonesNear(u, v, hu, hv)
+	local zones, n = QPATH.zones, 0
+	wipe(zones)
+	local l0, r0, t0, b0 = u - hu * 1.2, u + hu * 1.2, v - hv * 1.2, v + hv * 1.2
+	local seen = QPATH.seenZones or {}
+	for uiMapID in pairs(seen) do
+		local l, r, t, b = S.Rect(uiMapID)
+		if l and r > l0 and l < r0 and b > t0 and t < b0 then zones[uiMapID] = true n = n + 1 end
+	end
+	return n
+end
+local function DrawQuestiePaths()
+	local W = QuestiePaths()
+	if not (W or QPATH.lines) or not S.IsBuilt() then return end
+	QPATH.set = QPATH.set or S.PinSet("questiepaths", 0, 1)
+	S.ClearPinSet(QPATH.set)
+	QPATH.dirty, QPATH.at = false, GetTime()
+	if not mod.IsStitched() or not QPATH.near then return end
+	local zones = QPATH.zones
+	if W then
+		local routes = {}
+		for path in pairs(W.paths) do
+			if path.uiMapId and zones[path.uiMapId] and type(path.points) == "table" then
+				local okA, alpha = pcall(W.WorldMapAlpha, path)
+				if okA and alpha then
+					local rank = alpha + ((W.IsHighlighted and W.IsHighlighted(path)) and 2 or 0)
+					local key = path.route or path
+					if not routes[key] or rank > routes[key].rank then routes[key] = { path = path, alpha = alpha, rank = rank } end
+				end
+			end
+		end
+		for _, shown in pairs(routes) do
+			local path = shown.path
+			local l, r, t, b = S.Rect(path.uiMapId)
+			local okC, c = pcall(W.Color, path)
+			c = okC and type(c) == "table" and c or { 1, 0.8, 0, 1 }
+			local pts = {}
+			for _, p in ipairs(path.points) do
+				if type(p.x) == "number" and type(p.y) == "number" then
+					pts[#pts + 1] = l + p.x / 100 * (r - l)
+					pts[#pts + 1] = t + p.y / 100 * (b - t)
+				end
+			end
+			if #pts >= 4 then S.AddPath(QPATH.set, pts, QPATH.width, c[1], c[2], c[3], (c[4] or 1) * shown.alpha) end
+		end
+		return
+	end
+	for f, d in pairs(QPATH.lines) do
+		local icon = f.iconFrame
+		if d.map and zones[d.map] and icon and not f.hidden and not icon.hidden then
+			local l, r, t, b = S.Rect(d.map)
+			local c = type(d[5]) == "table" and d[5] or { 1, 0.8, 0, 1 }
+			local u1, v1 = l + d[1] / 100 * (r - l), t + d[2] / 100 * (b - t)
+			local u2, v2 = l + d[3] / 100 * (r - l), t + d[4] / 100 * (b - t)
+			S.AddLine(QPATH.set, u1, v1, u2, v2, QPATH.width, c[1], c[2], c[3], c[4] or 1)
+		end
+	end
+end
+mod.DrawQuestiePaths = function() QPATH.dirty = true end   -- (stitched or not: Compat.lua; drawn on the next tick)
+-- a zone a path is in, known to the culling
+local function SeenZone(uiMapID)
+	QPATH.seenZones = QPATH.seenZones or {}
+	if uiMapID and not QPATH.seenZones[uiMapID] then QPATH.seenZones[uiMapID] = true QPATH.key = "" end
+end
+-- Questie before 12.2 draws each stretch of a path as a frame of its own (QuestieFramePool:CreateLine),
+-- sized in pixels for Blizzard's map of its zone and pinned there by its middle: its ends are kept here
+-- as it's made, to be drawn through the zone's rectangle like the newer paths
+local function HookOldQuestieLines(Q)
+	local ok, FP = pcall(Q.ImportModule, Q, "QuestieFramePool")
+	if not ok or type(FP) ~= "table" or type(FP.CreateLine) ~= "function" then return end
+	local okZ, zdb = pcall(Q.ImportModule, Q, "ZoneDB")
+	zdb = okZ and type(zdb) == "table" and type(zdb.GetUiMapIdByAreaId) == "function" and zdb or nil
+	QPATH.lines = setmetatable({}, { __mode = "k" })
+	local create = FP.CreateLine
+	FP.CreateLine = function(self, iconFrame, sx, sy, ex, ey, width, color, areaId, ...)
+		local f = create(self, iconFrame, sx, sy, ex, ey, width, color, areaId, ...)
+		if type(f) == "table" and type(sx) == "number" and type(ey) == "number" and zdb then
+			local area = areaId or (iconFrame and iconFrame.AreaID)
+			local okM, uiMapID = pcall(zdb.GetUiMapIdByAreaId, zdb, area)
+			local d = { sx, sy, ex, ey, color, map = okM and S.Rect(uiMapID or 0) and uiMapID or nil }
+			QPATH.lines[f] = d
+			SeenZone(d.map)
+			if d.map and QPATH.zones[d.map] then QPATH.dirty = true end
+		end
+		return f
+	end
+	return true
+end
+local function HookQuestiePaths()
+	if QPATH.hooked then return end
+	local Q = _G.QuestieLoader
+	if type(Q) ~= "table" or type(Q.ImportModule) ~= "function" then return end
+	if QuestiePaths() then
+		local ok, M = pcall(Q.ImportModule, Q, "WaypointMap")
+		if not ok or type(M) ~= "table" or type(M.Invalidate) ~= "function" then return end
+		QPATH.hooked = true
+		hooksecurefunc(M, "Invalidate", function() QPATH.dirty = true end)
+	elseif HookOldQuestieLines(Q) then
+		QPATH.hooked = true
+	end
+end
+-- each pan / zoom: which zones are near (a change redraws); a light tick while the map is open draws
+-- what changed, at most every QPATH_EVERY (an icon Questie hid: gone by the next one)
+tinsert(S.viewHooks, function(u, v, hu, hv)
+	if not QPATH.hooked then return end
+	local W = QuestiePaths()
+	if W then                                       -- (the newer paths: their zones as they come)
+		for path in pairs(W.paths) do SeenZone(path.uiMapId) end
+	end
+	local n = QuestieZonesNear(u, v, hu, hv)
+	local near = n > 0 and n <= QPATH_MOST_ZONES
+	local key = near and "" or "far"
+	if near then
+		local ids = {}
+		for id in pairs(QPATH.zones) do ids[#ids + 1] = id end
+		table.sort(ids)
+		key = table.concat(ids, ",")
+	end
+	if key ~= QPATH.key or near ~= QPATH.near then QPATH.key, QPATH.near, QPATH.dirty = key, near, true end
+end)
+QPATH.tick = CreateFrame("Frame")
+QPATH.tick:Hide()
+QPATH.tick:SetScript("OnUpdate", function()
+	local now = GetTime()
+	if now - QPATH.at < QPATH_EVERY then return end
+	if QPATH.dirty or now - QPATH.at > 2 then DrawQuestiePaths() end
+end)
+
 function mod:SetupExtras(worldMap)
 	map, sc = worldMap, worldMap.ScrollContainer
 	map:HookScript("OnShow", function() fader:SetShown((mod.db.moveFade or 0) > 0) ApplyFpsCap() end)
@@ -722,7 +922,11 @@ function mod:SetupExtras(worldMap)
 	map:HookScript("OnShow", WarmLetGo)
 	hooksecurefunc(map, "SetAlpha", KeepFade)
 	SetUpAllPins()
-	map:HookScript("OnShow", SetUpAllPins)            -- (a copy an addon loaded since brought)
+	map:HookScript("OnShow", SetUpAllPinsAndWait)     -- (a copy an addon loaded since brought)
+	ns.RegisterEvent(PinRetry, "ADDON_LOADED", function() SetUpAllPins() end)
+	HookQuestiePaths()                               -- (now: an older Questie's path stretches are kept as they're made)
+	map:HookScript("OnShow", function() HookQuestiePaths() if QPATH.hooked then QPATH.dirty = true QPATH.tick:Show() end end)
+	map:HookScript("OnHide", function() QPATH.tick:Hide() end)
 	if type(map.OnCanvasScaleChanged) == "function" then hooksecurefunc(map, "OnCanvasScaleChanged", OnZoomStep) end
 	ApplyExtras()
 	-- (before the game saves its settings: the player's own back; Compat.lua's reassertion stands down)

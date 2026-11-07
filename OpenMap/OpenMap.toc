@@ -60,6 +60,7 @@ Data\Forever\Minimap.lua
 Data\Forever\MinimapLOD.lua
 Data\Forever\Caves.lua
 Data\Forever\CaveMinimap.lua
+Data\Forever\Tiles.lua
 Data\Forever\Gaps.lua
 Data\Forever\GapFills.lua
 Data\Forever\GapPlaces.lua

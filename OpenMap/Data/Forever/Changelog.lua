@@ -4,7 +4,10 @@
 local _, ns = ...
 
 ns.MapChangelog = {
-	{ version = "Unreleased", date = "", heads = { [1] = "Fixed", }, items = {
+	{ version = "Unreleased", date = "", heads = { [1] = "Improved", [3] = "Fixed", }, items = {
+		"|cff6e2c0aFlight masters are easier to see on the map|r: bigger, with a dark outline, and the ones you haven't learned are no longer half see-through (they were lost on the parchment).",
+		"|cff6e2c0aThe Drowned City's map is Santiago Reyes's updated version|r, which names more of its places (the Eternal Amphitheater and the Abyssal Dais).",
+		"|cff6e2c0aDungeon and cave maps show in every language|r: on the Latin American Spanish, Russian and Italian clients every dungeon map and Blizzard cave map was solid green squares, as the game doesn't have their art for those languages. OpenMap now brings that art itself. Found and first fixed by RADD95 (OpenMap TextureFix): with this version that addon isn't needed. (New textures: restart the game.)",
 		"|cff6e2c0aAn NPC who walks about shows once on the map|r: Girl with Puppies in Orgrimmar had a vendor icon at every point of her walk, dozens over the city. An NPC with many spawns in one zone (with Vendors and the other townsfolk on) now has one icon, in the middle of where it walks.",
 	} },
 	{ version = "v0.8.0-beta", date = "2026-11-07", heads = { [1] = "New", [3] = "Improved", [5] = "Fixed", }, items = {
