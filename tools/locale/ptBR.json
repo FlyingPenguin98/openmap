@@ -474,5 +474,16 @@
  "To your group": "Para seu grupo",
  "To your guild": "Para sua guilda",
  "Minimap detail in major cities": "Detalhe do minimapa nas capitais",
- "The minimap's detail over the six major cities' own maps, at half strength at most so the city's plan leads. Off: their own maps alone.": "O detalhe do minimapa sobre os mapas próprios das seis capitais, no máximo com metade da intensidade para que a planta da cidade prevaleça. Desativado: só os mapas delas."
+ "The minimap's detail over the six major cities' own maps, at half strength at most so the city's plan leads. Off: their own maps alone.": "O detalhe do minimapa sobre os mapas próprios das seis capitais, no máximo com metade da intensidade para que a planta da cidade prevaleça. Desativado: só os mapas delas.",
+ "Friends and guild": "Amigos e guilda",
+ "Your friends and guild members who are online: a badge on the zone each is in, with who's there (as the friends list and guild roster show it), or a class-coloured dot where they stand for those who use OpenMap and share where they are.": "Seus amigos e membros da guilda que estão online: um emblema na zona onde cada um está, com quem está lá (como a lista de amigos e a lista da guilda mostram), ou um ponto na cor da classe onde estão para quem usa o OpenMap e compartilha a localização.",
+ "Share where you are": "Compartilhar sua localização",
+ "Your guild, and your friends who use OpenMap, see you as a dot where you stand on their map, sent every few seconds while you move. Never from inside a dungeon, raid or battleground. Off, they see only your zone, as the friends list and guild roster show it.": "Sua guilda e seus amigos que usam o OpenMap veem você como um ponto no mapa deles, atualizado a cada poucos segundos enquanto você se move. Nunca de dentro de masmorras, raides ou campos de batalha. Desligado, eles veem só a sua zona, como a lista de amigos e a lista da guilda mostram.",
+ "Friend": "Amigo",
+ "Updated %d s ago": "Atualizado há %d s",
+ "Your guild and friends see you": "Sua guilda e amigos veem você",
+ "Your friends and guild members who use OpenMap can show on your map as a dot where they stand. Share where you are, so they see you on theirs?": "Seus amigos e membros da guilda que usam o OpenMap podem aparecer no seu mapa como um ponto onde estão. Compartilhar sua localização para que vejam você no mapa deles?",
+ "Share where I am": "Compartilhar minha localização",
+ "Not now": "Agora não",
+ "Only your guild and friends, never from a dungeon, raid or battleground. OpenMap's menu: More, Sharing.": "Só sua guilda e seus amigos, nunca de masmorras, raides ou campos de batalha. Menu do OpenMap: Mais, Compartilhamento."
 }

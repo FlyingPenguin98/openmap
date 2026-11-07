@@ -204,6 +204,7 @@ local function Rows()
 		optRow(L["Boat and zeppelin routes"], "routes", { atlas = "Ships_CargoShip-Map", texture = "Interface\\Icons\\INV_Misc_Spyglass_02", icon = true }),
 		optRow(L["Your arrow"], "playerArrow", { texture = "Interface\\Minimap\\MinimapArrow" }),
 		optRow(L["Party and raid members"], "group", Icon("Spell_Holy_PrayerOfFortitude")),
+		optRow(L["Friends and guild"], "friends", Icon("INV_Misc_GroupNeedMore")),
 		optRow(L["Your drawings"], "sketchShown", Icon("INV_Feather_04")),
 	}
 	if mod.defaults.allQuests ~= nil then        -- (Quests.lua: WoW Forever's toc loads it, retail's doesn't)
@@ -323,6 +324,8 @@ local function Rows()
 	end
 	rows[#rows + 1] = { L["Sharing"] }
 	fromOptions(L["Pins others share with you"], "pinsShared", Icon("INV_Misc_Map_01"))
+	rows[#rows + 1] = optRow(L["Share where you are"], "friendsShare", Icon("Ability_Hunter_EagleEye"))
+	rows[#rows].note = L["Your guild and friends see you"]   -- (a second line: what turning it on means)
 	rows[#rows + 1] = { L["Tools"] }
 	if mod.TogglePaint then
 		rows[#rows + 1] = row(L["Map notes"], "paint", Icon("INV_Misc_Note_02"), function() return mod:IsPainting() end,

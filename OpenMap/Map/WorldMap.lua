@@ -1088,6 +1088,7 @@ local function Setup()
 	ns.RegisterEvent(mod, "ZONE_CHANGED_NEW_AREA", function() if S.IsBuilt() then S.RefreshCities() end end)
 	Timed("Nav", mod.SetupNav, mod, map)          -- (before the menu: it holds Nav's search box)
 	Timed("Pins", mod.SetupPins, mod, map)
+	Timed("Friends", mod.SetupFriends, mod, map)
 	Timed("Quests", mod.SetupQuests, mod, map)
 	Timed("Dungeons", mod.SetupDungeons, mod, map)
 	Timed("Combat", mod.SetupCombat, mod, map)
@@ -1286,6 +1287,7 @@ function mod:Refresh()
 	if self.RefreshQuests then self:RefreshQuests() end
 	if self.RefreshDungeonCard then self.RefreshDungeonCard() end
 	if self.RefreshSketch then self.RefreshSketch() end
+	if self.RefreshFriends then self.RefreshFriends() end
 	if self.RefreshPanel then self:RefreshPanel() end
 end
 
@@ -1436,6 +1438,7 @@ function mod:Options()
 	if mod.ExtraOptions then mod:ExtraOptions(opts, get, set, off) end
 	if mod.NavOptions then mod:NavOptions(opts, get, set, off) end
 	if mod.PinOptions then mod:PinOptions(opts, get, set, off) end
+	if mod.FriendsOptions then mod:FriendsOptions(opts, get, set, off) end
 	if mod.DungeonOptions then mod:DungeonOptions(opts, get, set, off) end
 	if mod.LauncherOptions then mod:LauncherOptions(opts, get, off) end
 	if mod.SketchOptions then mod:SketchOptions(opts, get, set, off) end

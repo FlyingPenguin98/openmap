@@ -91,6 +91,7 @@ Map\Report.lua
 Map\Nav.lua
 Map\Combat.lua
 Map\Pins.lua
+Map\Friends.lua
 Map\News.lua
 Map\Window.lua
 Map\Compat.lua

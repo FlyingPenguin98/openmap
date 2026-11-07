@@ -245,6 +245,10 @@ Fed the view (centre, half extents, zoom) on every pan and zoom (`S.SetView`):
   a pin's card (follow it through Nav.lua, share, delete), the Pins list, sharing as addon messages
   (prefix `OpenMap`: whoever gets them is asked first; notes plain text, cut short) or a code to
   paste (`OMPINS1:`).
+- `Friends.lua`: friends and guild members online, by zone (a badge each, from the friends lists and
+  the guild roster), or as a class-coloured dot for those who share where they are: addon messages
+  (prefix `OpenMapLoc`, every few seconds while moving) to the guild and to friends found to use
+  OpenMap by a hello as they come online. Off unless turned on; never from an instance.
 - `Window.lua`: move (title bar) and resize (a grip in each bottom corner) the windowed map to any shape,
   remembered; the maximized map fills the screen's width. Re-applied after Blizzard's panel layout, never by editing its
   layout tables (taint).
