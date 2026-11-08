@@ -4,7 +4,7 @@
 local _, ns = ...
 
 ns.MapChangelog = {
-	{ version = "Unreleased", date = "", heads = { [1] = "Fixed", }, items = {
+	{ version = "v0.8.2", date = "2026-11-08", heads = { [1] = "Fixed", }, items = {
 		"|cff6e2c0aThe map no longer stalls a moment after it opens|r: since 0.8.0 OpenMap keeps the map's art loaded while it's closed, then let go of it all in one frame a second into the opening, which the game unloaded at once (about a second's freeze). It now lets go of it a little at a time.",
 		"|cff6e2c0aZooming in notch by notch is smooth again|r: since 0.8.1 the blur came back all at once each time the map stopped, one long frame the next wheel notch landed on. It now waits out a pause between notches and comes back a few zones a frame. Questie's mob paths are worked out once the map stops, not on every frame of a zoom.",
 	} },
