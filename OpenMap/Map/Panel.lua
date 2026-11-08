@@ -1588,7 +1588,7 @@ function mod:SetupPanel(worldMap)
 		end
 		LayoutSliders()
 		hint:SetWidth(inner - 24)
-		Fill()
+		return true
 	end
 
 	-- Dragging the corner now changes both dimensions. In particular,
@@ -1597,7 +1597,7 @@ function mod:SetupPanel(worldMap)
 		local value = math.floor(height + 0.5)
 		if math.abs(menu:GetHeight() - value) < 1 then return end
 		mod.db.menuHeight = value
-		Fill()
+		return true
 	end
 
 	local grip = CreateFrame("Button", nil, menu)
@@ -1608,6 +1608,15 @@ function mod:SetupPanel(worldMap)
 	grip:SetHighlightTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Highlight")
 	grip:SetPushedTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Down")
 	grip:RegisterForDrag("LeftButton")
+	grip:RegisterForClicks("LeftButtonUp")
+	-- Reset both saved dimensions: default width, natural content-fitting height.
+	grip:SetScript("OnDoubleClick", function(_, mouse)
+		if mouse ~= "LeftButton" then return end
+		mod.db.menuWidth = nil
+		mod.db.menuHeight = nil
+		ResizeWidth(mod.defaults.menuWidth)
+		Fill()
+	end)
 	grip:SetScript("OnDragStart", function(self)
 		self.startX, self.startY = GetCursorPosition()
 		self.startWidth = W
@@ -1618,8 +1627,9 @@ function mod:SetupPanel(worldMap)
 		mod.db.menuHeight = self.startHeight
 		self:SetScript("OnUpdate", function(handle)
 			local x, y = GetCursorPosition()
-			ResizeWidth(handle.startWidth + (x - handle.startX) / handle.dragScale)
-			ResizeHeight(handle.startHeight + (handle.startY - y) / handle.dragScale)
+			local widthChanged = ResizeWidth(handle.startWidth + (x - handle.startX) / handle.dragScale)
+			local heightChanged = ResizeHeight(handle.startHeight + (handle.startY - y) / handle.dragScale)
+			if widthChanged or heightChanged then Fill() end
 		end)
 	end)
 	grip:SetScript("OnDragStop", function(self)
