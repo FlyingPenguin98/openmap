@@ -4,7 +4,7 @@
 local _, ns = ...
 
 ns.MapChangelog = {
-	{ version = "v0.8.1-beta", date = "2026-11-07", heads = { [1] = "New", [3] = "Improved", [6] = "Fixed", }, items = {
+	{ version = "v0.8.1", date = "2026-11-08", heads = { [1] = "New", [3] = "Improved", [6] = "Fixed", }, items = {
 		"|cff6e2c0aQuestie's mob paths on the stitched map|r, drawn over the art for the zones near the view as you zoom in (Questie's own were under the art, and only on the zone's own map).",
 		"|cff6e2c0aDarkening colour|r (Options, under Darkening): the colour unexplored areas are darkened with, picked with the game's colour picker; |cff6e2c0aDefault colour|r brings back the dark one.",
 		"|cff6e2c0aZooming is about four times smoother|r: OpenMap no longer lays out its hidden icons and its blur on every frame of a zoom (the blur comes back a moment after you stop). Found and measured by Peendars.",
