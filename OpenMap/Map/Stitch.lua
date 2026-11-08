@@ -2129,8 +2129,10 @@ end
 -- view (or the map opening on one) doesn't stall a frame setting them all at once
 -- Each fades in as it gets its file (LOAD_FADE), not popping in (the file itself streams in
 -- over a few frames). A long queue (the map opening on a zone up close: a thousand and more) is
--- set over its frames at the most, not 40 a frame (in testing: two seconds for the detail to come in)
-local LOAD_PER_FRAME = { 40, frames = 6, most = 300 }   -- (one local: the file is at Lua's limit of 200)
+-- set over its frames at the most: 60, not 300 (a frame setting 300 files was a 35 ms hitch on
+-- a 240 Hz machine, each file set being a load and an upload, in testing: two seconds for the
+-- detail to come in, and a pan into new ground arriving over a few more frames)
+local LOAD_PER_FRAME = { 40, frames = 6, most = 60 }   -- (one local: the file is at Lua's limit of 200)
 local LOAD_FADE = 0.3           -- seconds
 local loadQueue, loadAt = {}, 1
 local fading, fadingN = {}, 0   -- texture -> when it got its file
