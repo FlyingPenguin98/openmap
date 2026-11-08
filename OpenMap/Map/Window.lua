@@ -4,8 +4,8 @@
 -- remembered, and a size slider scales the whole window. Only the windowed map: the maximized map is left to
 -- Blizzard. Blizzard's panel layout tables are left alone (writing to them can
 -- taint): the saved place is put back each time Blizzard lays the map out.
--- With Move Any, the window is Move Any's: no title bar, grips or saved place here (they
--- fought its own drag and resize, #23).
+-- With Move Any, its position and scale remain authoritative. OpenMap supplies
+-- only the viewport resize grips and saved width/height, without a competing mover.
 --------------------------------------------------------------------------------
 
 local _, ns = ...
@@ -28,7 +28,7 @@ local FillScreen, SetupQuestLog, TurnArrows
 local blizzardSize              -- the windowed map's own size, for a reset
 local ours = false              -- OpenMap is moving / sizing the window itself (not to be undone)
 local sizing = false            -- a grip is being dragged: the drag sizes the window, nothing puts it back
-local moveAny = false           -- Move Any moves and sizes the window: OpenMap leaves it be
+local moveAny = false           -- Move Any owns position and scale, OpenMap owns viewport dimensions
 
 -- Move Any loaded, or on to load for this character (it may load after OpenMap sets the window up)
 local function MoveAnyOn()
@@ -54,18 +54,20 @@ local function Maximized()
 end
 
 local function Apply()
-	if not map or Maximized() or ours or moveAny or sizing then return end
+	if not map or Maximized() or ours or sizing then return end
 	ours = true
-	local w = mod.db.window
-	if w then
-		local point, rel, relPoint, x, y = map:GetPoint(1)
-		if map:GetNumPoints() ~= 1 or point ~= w[1] or rel ~= UIParent or relPoint ~= w[2]
-			or math.abs((x or 0) - w[3]) > 0.5 or math.abs((y or 0) - w[4]) > 0.5 then
-			map:ClearAllPoints()
-			map:SetPoint(w[1], UIParent, w[2], w[3], w[4])
+	if not moveAny then
+		local w = mod.db.window
+		if w then
+			local point, rel, relPoint, x, y = map:GetPoint(1)
+			if map:GetNumPoints() ~= 1 or point ~= w[1] or rel ~= UIParent or relPoint ~= w[2]
+				or math.abs((x or 0) - w[3]) > 0.5 or math.abs((y or 0) - w[4]) > 0.5 then
+				map:ClearAllPoints()
+				map:SetPoint(w[1], UIParent, w[2], w[3], w[4])
+			end
 		end
+		if math.abs((map:GetScale() or 1) - mod.db.windowScale) > 0.001 then map:SetScale(mod.db.windowScale) end
 	end
-	if math.abs((map:GetScale() or 1) - mod.db.windowScale) > 0.001 then map:SetScale(mod.db.windowScale) end
 	local size = mod.db.windowSize
 	if size and not InCombatLockdown() and (math.abs(map:GetWidth() - size[1]) > 0.5 or math.abs(map:GetHeight() - size[2]) > 0.5) then
 		map:SetSize(size[1], size[2])
@@ -163,7 +165,7 @@ local function Grip(corner)
 			return
 		end
 		mod.db.windowSize = { math.floor(map:GetWidth() + 0.5), math.floor(map:GetHeight() + 0.5) }
-		Save()
+		if not moveAny then Save() end
 		if map:IsShown() then Refit() end   -- (laid out at the scale the drag showed: WorldMap.lua)
 		if mod.EndResize then mod.EndResize() end
 	end
@@ -180,9 +182,12 @@ local function Grip(corner)
 		local w = math.max(MIN_W, start.w + (left and -dx or dx))
 		local h = math.max(MIN_H, start.h - (y - start.y) / s)
 		ours = true
-		map:ClearAllPoints()
-		-- (offsets in the map's own units, as GetLeft gives)
-		map:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", left and start.right - w or start.left, start.top)
+		if not moveAny then
+			map:ClearAllPoints()
+			-- (offsets in the map's own units, as GetLeft gives)
+			map:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", left and start.right - w or start.left, start.top)
+		end
+		-- Move Any owns the frame anchor; change dimensions only to avoid a mover fight.
 		map:SetSize(w, h)
 		ours = false
 		if mod.FollowResize then mod.FollowResize() end
@@ -213,7 +218,7 @@ function mod:SetupWindow(worldMap)
 		end
 	end
 	grip = {}
-	-- (with Move Any: none of this. Its own drag and resize place the window, and nothing puts it back)
+	-- With Move Any, leave position, scale and title bar to it; resizing is set up below.
 	if not moveAny then
 		map:SetClampedToScreen(true)
 		-- partly off the screen: sideways and down while some of it stays on, never up (its title bar is
@@ -254,8 +259,6 @@ function mod:SetupWindow(worldMap)
 		end)
 		handle:SetScript("OnLeave", GameTooltip_Hide)
 
-		grip = { Grip("BOTTOMRIGHT"), Grip("BOTTOMLEFT") }
-
 		-- put the saved place back whenever Blizzard lays the map out: opening shows the map first and
 		-- places it after (inside ShowUIPanel), so it's put back once that's done, not a moment later
 		map:HookScript("OnShow", Apply)
@@ -282,7 +285,21 @@ function mod:SetupWindow(worldMap)
 			map:SetUserPlaced(false)
 			Save()
 		end)
+	else
+		-- Preserve only OpenMap's saved width/height. Move Any still controls
+		-- the window's position and scale, including any subsequent adjustments.
+		map:HookScript("OnShow", Apply)
+		if ShowUIPanel then hooksecurefunc("ShowUIPanel", function(frame) if frame == map then Apply() end end) end
+		if UpdateUIPanelPositions then hooksecurefunc("UpdateUIPanelPositions", function() if map:IsShown() then Apply() end end) end
+		local function RestoreSize()
+			if not ours and not sizing and map:IsShown() then Apply() end
+		end
+		for _, method in ipairs({ "SetSize", "SetWidth", "SetHeight" }) do
+			if map[method] then hooksecurefunc(map, method, RestoreSize) end
+		end
 	end
+	-- Both clients use the same corner grips; only their resize anchoring differs.
+	grip = { Grip("BOTTOMRIGHT"), Grip("BOTTOMLEFT") }
 	local function Mode()
 		local max = Maximized()
 		mod.ChatOverMap()
