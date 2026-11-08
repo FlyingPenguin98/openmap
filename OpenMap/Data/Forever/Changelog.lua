@@ -4,6 +4,9 @@
 local _, ns = ...
 
 ns.MapChangelog = {
+	{ version = "Unreleased", date = "", heads = { [1] = "Fixed", }, items = {
+		"|cff6e2c0aZooming in notch by notch is smooth again|r: since 0.8.1 the blur came back all at once each time the map stopped, one long frame the next wheel notch landed on. It now waits out a pause between notches and comes back a few zones a frame. Questie's mob paths are worked out once the map stops, not on every frame of a zoom.",
+	} },
 	{ version = "v0.8.1", date = "2026-11-08", heads = { [1] = "New", [3] = "Improved", [7] = "Fixed", }, items = {
 		"|cff6e2c0aQuestie's mob paths on the stitched map|r, drawn over the art for the zones near the view as you zoom in (Questie's own were under the art, and only on the zone's own map).",
 		"|cff6e2c0aDarkening colour|r (Options, under Darkening): the colour unexplored areas are darkened with, picked with the game's colour picker; |cff6e2c0aDefault colour|r brings back the dark one.",
@@ -56,12 +59,5 @@ ns.MapChangelog = {
 		"|cff6e2c0aFull screen stays full screen|r, and the quest log you closed stays closed, the next time the map opens: it went back to the window and the quest log each time (a player's report).",
 		"|cff6e2c0aImproves performance|r under Fade icons while zooming no longer stays on show over the menu's other tabs (a player's report).",
 		"|cff6e2c0aRiverglades and Zephras Isle show their levels|r on the zone hover (35-45 and 1-12, from the Warcraft Wiki; a player's report).",
-	} },
-	{ version = "v0.7.2-beta", date = "2026-10-21", heads = { [1] = "Improved", [4] = "Fixed", }, items = {
-		"|cff6e2c0aZooming is smoother with unexplored areas darkened|r: greying the land you haven't found cost a lot of frame rate while zooming; it now costs far less.",
-		"|cff6e2c0aUnexplored areas for one character only|r: the menu's |cff6e2c0aOnly for this character|r, under Unexplored areas, gives this character its own choice (darkened, hidden or shown); every other character keeps the shared one (a player's request).",
-		"|cff6e2c0aFade icons while zooming|r says |cff6e2c0aImproves performance|r under it in the map's menu, so it isn't turned off unawares.",
-		"|cff6e2c0aThe map loads the zone you pan or zoom to again|r: with an addon adding map icons (Questie, GatherLite ...), it could stay on the zone you started on, so the zone or continent you'd panned to showed none of their icons until you clicked it (a player's report from 0.6, and ours). Its setting, once Follow the view, is now |cff6e2c0aLoad the zone in view|r (the menu's More tab), saying what it does.",
-		"|cff6e2c0aThe map window drags and resizes with Move Any installed but turned off|r: OpenMap asked whether Move Any was on for a character named by your first name alone (WoW Forever gives a first and last name), which the game took as on, and left the window to it (a player's report, with the fix).",
 	} },
 }

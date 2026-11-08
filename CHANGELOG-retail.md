@@ -1,5 +1,14 @@
 # OpenMap changelog
 
+## Unreleased
+
+### Fixed
+
+- **Zooming in notch by notch is smooth again**: since 0.8.1 the blur came back all at once each
+  time the map stopped, one long frame the next wheel notch landed on. It now waits out a pause
+  between notches and comes back a few zones a frame. Questie's mob paths are worked out once the
+  map stops, not on every frame of a zoom.
+
 ## v0.8.1 (2026-11-08)
 
 ### New

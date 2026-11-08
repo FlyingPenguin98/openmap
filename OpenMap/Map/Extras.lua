@@ -849,7 +849,7 @@ mod.DrawQuestiePaths = function() QPATH.dirty = true end   -- (stitched or not: 
 -- a zone a path is in, known to the culling
 local function SeenZone(uiMapID)
 	QPATH.seenZones = QPATH.seenZones or {}
-	if uiMapID and not QPATH.seenZones[uiMapID] then QPATH.seenZones[uiMapID] = true QPATH.key = "" end
+	if uiMapID and not QPATH.seenZones[uiMapID] then QPATH.seenZones[uiMapID] = true QPATH.moved = true end
 end
 -- Questie before 12.2 draws each stretch of a path as a frame of its own (QuestieFramePool:CreateLine),
 -- sized in pixels for Blizzard's map of its zone and pinned there by its middle: its ends are kept here
@@ -888,31 +888,49 @@ local function HookQuestiePaths()
 		QPATH.hooked = true
 	end
 end
--- each pan / zoom: which zones are near (a change redraws); a light tick while the map is open draws
--- what changed, at most every QPATH_EVERY (an icon Questie hid: gone by the next one)
+-- each pan / zoom only notes the view: which zones are near is worked out, and the paths redrawn,
+-- once the map has stopped (QPATH_SETTLE), not on every frame of a zoom. A light tick while the map
+-- is open draws what changed, at most every QPATH_EVERY, and everything again every QPATH_REFRESH
+-- while it's still (an icon Questie hid without saying: gone by then)
+local QPATH_SETTLE = 0.2        -- seconds the view is still before the paths are looked at again
+local QPATH_REFRESH = 5
+QPATH.view, QPATH.movedAt, QPATH.spare = {}, -10, {}
 tinsert(S.viewHooks, function(u, v, hu, hv)
 	if not QPATH.hooked then return end
+	local w = QPATH.view
+	w[1], w[2], w[3], w[4] = u, v, hu, hv
+	QPATH.moved, QPATH.movedAt = true, GetTime()
+end)
+-- the zones near the view now: a different set (or near / far) redraws
+local function QuestieNearNow()
+	local w = QPATH.view
+	if not w[1] then return end
 	local W = QuestiePaths()
 	if W then                                       -- (the newer paths: their zones as they come)
 		for path in pairs(W.paths) do SeenZone(path.uiMapId) end
 	end
-	local n = QuestieZonesNear(u, v, hu, hv)
+	QPATH.moved = false
+	local was = QPATH.zones
+	QPATH.zones, QPATH.spare = QPATH.spare, was
+	local n = QuestieZonesNear(w[1], w[2], w[3], w[4])
 	local near = n > 0 and n <= QPATH_MOST_ZONES
-	local key = near and "" or "far"
-	if near then
-		local ids = {}
-		for id in pairs(QPATH.zones) do ids[#ids + 1] = id end
-		table.sort(ids)
-		key = table.concat(ids, ",")
+	local same = near == QPATH.near and n == (QPATH.count or -1)
+	if same and near then
+		for id in pairs(QPATH.zones) do
+			if not was[id] then same = false break end
+		end
 	end
-	if key ~= QPATH.key or near ~= QPATH.near then QPATH.key, QPATH.near, QPATH.dirty = key, near, true end
-end)
+	QPATH.count = n
+	if not same then QPATH.near, QPATH.dirty = near, true end
+end
 QPATH.tick = CreateFrame("Frame")
 QPATH.tick:Hide()
 QPATH.tick:SetScript("OnUpdate", function()
 	local now = GetTime()
+	if now - QPATH.movedAt < QPATH_SETTLE or (mod.Zooming and mod.Zooming()) then return end
+	if QPATH.moved then QuestieNearNow() end
 	if now - QPATH.at < QPATH_EVERY then return end
-	if QPATH.dirty or now - QPATH.at > 2 then DrawQuestiePaths() end
+	if QPATH.dirty or now - QPATH.at > QPATH_REFRESH then DrawQuestiePaths() end
 end)
 
 function mod:SetupExtras(worldMap)
