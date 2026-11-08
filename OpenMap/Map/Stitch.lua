@@ -1958,22 +1958,32 @@ local function BuildBlur(mapID)
 	ShowZone(mapID)
 end
 
--- amount 0..1; the view's world rectangle (normalized): zones in it get their copies
-function S.SetBlur(amount, u0, v0, u1, v1)
-	if not root then return end
+-- amount 0..1; the view's world rectangle (normalized): zones in it get their copies.
+-- most: turn on (or build) at most this many zones' copies this call, the rest left for the next
+-- (Close.lua brings the blur back a few zones a frame, not all in one frame); true once all are done
+function S.SetBlur(amount, u0, v0, u1, v1, most)
+	if not root then return true end
 	softNow = amount
+	local left = most or math.huge
+	local done = true
 	for _, mapID in ipairs(overlayZones) do
 		local l, r, t, b = S.Rect(mapID)
 		local inView = amount > 0.01 and l and r > u0 and l < u1 and b > v0 and t < v1
-		if inView and blurZones[mapID] == nil then BuildBlur(mapID) end
 		local frames = blurZones[mapID]
-		local shown = inView and true or false
-		if frames and frames.shown ~= shown then
-			frames.shown = shown
-			for _, f in ipairs(frames) do f:SetShown(shown) end
+		if inView and (frames == nil or (frames and not frames.shown)) and left <= 0 then
+			done = false
+		else
+			if inView and frames == nil then BuildBlur(mapID) frames = blurZones[mapID] end
+			local shown = inView and true or false
+			if frames and frames.shown ~= shown then
+				frames.shown = shown
+				for _, f in ipairs(frames) do f:SetShown(shown) end
+				if shown then left = left - 1 end
+			end
 		end
 	end
 	ApplyDetail()
+	return done
 end
 
 -- underground (Close.lua): as a cave surfaces, the world above goes out of focus. The

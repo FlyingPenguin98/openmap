@@ -780,15 +780,18 @@ end
 -- the blur rests while the map moves: its four copies of every zone in view are laid out again
 -- on every frame of a zoom or pan (about 60 ms a zoom frame and 8 ms a pan frame at 16x,
 -- /openmap bench); back `after` seconds once it stops. A lone view update (the map opening, a
--- setting changed) applies it at once: it rests from the second update in a row (`gap` apart at most)
-local BlurRest = { frame = CreateFrame("Frame"), args = {}, at = -10, after = 0.15, gap = 0.1 }
+-- setting changed) applies it at once: it rests from the second update in a row (`gap` apart at most).
+-- It comes back `step` zones a frame: all at once, it was one long frame each time the map stopped,
+-- which the next wheel notch, a moment later, landed on. `after` is longer than a pause between
+-- notches, so zooming in notch by notch keeps it resting; a zoom starting again stops the return
+local BlurRest = { frame = CreateFrame("Frame"), args = {}, at = -10, after = 0.35, gap = 0.1, step = 2 }
 BlurRest.frame:Hide()
 BlurRest.frame:SetScript("OnUpdate", function(self)
-	if mod.Zooming and mod.Zooming() then return end
+	if mod.Zooming and mod.Zooming() then BlurRest.at = GetTime() return end
 	if GetTime() - BlurRest.at < BlurRest.after then return end
-	self:Hide()
 	local a = BlurRest.args
-	Try("blur", S.SetBlur, a[1], a[2], a[3], a[4], a[5])
+	local done = Try("blur", S.SetBlur, a[1], a[2], a[3], a[4], a[5], BlurRest.step)
+	if done ~= false then self:Hide() end
 end)
 
 S.closeView = {}

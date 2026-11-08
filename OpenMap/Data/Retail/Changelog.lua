@@ -4,6 +4,10 @@
 local _, ns = ...
 
 ns.MapChangelog = {
+	{ version = "v0.8.2", date = "2026-11-08", heads = { [1] = "Fixed", }, items = {
+		"|cff6e2c0aThe map no longer stalls a moment after it opens|r: since 0.8.0 OpenMap keeps the map's art loaded while it's closed, then let go of it all in one frame a second into the opening, which the game unloaded at once (about a second's freeze). It now lets go of it a little at a time.",
+		"|cff6e2c0aZooming in notch by notch is smooth again|r: since 0.8.1 the blur came back all at once each time the map stopped, one long frame the next wheel notch landed on. It now waits out a pause between notches and comes back a few zones a frame. Questie's mob paths are worked out once the map stops, not on every frame of a zoom.",
+	} },
 	{ version = "v0.8.1", date = "2026-11-08", heads = { [1] = "New", [3] = "Improved", [6] = "Fixed", }, items = {
 		"|cff6e2c0aQuestie's mob paths on the stitched map|r, drawn over the art for the zones near the view as you zoom in (Questie's own were under the art, and only on the zone's own map).",
 		"|cff6e2c0aDarkening colour|r (Options, under Darkening): the colour unexplored areas are darkened with, picked with the game's colour picker; |cff6e2c0aDefault colour|r brings back the dark one.",
@@ -73,35 +77,5 @@ ns.MapChangelog = {
 		"The zone you're looking at has its name over the map again when you hover it, where the game names no place in it (Silverpine Forest's had gone; reported in #25). With Zone levels off, zone names still show, without their levels.",
 		"|cff6e2c0aMove Any|r owns the map window: with it, OpenMap's title bar, resize grips and saved place stand down, so Move Any's own drag and resize work on the map again (reported in #23). The map size slider and Reset size and place are off then.",
 		"A city's own map that went missing (Ironforge showing only Dun Morogh's painting of it, until a /reload: reported in #30) is shown again when you reopen the map, and the map's check of what's in view no longer stays stuck if it stopped part way. (A safeguard: what hid it isn't known yet.)",
-	} },
-	{ version = "v0.4.0-beta", date = "2026-10-16", heads = { [1] = "New", [11] = "Improved", [20] = "Fixed", }, items = {
-		"|cff6e2c0aDungeon maps.|r Click a dungeon's entrance for its own map, drawn from the game's own art (WoW Forever's map never shows it), right in the map window. Zoom with the wheel, drag to pan, and step through its floors with the arrows, the floor list or the side panel's Floors tab, which shows each floor as a small picture. Where several share an entrance you pick one; Blackrock Spire, Dire Maul and Scarlet Monastery are listed by wing, each opening on its own floor. Right-click, Escape or Back takes you back to the world where you were. 25 dungeons and raids have maps; WoW Forever's own new dungeons open on a blank page until the game has art for them.",
-		"|cff6e2c0aA side panel for each dungeon|r, in the quest log's place and look, as a tab beside the log: its floors, its bosses, its quests (with Questie: their level, done or in your log, objectives on hover) and its loot, where we recommend NeedRoll by mikebvs (a boss's row opens it). Put the quest log away and the dungeon's map has the whole view; the tabs at the map's edge bring the log back.",
-		"|cff6e2c0aDungeon entrances|r show their level range, coloured for your level (the menu's Level ranges hides them). WoW Forever's own dungeons are on the map: City of Dalaran, The Drowned City, Excavation Site: Wetlands, The Hall of Thanes and Ruins of Lordaeron so far.",
-		"|cff6e2c0aMap pins|r, as many as you like: Ctrl-click the map (or Drop a pin) for one with a note and a colour. Its card follows it (Blizzard's waypoint, and TomTom's), shares it with your group, guild or a friend (other OpenMap players are asked first), gives a code to paste anywhere, or deletes it. The Pins list (/openmap pins) has them all, for all your characters.",
-		"|cff6e2c0aThe quill:|r draw on the map with a pen, lines, arrows, circles and raid marks, in six inks and three widths (the menu's Quill, or /openmap draw). Your drawings are kept, and a pin's card can draw on that pin.",
-		"|cff6e2c0aTabs at the map's edge|r for the OpenMap button and your favourites, in WoW Forever's own tab art. Drag the OpenMap tab anywhere round the edge; the arrow by it folds your favourites away. \"Buttons as edge tabs\" (the menu's Look tab) puts them back in the corner.",
-		"|cff6e2c0aReport a problem draws:|r in two steps, draw where it's wrong (with the quill, or on a dungeon's page), then say what's wrong, for a code to paste into a GitHub issue.",
-		"|cff6e2c0aWhen reopening the map:|r center on the player (the default for new installs), always restore the previous view, or restore it only while you're still in view. Middle-click the map to center on yourself at the same zoom. Thanks, C-Clymer (#19)!",
-		"|cff6e2c0aWhat's new|r in the game, laid out like the quest log: each version's changes, Newer and Older, and where to find OpenMap on GitHub.",
-		"|cff6e2c0aFor addon authors:|r OpenMapAPI (docs/api.md), to place things on the stitched world, hear when the view moves or a dungeon's map opens, and add a switch to the OpenMap menu or a section to a dungeon's panel.",
-		"One place for OpenMap's settings: /openmap (and the game's AddOns settings page) opens the map's own menu, now with every setting in three tabs (On the map, Look, More) in the game's own settings look. The Look tab's sliders sit in two columns, with Defaults and Reset size and place under them.",
-		"Other addons' map icons placed through HereBeDragons (TomTom, gatherers, notes addons) show on the stitched map from every zone in view, and Leatrix Maps' icons show above its art.",
-		"Teldrassil's coast is whole, the great tree's roots all round the island, and Thunder Bluff comes in sooner, cut to its plan, under Mulgore's banner for it. (Changed textures: restart the game.)",
-		"Darkened unexplored areas reach all of a zone's land and fade softly at their edges, with no hard lines or boxes in zones you've been to; cities you haven't found are darkened (or hidden) too. (Changed textures: restart the game.)",
-		"The minimap's detail comes in after the same turns of the wheel in any window, full screen too, and a tall or very wide window brings the zones in by how much of the world is in view.",
-		"The map pin's card, the pins list, What's new and the menu's dropdowns have the game's own frames and dropdown look; the coordinates are steady black boxes in the bottom-right corner; Find me has a crosshair; tooltips say plainly what a click does.",
-		"The quest log's Back (from a quest's details) leaves the map where you're looking. The OpenMap menu shows over the quest log and stays put while you drag the map window, and the window's bottom-right corner is easier to grab with the quest log open.",
-		"\"Reset sliders to defaults\" in Options, and Defaults under the menu's sliders.",
-		"OpenMap gives back the game settings it holds: turn off its coordinates and Blizzard's come back, and at logout the map fade and coordinates are the game's own again.",
-		"No more \"action blocked\" errors opening the map (or the quest log updating it) in combat (reported by C-Clymer in #19).",
-		"Clicking a quest on another continent opens it at the first click.",
-		"Zooming in on a zone no longer flashes plain parchment between its art from afar and close in.",
-		"The quest log's button stays over the map's parchment border when you zoom right out, and its arrows point the way the log goes.",
-		"A click on the window's resize corner without dragging no longer resets the view.",
-		"Closing the map in the middle of resizing or moving it no longer leaves the window following the mouse.",
-		"The menu's tabs no longer show another tab's names behind their own, and its search results aren't see-through.",
-		"Clearing or replacing a map pin removes its TomTom waypoint.",
-		"A flight route to or from a flight master you haven't learned says so.",
 	} },
 }

@@ -569,7 +569,7 @@ local function SetUpPins(name, pins)
 		provider.RefreshAllData = function(self, ...)
 			local before = self:GetMap() and self:GetMap():GetMapID()
 			if before ~= count.mapID then count.placed, count.ours, count.moved, count.mapID = 0, 0, 0, before end
-			return Refresh(self, ...)
+			return mod.TimeAfter(spec.questie and "Questie's icons placed" or "map pins placed", Refresh, self, ...)
 		end
 	end
 	-- (taken over with the map open, after the library placed its icons the game's way: again, ours)
@@ -616,7 +616,7 @@ PinRetry:SetScript("OnUpdate", function(self)
 	if now - self.at < 0.5 then return end
 	self.at = now
 	if not map or not map:IsShown() or not next(pending) then self:Hide() return end
-	SetUpAllPins()
+	mod.TimeAfter("pin libraries, again", SetUpAllPins)
 end)
 local function SetUpAllPinsAndWait()
 	SetUpAllPins(true)
@@ -750,16 +750,36 @@ local function WarmHold()
 	warmN = #files
 	warmFrame:Show()
 end
+-- Let go a few files a frame (WARM_STEP), from a moment into the opening (the map's own textures
+-- drawn by then, holding the files themselves): all in one frame, the game unloaded the rest at once,
+-- a stall of about a second each time the map opened. The map closing stops it (WarmHold holds again)
+local WARM_STEP = 15            -- files let go a frame: 1,200 over about 1.5 s
+local warmRelease = CreateFrame("Frame")
+warmRelease:Hide()
+warmRelease:SetScript("OnUpdate", function(self)
+	if not map:IsShown() or not warmFrame then self:Hide() return end
+	mod.TimeAfter("warm art let go (a frame's worth)", function()
+		for _ = 1, WARM_STEP do
+			if warmN == 0 then break end
+			warmTex[warmN]:SetTexture(nil)
+			warmTex[warmN]:Hide()
+			warmN = warmN - 1
+		end
+	end)
+	if warmN == 0 then warmFrame:Hide() self:Hide() end
+end)
 local function WarmLetGo()
 	if not warmFrame then return end
-	-- (a moment into the opening: the map's own textures drawn by then, holding the files themselves)
+	warmRelease:Hide()
 	C_Timer.After(1, function()
-		if map:IsShown() and warmFrame then warmFrame:Hide() end
+		if map:IsShown() and warmFrame then warmRelease:Show() end
 	end)
 end
+local function WarmStop() warmRelease:Hide() end
 function mod:ToggleWarm()
 	mod.db.keepWarm = mod.db.keepWarm == false
 	if not mod.db.keepWarm and warmFrame then
+		warmRelease:Hide()
 		for i = 1, warmN do warmTex[i]:SetTexture(nil) warmTex[i]:Hide() end
 		warmN = 0
 		warmFrame:Hide()
@@ -849,7 +869,7 @@ mod.DrawQuestiePaths = function() QPATH.dirty = true end   -- (stitched or not: 
 -- a zone a path is in, known to the culling
 local function SeenZone(uiMapID)
 	QPATH.seenZones = QPATH.seenZones or {}
-	if uiMapID and not QPATH.seenZones[uiMapID] then QPATH.seenZones[uiMapID] = true QPATH.key = "" end
+	if uiMapID and not QPATH.seenZones[uiMapID] then QPATH.seenZones[uiMapID] = true QPATH.moved = true end
 end
 -- Questie before 12.2 draws each stretch of a path as a frame of its own (QuestieFramePool:CreateLine),
 -- sized in pixels for Blizzard's map of its zone and pinned there by its middle: its ends are kept here
@@ -888,42 +908,60 @@ local function HookQuestiePaths()
 		QPATH.hooked = true
 	end
 end
--- each pan / zoom: which zones are near (a change redraws); a light tick while the map is open draws
--- what changed, at most every QPATH_EVERY (an icon Questie hid: gone by the next one)
+-- each pan / zoom only notes the view: which zones are near is worked out, and the paths redrawn,
+-- once the map has stopped (QPATH_SETTLE), not on every frame of a zoom. A light tick while the map
+-- is open draws what changed, at most every QPATH_EVERY, and everything again every QPATH_REFRESH
+-- while it's still (an icon Questie hid without saying: gone by then)
+local QPATH_SETTLE = 0.2        -- seconds the view is still before the paths are looked at again
+local QPATH_REFRESH = 5
+QPATH.view, QPATH.movedAt, QPATH.spare = {}, -10, {}
 tinsert(S.viewHooks, function(u, v, hu, hv)
 	if not QPATH.hooked then return end
+	local w = QPATH.view
+	w[1], w[2], w[3], w[4] = u, v, hu, hv
+	QPATH.moved, QPATH.movedAt = true, GetTime()
+end)
+-- the zones near the view now: a different set (or near / far) redraws
+local function QuestieNearNow()
+	local w = QPATH.view
+	if not w[1] then return end
 	local W = QuestiePaths()
 	if W then                                       -- (the newer paths: their zones as they come)
 		for path in pairs(W.paths) do SeenZone(path.uiMapId) end
 	end
-	local n = QuestieZonesNear(u, v, hu, hv)
+	QPATH.moved = false
+	local was = QPATH.zones
+	QPATH.zones, QPATH.spare = QPATH.spare, was
+	local n = QuestieZonesNear(w[1], w[2], w[3], w[4])
 	local near = n > 0 and n <= QPATH_MOST_ZONES
-	local key = near and "" or "far"
-	if near then
-		local ids = {}
-		for id in pairs(QPATH.zones) do ids[#ids + 1] = id end
-		table.sort(ids)
-		key = table.concat(ids, ",")
+	local same = near == QPATH.near and n == (QPATH.count or -1)
+	if same and near then
+		for id in pairs(QPATH.zones) do
+			if not was[id] then same = false break end
+		end
 	end
-	if key ~= QPATH.key or near ~= QPATH.near then QPATH.key, QPATH.near, QPATH.dirty = key, near, true end
-end)
+	QPATH.count = n
+	if not same then QPATH.near, QPATH.dirty = near, true end
+end
 QPATH.tick = CreateFrame("Frame")
 QPATH.tick:Hide()
 QPATH.tick:SetScript("OnUpdate", function()
 	local now = GetTime()
+	if now - QPATH.movedAt < QPATH_SETTLE or (mod.Zooming and mod.Zooming()) then return end
+	if QPATH.moved then mod.TimeAfter("Questie paths, zones near", QuestieNearNow) end
 	if now - QPATH.at < QPATH_EVERY then return end
-	if QPATH.dirty or now - QPATH.at > 2 then DrawQuestiePaths() end
+	if QPATH.dirty or now - QPATH.at > QPATH_REFRESH then mod.TimeAfter("Questie paths drawn", DrawQuestiePaths) end
 end)
 
 function mod:SetupExtras(worldMap)
 	map, sc = worldMap, worldMap.ScrollContainer
 	map:HookScript("OnShow", function() fader:SetShown((mod.db.moveFade or 0) > 0) ApplyFpsCap() end)
 	map:HookScript("OnHide", function() fader:Hide() faded = 1 SetFade(1) ApplyFpsCap() end)
-	map:HookScript("OnHide", WarmHold)
+	map:HookScript("OnHide", function() WarmStop() mod.TimeClose("warm art held", WarmHold) end)
 	map:HookScript("OnShow", WarmLetGo)
 	hooksecurefunc(map, "SetAlpha", KeepFade)
 	SetUpAllPins()
-	map:HookScript("OnShow", SetUpAllPinsAndWait)     -- (a copy an addon loaded since brought)
+	map:HookScript("OnShow", function() mod.TimeAfter("pin libraries", SetUpAllPinsAndWait) end)     -- (a copy an addon loaded since brought)
 	ns.RegisterEvent(PinRetry, "ADDON_LOADED", function() SetUpAllPins() end)
 	HookQuestiePaths()                               -- (now: an older Questie's path stretches are kept as they're made)
 	map:HookScript("OnShow", function() HookQuestiePaths() if QPATH.hooked then QPATH.dirty = true QPATH.tick:Show() end end)
