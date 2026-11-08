@@ -30,12 +30,16 @@ local function Click(mouse)
 end
 
 local function Tip(owner)
-	GameTooltip:SetOwner(owner, "ANCHOR_LEFT")
-	GameTooltip:AddLine("|cff" .. ns.ACCENT .. "Open|rMap")
-	GameTooltip:AddLine(L["Click: the map and its menu"], 1, 1, 1)
-	GameTooltip:AddLine(L["Right-click: the options window"], 1, 1, 1)
-	if owner == button then GameTooltip:AddLine(L["Drag: move it round the minimap"], 0.6, 0.6, 0.6) end
-	GameTooltip:Show()
+	-- Titan/LDB hands us its own tooltip, already positioned and shown by the display.
+	-- For the minimap button and addon compartment, we still own GameTooltip.
+	local brokerTooltip = owner and owner.AddLine
+	local tooltip = brokerTooltip and owner or GameTooltip
+	if not brokerTooltip then tooltip:SetOwner(owner, "ANCHOR_LEFT") end
+	tooltip:AddLine("|cff" .. ns.ACCENT .. "Open|rMap")
+	tooltip:AddLine(L["Click: the map and its menu"], 1, 1, 1)
+	tooltip:AddLine(L["Right-click: the options window"], 1, 1, 1)
+	if owner == button then tooltip:AddLine(L["Drag: move it round the minimap"], 0.6, 0.6, 0.6) end
+	if not brokerTooltip then tooltip:Show() end
 end
 
 -- the addon compartment (the toc's AddonCompartmentFunc*): globals, as the game looks them up by name
@@ -108,22 +112,8 @@ local function RegisterBroker()
 		label = "OpenMap",
 		icon = ICON,
 		tocname = ns.name,
-		OnClick = function(_, mouse)
-			if mouse ~= "RightButton" then
-				ToggleWorldMap()
-				return
-			end
-			if not mod.enabled then OpenWindow() return end
-			if mod.OpenMenu and mod:OpenMenu() then return end
-			-- On the first map opening, the menu may not have been built yet.
-			if not (WorldMapFrame and WorldMapFrame:IsShown()) then ToggleWorldMap() end
-			C_Timer.After(0, function() if mod.OpenMenu then mod:OpenMenu() end end)
-		end,
-		OnTooltipShow = function(tooltip)
-			tooltip:AddLine("|cff" .. ns.ACCENT .. "Open|rMap")
-			tooltip:AddLine(L["Left-click: show or hide the map"], 1, 1, 1)
-			tooltip:AddLine(L["Right-click: the map's menu"], 1, 1, 1)
-		end,
+		OnClick = function(_, mouse) Click(mouse) end,
+		OnTooltipShow = Tip,
 	})
 end
 
