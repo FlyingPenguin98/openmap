@@ -456,7 +456,6 @@ L["You can change any of it later in OpenMap's menu (its button on the map, or /
 L["Your arrow"] = "내 화살표"
 L["Your buttons"] = "내 버튼"
 L["Your drawings"] = "내 그림"
-L["Your friends and guild members who are online: a badge on the zone each is in, with who's there (as the friends list and guild roster show it), or a class-coloured dot where they stand for those who use OpenMap and share where they are."] = "접속 중인 친구와 길드원: 각자 있는 지역에 배지로 누가 있는지 표시하거나(친구 목록과 길드 목록에 나오는 대로), OpenMap을 사용하며 위치를 공유하는 사람은 서 있는 곳에 직업 색상 점으로 표시합니다."
 L["Your friends and guild members who use OpenMap can show on your map as a dot where they stand. Share where you are, so they see you on theirs?"] = "OpenMap을 사용하는 친구와 길드원이 내 지도에 서 있는 위치의 점으로 표시될 수 있습니다. 내 위치도 공유해서 그들의 지도에 보이게 할까요?"
 L["Your guild (those with OpenMap are asked whether to add it)."] = "길드에 공유합니다 (OpenMap 사용자에게는 추가할지 묻습니다)."
 L["Your guild and friends see you"] = "길드원과 친구에게 보임"
