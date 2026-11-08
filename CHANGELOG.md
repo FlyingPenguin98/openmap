@@ -1,12 +1,66 @@
 # OpenMap changelog
 
-## Unreleased
+## v0.8.1-beta (2026-11-07)
+
+### New
+
+- **Questie's mob paths on the stitched map**, drawn over the art for the zones near the view as
+  you zoom in (Questie's own were under the art, and only on the zone's own map).
+
+- **Darkening colour** (Options, under Darkening): the colour unexplored areas are darkened with,
+  picked with the game's colour picker; **Default colour** brings back the dark one.
+
+### Improved
+
+- **Zooming is about four times smoother**: OpenMap no longer lays out its hidden icons and its
+  blur on every frame of a zoom (the blur comes back a moment after you stop). Found and measured
+  by Peendars.
+
+- **Flight masters are easier to see on the map**: bigger, with a dark outline, and the ones you
+  haven't learned are no longer half see-through (they were lost on the parchment).
+
+- **Ctrl-click drops a pin can be turned off** (Options, and the menu's More tab): with Map Pin
+  Enhanced a Ctrl-click dropped two pins, its own and OpenMap's. Off, the menu's Drop a pin still
+  works.
+
+- **The Drowned City's map is Santiago Reyes's updated version**, which names more of its places
+  (the Eternal Amphitheater and the Abyssal Dais).
 
 ### Fixed
 
+- **Dungeon and cave maps show in every language**: on the Latin American Spanish, Russian and
+  Italian clients every dungeon map and Blizzard cave map was solid green squares, as the game
+  doesn't have their art for those languages. OpenMap now brings that art itself. Found and
+  first fixed by RADD95 (OpenMap TextureFix): with this version that addon isn't needed.
+  (New textures: restart the game.)
+
+- **Zone names in your client's language**: on every client but English, the zones' prebuilt
+  art lettered their English names over the map. Other languages now draw the zones from the
+  client's own art (zooming is a little slower there, as with that art turned off).
+
+- **Questie's icons show the first time you open the map**: after a login they could be missing
+  until the map was closed and opened again (Questie was still setting up when OpenMap looked).
+
+- **Zygor's waypoint shows on the stitched map**, in the right place and over the art (Zygor uses
+  its own renamed copy of HereBeDragons, which OpenMap didn't know). Traced by robnoord.
+
+- **Your class's trainers are found on every language's client**: on a French client (and the
+  other non-English ones) every class trainer showed as a profession trainer.
+
 - **An NPC who walks about shows once on the map**: Girl with Puppies in Orgrimmar had a vendor
   icon at every point of her walk, dozens over the city. An NPC with many spawns in one zone (with
-  Vendors and the other townsfolk on) now has one icon, in the middle of where it walks.
+  Vendors and the other townsfolk on) now has one icon, in the middle of where it walks. Fixed by
+  diegodiaz1256.
+
+- **The map opened on Zephras Isle shows Zephras Isle**, as its airship opens it: it showed the
+  stitched world with no one on it.
+
+- **No friends dot or badge for yourself**: with Share where you are on, you could show on your
+  own map as a guild member (the guild's roster can spell your realm differently).
+
+- **The map opens at once inside a dungeon**: each opening loaded the dungeon's map art again, a
+  second or two (longer in dungeons with many floors, whose Floors tab shows every floor). OpenMap
+  now keeps the art of the dungeon you're in loaded, as it does the world map's.
 
 ## v0.8.0-beta (2026-11-07)
 

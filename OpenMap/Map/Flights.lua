@@ -67,14 +67,20 @@ local function Known(id)
 	return n and mod.char.flightsKnown and mod.char.flightsKnown[n[1]]
 end
 
+-- learned ones in their colour, the rest grey; both a size up from the map's other icons and outlined
+-- in dark, as the boot alone was lost on the parchment (a grey one at 14 and half see-through above all)
+local SIZE_KNOWN, SIZE_NOT = 22, 18
+
 local function RefreshLook()
 	ReadFound()
 	for id, pin in pairs(pins) do
 		local known = Known(id)
 		pin:SetShown(known or not mod.db.foundOnly)   -- (Only places you've found: learned ones only)
 		pin.Icon:SetDesaturated(not known)
-		pin.Icon:SetAlpha(known and 1 or 0.55)
-		pin:SetSize(known and 18 or 14, known and 18 or 14)
+		pin.Icon:SetAlpha(known and 1 or 0.9)
+		if pin.shadow then pin.shadow:SetAlpha(known and 0.8 or 0.65) end
+		local size = known and SIZE_KNOWN or SIZE_NOT
+		pin:SetSize(size, size)
 	end
 end
 
@@ -295,8 +301,17 @@ function mod:BuildFlights()
 			local u, v = S.FromYards(n[2], n[3], n[4])
 			if u then
 				nodeAt[id] = { u, v }
-				local pin = S.AddPin(set, u, v, { atlas = KNOWN_ATLAS[factionBit], size = 18 })
+				local look = { atlas = KNOWN_ATLAS[factionBit], size = SIZE_KNOWN }
+				local pin = S.AddPin(set, u, v, look)
 				pin.node = id
+				-- (a dark outline: the boot again, in black, a little bigger, under it)
+				pin.shadow = pin.shadow or pin:CreateTexture(nil, "BACKGROUND")
+				pin.shadow:ClearAllPoints()
+				pin.shadow:SetPoint("TOPLEFT", -3, 3)
+				pin.shadow:SetPoint("BOTTOMRIGHT", 3, -3)
+				S.Look(pin.shadow, look)
+				pin.shadow:SetVertexColor(0, 0, 0)
+				pin.shadow:Show()
 				pin.ring = pin:CreateTexture(nil, "OVERLAY")
 				pin.ring:SetPoint("CENTER")
 				pin.ring:SetSize(30, 30)

@@ -12,7 +12,7 @@ Santiago Reyes's site: https://sreyesmaps.com/post/proyecto-atlas-de-azeroth-for
 | `dungeons/excavation-site-wetlands.png` | Excavation Site: Wetlands | Santiago Reyes |
 | `dungeons/ruins-of-lordaeron.png` | Ruins of Lordaeron | Santiago Reyes |
 | `dungeons/hall-of-thanes.png` | The Hall of Thanes | Santiago Reyes |
-| `dungeons/the-drowned-city.webp` | The Drowned City | Santiago Reyes |
+| `dungeons/the-drowned-city.jpg` | The Drowned City | Santiago Reyes |
 | `dungeons/kroldok-stronghold.webp` | Krol'dok Stronghold | Santiago Reyes |
 | `dungeons/shapers-terrace.webp` | Shaper's Terrace | Santiago Reyes |
 

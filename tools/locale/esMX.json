@@ -485,5 +485,11 @@
  "Your friends and guild members who use OpenMap can show on your map as a dot where they stand. Share where you are, so they see you on theirs?": "Tus amigos y miembros de la hermandad que usan OpenMap pueden aparecer en tu mapa como un punto donde están. ¿Compartir tu ubicación para que te vean en el suyo?",
  "Share where I am": "Compartir mi ubicación",
  "Not now": "Ahora no",
- "Only your guild and friends, never from a dungeon, raid or battleground. OpenMap's menu: More, Sharing.": "Solo tu hermandad y tus amigos, nunca desde calabozos, bandas o campos de batalla. Menú de OpenMap: Más, Compartir."
+ "Only your guild and friends, never from a dungeon, raid or battleground. OpenMap's menu: More, Sharing.": "Solo tu hermandad y tus amigos, nunca desde calabozos, bandas o campos de batalla. Menú de OpenMap: Más, Compartir.",
+ "Ctrl-click drops a pin": "Ctrl+clic coloca un marcador",
+ "Ctrl-click on the map drops a pin. Turn it off if another addon drops its own pin on Ctrl-click (Map Pin Enhanced): the menu's Drop a pin still works.": "Ctrl+clic en el mapa coloca un marcador. Desactívalo si otro accesorio coloca su propio marcador con Ctrl+clic (Map Pin Enhanced): Colocar marcador en el menú sigue funcionando.",
+ "Darkening colour": "Color del oscurecimiento",
+ "The colour unexplored areas are darkened with.": "El color con el que se oscurecen las áreas sin explorar.",
+ "Default colour": "Color predeterminado",
+ "dungeon and cave maps in every language (they showed green on some languages' clients)": "mapas de calabozos y cuevas en todos los idiomas (se veían verdes en los clientes de algunos idiomas)"
 }

@@ -14,6 +14,8 @@ import bisect, os, struct, sys, zlib
 import numpy as np
 
 LOCALE_ENUS = 0x2
+LOCALES = {"enUS": 0x2, "koKR": 0x4, "frFR": 0x10, "deDE": 0x20, "zhCN": 0x40, "esES": 0x80,
+           "zhTW": 0x100, "enGB": 0x200, "esMX": 0x1000, "ruRU": 0x2000, "ptBR": 0x4000, "itIT": 0x8000}
 NO_NAMES = 0x10000000           # root block content flag: no name hashes stored
 
 
@@ -145,6 +147,7 @@ class Casc:
     # --- file ID -> content key: the root table (enUS or every locale)
     def _root(self, d):
         fids, keys = [], []
+        self._blocks = []                       # every block's IDs and locale mask (locales())
         if d[:4] == b"TSFM":
             hsize, version = struct.unpack_from("<II", d, 4)
             if hsize > 1000:                    # (the first form: no header size or version)
@@ -173,6 +176,7 @@ class Casc:
                 rec = np.frombuffer(d, np.uint8, num * 24, pos).reshape(num, 24)
                 ck = rec[:, :16]
                 pos += 24 * num
+            self._blocks.append((ids, locale))
             if locale & LOCALE_ENUS:
                 fids.append(ids)
                 keys.append(ck)
@@ -190,6 +194,19 @@ class Casc:
     def read(self, fid):
         """the file with this file ID, decoded"""
         return self.read_ckey(self.ckey_of(fid))
+
+    def locales(self, fid):
+        """the locales the root lists this file ID for (LOCALES' names): the game client reads a
+        file only through its own locale's entries, so one listed for enUS alone is missing on
+        every other client"""
+        if not hasattr(self, "_loc_ids"):
+            ids = np.concatenate([b[0] for b in self._blocks])
+            loc = np.concatenate([np.full(len(b[0]), b[1], np.uint32) for b in self._blocks])
+            order = np.argsort(ids, kind="stable")
+            self._loc_ids, self._loc = ids[order], loc[order]
+        lo, hi = np.searchsorted(self._loc_ids, fid), np.searchsorted(self._loc_ids, fid, "right")
+        mask = int(np.bitwise_or.reduce(self._loc[lo:hi])) if hi > lo else 0
+        return [name for name, bit in LOCALES.items() if mask & bit]
 
 
 if __name__ == "__main__":
