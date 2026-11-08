@@ -487,6 +487,7 @@ L["needs flight masters you haven't learned"] = "requer mestres de voo que você
 L["none to speak of"] = "praticamente nada"
 L["the map art is the game's own"] = "a arte do mapa é a do próprio jogo"
 L["the map in combat, RareScanner's icons over the map and other map addons' pins"] = "o mapa em combate, os ícones do RareScanner sobre o mapa e os ícones de outros addons de mapa"
+L["the map's hitches while panning, found and measured with /openmap bench"] = "os travamentos do mapa ao arrastá-lo, encontrados e medidos com /openmap bench"
 L["what's wrong?"] = "o que está errado?"
 L["your group"] = "seu grupo"
 L["your guild"] = "sua guilda"

@@ -491,5 +491,6 @@
  "Darkening colour": "Cor do escurecimento",
  "The colour unexplored areas are darkened with.": "A cor usada para escurecer as áreas inexploradas.",
  "Default colour": "Cor padrão",
- "dungeon and cave maps in every language (they showed green on some languages' clients)": "mapas de masmorras e cavernas em todos os idiomas (apareciam verdes nos clientes de alguns idiomas)"
+ "dungeon and cave maps in every language (they showed green on some languages' clients)": "mapas de masmorras e cavernas em todos os idiomas (apareciam verdes nos clientes de alguns idiomas)",
+ "the map's hitches while panning, found and measured with /openmap bench": "os travamentos do mapa ao arrastá-lo, encontrados e medidos com /openmap bench"
 }

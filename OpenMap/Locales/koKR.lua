@@ -487,6 +487,7 @@ L["needs flight masters you haven't learned"] = "발견하지 못한 비행 지�
 L["none to speak of"] = "거의 없음"
 L["the map art is the game's own"] = "지도 그림은 게임에 있는 그대로입니다"
 L["the map in combat, RareScanner's icons over the map and other map addons' pins"] = "전투 중 지도, 지도 위의 RareScanner 아이콘과 다른 지도 애드온의 아이콘"
+L["the map's hitches while panning, found and measured with /openmap bench"] = "지도를 이동할 때 끊기는 문제, /openmap bench 명령으로 찾아내고 측정"
 L["what's wrong?"] = "무엇이 문제입니까?"
 L["your group"] = "파티원"
 L["your guild"] = "길드원"

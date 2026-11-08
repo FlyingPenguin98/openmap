@@ -1,14 +1,12 @@
 # OpenMap changelog
 
-## Unreleased
+## v0.8.2 (2026-11-08)
 
 ### Improved
 
 - **Panning no longer hitches**: the map set up to 300 textures' files in a single frame where a
   pan brought new ground into view, and each set is a load and an upload, so that frame showed as
   a hitch of about 35 ms. It sets 60 a frame now; the art still fades in, a few frames later.
-
-## v0.8.2 (2026-11-08)
 
 ### Fixed
 

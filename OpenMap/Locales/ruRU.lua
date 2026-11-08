@@ -487,6 +487,7 @@ L["needs flight masters you haven't learned"] = "нужны распорядит
 L["none to speak of"] = "почти нет"
 L["the map art is the game's own"] = "графика карты взята из самой игры"
 L["the map in combat, RareScanner's icons over the map and other map addons' pins"] = "карта в бою, значки RareScanner поверх карты и значки других модификаций карты"
+L["the map's hitches while panning, found and measured with /openmap bench"] = "подтормаживания карты при прокрутке, найденные и измеренные с помощью /openmap bench"
 L["what's wrong?"] = "что не так?"
 L["your group"] = "ваша группа"
 L["your guild"] = "ваша гильдия"

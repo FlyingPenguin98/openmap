@@ -491,5 +491,6 @@
  "Darkening colour": "어둡게 하기 색상",
  "The colour unexplored areas are darkened with.": "탐험하지 않은 지역을 어둡게 할 때 쓰는 색상입니다.",
  "Default colour": "기본 색상",
- "dungeon and cave maps in every language (they showed green on some languages' clients)": "모든 언어에서 던전과 동굴 지도 표시 (일부 언어 클라이언트에서 녹색으로 보이던 문제)"
+ "dungeon and cave maps in every language (they showed green on some languages' clients)": "모든 언어에서 던전과 동굴 지도 표시 (일부 언어 클라이언트에서 녹색으로 보이던 문제)",
+ "the map's hitches while panning, found and measured with /openmap bench": "지도를 이동할 때 끊기는 문제, /openmap bench 명령으로 찾아내고 측정"
 }

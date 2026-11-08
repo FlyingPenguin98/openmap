@@ -487,6 +487,7 @@ L["needs flight masters you haven't learned"] = "需經過你尚未發現的飛�
 L["none to speak of"] = "微不足道"
 L["the map art is the game's own"] = "地圖美術皆來自遊戲本身"
 L["the map in combat, RareScanner's icons over the map and other map addons' pins"] = "戰鬥中的地圖、地圖上方的 RareScanner 圖示，以及其他地圖插件的圖示"
+L["the map's hitches while panning, found and measured with /openmap bench"] = "拖曳地圖時的卡頓，用 /openmap bench 找出並測量"
 L["what's wrong?"] = "哪裡有問題？"
 L["your group"] = "你的隊伍"
 L["your guild"] = "你的公會"
