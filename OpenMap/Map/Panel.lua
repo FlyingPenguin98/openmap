@@ -572,6 +572,7 @@ local RAIL_MAIN = { 40, 42 }    -- the OpenMap tab: out from the edge, along it 
 local RAIL_FAV = { 32, 34 }     -- a favourite's
 local RAIL_GAP, RAIL_ARROW = 3, 16
 local RAIL_END = 44             -- kept clear at each end of an edge (the quest log button, the coordinates)
+local RAIL_QUEST_ROOM = 40      -- right side: room below the tabs for the windowed quest log toggle
 local RAIL_DEFAULT = { edge = "right", at = 0 }   -- (low on the right, past the end kept clear)
 local DUNGEON_TABS = 2 * 42 + 3 -- a dungeon map's two tabs, along the right edge
 local VERTICAL = { left = true, right = true }
@@ -710,7 +711,10 @@ RefreshRail = function()
 	-- the OpenMap tab where it was put, kept off the edge's ends; the favourites the way along it
 	-- there's more room (on the right edge, less a dungeon map's tabs while they show)
 	local half = RAIL_MAIN[2] / 2
-	local s0 = math.max(RAIL_END + half, math.min(len - RAIL_END - half, (pos.at or 0) * len))
+	-- Move the entire tab stack up when the quest toggle sits beneath it.
+	-- Other edges and the fullscreen layout keep their existing positions.
+	local questRoom = (edge == "right" and map.IsMaximized and not map:IsMaximized()) and RAIL_QUEST_ROOM or 0
+	local s0 = math.max(RAIL_END + questRoom + half, math.min(len - RAIL_END - half, (pos.at or 0) * len))
 	local dir = (len - s0 >= s0) and 1 or -1
 	local reserve = (edge == "right" and mod.DungeonTabsShown and mod.DungeonTabsShown()) and (DUNGEON_TABS + 12) or 0
 	local reach = (dir > 0 and (len - s0) or s0) - RAIL_END - reserve

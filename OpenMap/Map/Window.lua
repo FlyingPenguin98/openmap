@@ -345,6 +345,31 @@ function mod:SetupWindow(worldMap)
 	for _, g in ipairs(grip) do g:SetFrameLevel(OverIcons() + 1) end
 	FitRightGrip()
 	SetupQuestLog()
+	-- Keep the resize grip in the bottom-right corner: put the quest toggle at
+	-- the bottom of the right-hand tab rail, above the coordinate labels.
+	local function PlaceQuestToggle()
+		local toggle = map.SidePanelToggle
+		local canvas = map.GetCanvasContainer and map:GetCanvasContainer()
+		if not toggle or not canvas or InCombatLockdown() then return end
+		local windowed = not Maximized()
+		local x, y = -2, windowed and 46 or 1
+		local p, rel, rp, ox, oy = toggle:GetPoint(1)
+		if toggle:GetNumPoints() == 1 and p == "BOTTOMRIGHT" and rel == canvas
+			and rp == "BOTTOMRIGHT" and ox == x and oy == y then return end
+		toggle:ClearAllPoints()
+		toggle:SetPoint("BOTTOMRIGHT", canvas, "BOTTOMRIGHT", x, y)
+		if mod.PlaceCoords then mod.PlaceCoords() end
+	end
+	map:HookScript("OnShow", PlaceQuestToggle)
+	if map.RefreshOverlayFrames then hooksecurefunc(map, "RefreshOverlayFrames", PlaceQuestToggle) end
+	if map.SetDisplayState then hooksecurefunc(map, "SetDisplayState", PlaceQuestToggle) end
+	if map.Maximize then hooksecurefunc(map, "Maximize", PlaceQuestToggle) end
+	if map.Minimize then hooksecurefunc(map, "Minimize", PlaceQuestToggle) end
+	if map.QuestLog then
+		map.QuestLog:HookScript("OnShow", PlaceQuestToggle)
+		map.QuestLog:HookScript("OnHide", PlaceQuestToggle)
+	end
+	PlaceQuestToggle()
 	-- Blizzard's buttons on the map over its icons and the dungeon view (the quest log's button among
 	-- them); and that button's arrows turned (Blizzard's point the other way): the log comes in from
 	-- the right, so in is ◀ and away is ▶
