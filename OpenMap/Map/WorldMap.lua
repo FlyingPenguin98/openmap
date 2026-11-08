@@ -1349,6 +1349,7 @@ function mod:Diag()
 		for i, p in ipairs(parts) do parts[i] = ("%s %.0f"):format(p[1], p[2]) end
 		if #parts > 0 then ns:Print("  the latest, by part (ms; parts can run inside each other): %s.", table.concat(parts, ", ")) end
 	end
+	if mod.dungeonOpenMs then ns:Print("Opening the latest dungeon's map took %.0f ms (OpenMap's part).", mod.dungeonOpenMs) end
 	local registered, shown, placed, ours, moved
 	if mod.QuestieStatus then registered, shown, placed, ours, moved = mod.QuestieStatus() end
 	if registered then

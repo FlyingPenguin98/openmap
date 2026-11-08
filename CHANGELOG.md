@@ -57,6 +57,10 @@
 
 - **No friends dot or badge for yourself**: with Share where you are on, you could show on your
   own map as a guild member (the guild's roster can spell your realm differently).
+
+- **The map opens at once inside a dungeon**: each opening loaded the dungeon's map art again, a
+  second or two (longer in dungeons with many floors, whose Floors tab shows every floor). OpenMap
+  now keeps the art of the dungeon you're in loaded, as it does the world map's.
 ## v0.8.0-beta (2026-11-07)
 
 ### New

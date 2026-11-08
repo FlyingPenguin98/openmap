@@ -764,6 +764,7 @@ function mod:ToggleWarm()
 		warmN = 0
 		warmFrame:Hide()
 	end
+	if mod.HoldDungeonHere then mod.HoldDungeonHere() end   -- (the dungeon you're in: Dungeons.lua)
 	ns:Print(("Keep the map's art warm: %s"):format(mod.db.keepWarm and "on" or "off"))
 end
 

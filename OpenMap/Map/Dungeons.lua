@@ -1012,6 +1012,7 @@ end
 
 -- a dungeon's map in the view: its wing's first floor, else its first; grown out of `pin` (the entrance)
 local function OpenView(inst, pin)
+	local t0 = debugprofilestop and debugprofilestop()
 	-- (none in the client, WoW Forever's own dungeons: a blank page, its side panel as any other's)
 	local floors = FloorsOf(inst)
 	if not floors or #floors == 0 then floors = BLANK end
@@ -1038,7 +1039,6 @@ local function OpenView(inst, pin)
 	view.floor = nil
 	ShowFloor(first, true)
 	Sound("IG_QUEST_LOG_OPEN")
-	FillSide()
 	if (mod.db.dungeonHints or 0) < HINTS then
 		mod.db.dungeonHints = (mod.db.dungeonHints or 0) + 1
 		local hint = L["|cffffd100Right-click|r or |cffffd100Esc|r to go back to the world map"]
@@ -1053,7 +1053,8 @@ local function OpenView(inst, pin)
 	else
 		view.hint:Hide()
 	end
-	RefreshCard()
+	RefreshCard()                                 -- (fills the side panel too: once, not twice)
+	if t0 then mod.dungeonOpenMs = debugprofilestop() - t0 end   -- (/openmap status)
 	return true
 end
 function mod.DungeonViewShown() return view and view:IsShown() or false end
@@ -1947,6 +1948,66 @@ function mod:DungeonOptions(opts, get, set, off)
 		desc = L["With Dungeon Journal installed, an entrance can open that dungeon's page in it instead of its map (its map still opens where Dungeon Journal has no page for it)."] }
 end
 
+-- the dungeon you're in, as Places.lua has it (nil: not in one, or one it doesn't list)
+local function InstanceHere()
+	if not IsInInstance or not IsInInstance() then return end
+	local instID = select(8, GetInstanceInfo())
+	if not instID then return end
+	for _, g in ipairs(Places().instances or {}) do
+		for _, inst in ipairs(g[4]) do
+			if inst[1] == instID then return inst end
+		end
+	end
+end
+
+-- The dungeon you're in, kept warm: the game lets go of a closed map's files, so every opening of its
+-- map read each floor's 12 tiles again (the floor shown and the Floors tab's pictures of every floor:
+-- 84 files in Shadowfang Keep), a second or two each time. Inside a dungeon its floors' files are
+-- drawn on a frame that stays shown, a pixel across at almost no alpha (as Extras.lua keeps the world
+-- map's art), a few a frame so going in doesn't hitch; let go on the way out. /openmap warm: off too
+local HOLD_STEP = 6             -- files set a frame
+local holdFrame, holdTex, holdFiles, holdNext = nil, {}, {}, 1
+local function HoldStep(self)
+	local last = math.min(#holdFiles, holdNext + HOLD_STEP - 1)
+	for i = holdNext, last do
+		local t = holdTex[i]
+		if not t then
+			t = self:CreateTexture(nil, "BACKGROUND")
+			t:SetAllPoints(self)
+			t:SetAlpha(0.01)
+			holdTex[i] = t
+		end
+		t:SetTexture(holdFiles[i])
+		t:Show()
+	end
+	holdNext = last + 1
+	if holdNext > #holdFiles then self:SetScript("OnUpdate", nil) end
+end
+function mod.HoldDungeonHere()
+	local files = {}
+	local inst = mod.db.keepWarm ~= false and InstanceHere()
+	local floors = inst and not DungeonMap(inst) and FloorsOf(inst)
+	for _, f in ipairs(floors or {}) do
+		for _, file in ipairs(f.tiles or {}) do files[#files + 1] = file end
+	end
+	if #files == 0 and not holdFrame then return end
+	if not holdFrame then
+		holdFrame = CreateFrame("Frame")
+		holdFrame:SetFrameStrata("BACKGROUND")
+		holdFrame:SetSize(1, 1)
+		holdFrame:SetPoint("BOTTOMLEFT", 0, 0)
+	end
+	for i = #files + 1, #holdTex do holdTex[i]:SetTexture(nil) holdTex[i]:Hide() end
+	holdFiles, holdNext = files, 1
+	if #files == 0 then
+		holdFrame:SetScript("OnUpdate", nil)
+		holdFrame:Hide()
+		return
+	end
+	holdFrame:Show()
+	holdFrame:SetScript("OnUpdate", HoldStep)
+end
+
 function mod:SetupDungeons(worldMap)
 	map, sc = worldMap, worldMap.ScrollContainer
 	-- (the map before this one: the event comes before Blizzard resets the view, so ReturnView knows it)
@@ -1998,18 +2059,10 @@ function mod:SetupDungeons(worldMap)
 				end
 				here = info.parentMapID
 			end
-			if not IsInInstance or not IsInInstance() then return end
-			local instID = select(8, GetInstanceInfo())
-			if not instID then return end
-			for _, g in ipairs(Places().instances or {}) do
-				for _, inst in ipairs(g[4]) do
-					if inst[1] == instID then
-						local id = DungeonMap(inst)
-						if not id then OpenView(inst, nil) elseif map:GetMapID() ~= id then S.OpenMap(id) end
-						return
-					end
-				end
-			end
+			local inst = InstanceHere()
+			if not inst then return end
+			local id = DungeonMap(inst)
+			if not id then OpenView(inst, nil) elseif map:GetMapID() ~= id then S.OpenMap(id) end
 		end)
 	end)
 	map:HookScript("OnHide", function()
@@ -2033,5 +2086,10 @@ function mod:SetupDungeons(worldMap)
 	ns.RegisterEvent(events, "PLAYER_LEVEL_UP", function()
 		C_Timer.After(0, function() Recolour() RefreshCard() end)   -- (UnitLevel catches up after the event)
 	end)
+	-- (into a dungeon or out: its floors held, or let go; a moment after the loading screen)
+	local function Rehold() C_Timer.After(2, mod.HoldDungeonHere) end
+	ns.RegisterEvent(events, "PLAYER_ENTERING_WORLD", Rehold)
+	ns.RegisterEvent(events, "ZONE_CHANGED_NEW_AREA", Rehold)
+	Rehold()                                      -- (set up already inside one)
 	ns.RegisterEvent(events, "QUEST_TURNED_IN", function() if card and card:IsShown() then C_Timer.After(0.5, RefreshCard) end end)
 end
