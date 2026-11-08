@@ -31,6 +31,7 @@ jobs:
       - run: python tools/offline-test/run.py pad
       - run: python tools/offline-test/run.py padmap
       - run: python tools/offline-test/navigation.py
+      - run: python -P tools/offline-test/brightness.py
       - run: python -P tools/offline-test/friends.py
       # (WoW Forever's own data: its combat list, caves, painted gaps and sea chart)
       - if: matrix.client == 'forever'

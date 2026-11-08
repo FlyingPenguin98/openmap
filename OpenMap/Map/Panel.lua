@@ -1406,6 +1406,7 @@ function mod:SetupPanel(worldMap)
 	menu.extraRows[#menu.extraRows + 1] = made.iconSize
 	for _, s in ipairs({
 		{ "windowScale", L["Map size"], Icon("INV_Misc_Spyglass_02") },
+		{ "brightness", L["Map brightness"], Icon("Spell_Shadow_DarkRitual") },
 		{ "colorMatch", L["Colour matching"], Icon("INV_Misc_Map_01") },
 		{ "desaturate", L["Take colour out"], Icon("Spell_Shadow_Twilight") },
 		{ "darkening", L["Darkening"], Icon("Spell_Shadow_DarkRitual") },
@@ -1427,7 +1428,7 @@ function mod:SetupPanel(worldMap)
 	end
 	-- each column's, top down
 	local height = 0
-	for col, list in ipairs({ { "zoom", "icons", "iconSize", "windowScale", "colorMatch", "desaturate" }, { "from", "minimapMix", "opacity", "darkening", "moveFade", "mapFpsCap" } }) do
+	for col, list in ipairs({ { "zoom", "icons", "iconSize", "windowScale", "brightness", "colorMatch", "desaturate" }, { "from", "minimapMix", "opacity", "darkening", "moveFade", "mapFpsCap" } }) do
 		local y = -22
 		for _, key in ipairs(list) do
 			local r = made[key]

@@ -1,5 +1,12 @@
 # OpenMap changelog
 
+## Unreleased
+
+### New
+
+- **Map brightness** in the Look tab: dim the whole stitched map, including explored areas and the
+  sea, while player and quest icons stay bright. 100% keeps the original look (the default).
+
 ## v0.8.2 (2026-11-08)
 
 ### Improved

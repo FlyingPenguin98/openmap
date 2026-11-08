@@ -492,5 +492,7 @@
  "The colour unexplored areas are darkened with.": "탐험하지 않은 지역을 어둡게 할 때 쓰는 색상입니다.",
  "Default colour": "기본 색상",
  "dungeon and cave maps in every language (they showed green on some languages' clients)": "모든 언어에서 던전과 동굴 지도 표시 (일부 언어 클라이언트에서 녹색으로 보이던 문제)",
- "the map's hitches while panning, found and measured with /openmap bench": "지도를 이동할 때 끊기는 문제, /openmap bench 명령으로 찾아내고 측정"
+ "the map's hitches while panning, found and measured with /openmap bench": "지도를 이동할 때 끊기는 문제, /openmap bench 명령으로 찾아내고 측정",
+ "Map brightness": "지도 밝기",
+ "Brightness of the entire OpenMap map, including explored areas and the sea. Player and quest icons stay bright. 100% restores the original brightness.": "탐험한 지역과 바다를 포함한 OpenMap 지도 전체의 밝기입니다. 플레이어와 퀘스트 아이콘의 밝기는 유지됩니다. 100%로 설정하면 원래 밝기로 돌아갑니다."
 }
