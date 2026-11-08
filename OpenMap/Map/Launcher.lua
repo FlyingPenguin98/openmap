@@ -97,6 +97,36 @@ function mod.RefreshLauncher()
 	end
 end
 
+-- Titan Panel and other LibDataBroker displays can use this launcher without
+-- OpenMap depending on either addon. Libraries from other addons are ready at
+-- PLAYER_LOGIN; if no broker is installed, the minimap launcher still works.
+local function RegisterBroker()
+	local ldb = LibStub and LibStub("LibDataBroker-1.1", true)
+	if not ldb then return end
+	ldb:NewDataObject("OpenMap", {
+		type = "launcher",
+		label = "OpenMap",
+		icon = ICON,
+		tocname = ns.name,
+		OnClick = function(_, mouse)
+			if mouse ~= "RightButton" then
+				ToggleWorldMap()
+				return
+			end
+			if not mod.enabled then OpenWindow() return end
+			if mod.OpenMenu and mod:OpenMenu() then return end
+			-- On the first map opening, the menu may not have been built yet.
+			if not (WorldMapFrame and WorldMapFrame:IsShown()) then ToggleWorldMap() end
+			C_Timer.After(0, function() if mod.OpenMenu then mod:OpenMenu() end end)
+		end,
+		OnTooltipShow = function(tooltip)
+			tooltip:AddLine("|cff" .. ns.ACCENT .. "Open|rMap")
+			tooltip:AddLine(L["Left-click: show or hide the map"], 1, 1, 1)
+			tooltip:AddLine(L["Right-click: the map's menu"], 1, 1, 1)
+		end,
+	})
+end
+
 function mod:LauncherOptions(opts, get, off)
 	local function set(info, v) mod.db[info[#info]] = v mod.RefreshLauncher() end
 	opts.minimapButton = { type = "toggle", name = L["Minimap button"], order = 28.5, get = get, set = set, disabled = off,
@@ -111,5 +141,8 @@ local boot = CreateFrame("Frame")
 boot:RegisterEvent("PLAYER_LOGIN")
 boot:SetScript("OnEvent", function(self)
 	self:UnregisterEvent("PLAYER_LOGIN")
-	if mod.db and mod.db.enabled then mod.RefreshLauncher() end
+	if mod.db and mod.db.enabled then
+		mod.RefreshLauncher()
+		RegisterBroker()
+	end
 end)
