@@ -16,6 +16,7 @@ ns.Credits = {
 		{ "Santiago Reyes", L["Hand painted custom art for OpenMap including the sea elements, blank land between zones, and his maps of WoW Forever dungeons."] },
 	} },
 	{ L["Programming"], {   -- (not "Code": that's the Pins code button's word)
+		{ "daxtron2", L["the map's hitches while panning, found and measured with /openmap bench"] },
 		{ "Ironship", L["the map in combat, RareScanner's icons over the map and other map addons' pins"] },
 		{ "C-Clymer", L["how the map reopens, and middle-click to center on you"] },
 		{ "RADD95", L["dungeon and cave maps in every language (they showed green on some languages' clients)"] },
