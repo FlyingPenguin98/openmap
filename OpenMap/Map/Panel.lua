@@ -713,7 +713,7 @@ RefreshRail = function()
 	local half = RAIL_MAIN[2] / 2
 	-- Move the entire tab stack up when the quest toggle sits beneath it.
 	-- Other edges and the fullscreen layout keep their existing positions.
-	local questRoom = (edge == "right" and map.IsMaximized and not map:IsMaximized()) and RAIL_QUEST_ROOM or 0
+	local questRoom = (edge == "right" and map.IsMaximized and not map:IsMaximized() and mod.MoveAnyOn and mod.MoveAnyOn()) and RAIL_QUEST_ROOM or 0
 	local s0 = math.max(RAIL_END + questRoom + half, math.min(len - RAIL_END - half, (pos.at or 0) * len))
 	local dir = (len - s0 >= s0) and 1 or -1
 	local reserve = (edge == "right" and mod.DungeonTabsShown and mod.DungeonTabsShown()) and (DUNGEON_TABS + 12) or 0
