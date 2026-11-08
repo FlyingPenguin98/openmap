@@ -750,16 +750,36 @@ local function WarmHold()
 	warmN = #files
 	warmFrame:Show()
 end
+-- Let go a few files a frame (WARM_STEP), from a moment into the opening (the map's own textures
+-- drawn by then, holding the files themselves): all in one frame, the game unloaded the rest at once,
+-- a stall of about a second each time the map opened. The map closing stops it (WarmHold holds again)
+local WARM_STEP = 15            -- files let go a frame: 1,200 over about 1.5 s
+local warmRelease = CreateFrame("Frame")
+warmRelease:Hide()
+warmRelease:SetScript("OnUpdate", function(self)
+	if not map:IsShown() or not warmFrame then self:Hide() return end
+	mod.TimeAfter("warm art let go (a frame's worth)", function()
+		for _ = 1, WARM_STEP do
+			if warmN == 0 then break end
+			warmTex[warmN]:SetTexture(nil)
+			warmTex[warmN]:Hide()
+			warmN = warmN - 1
+		end
+	end)
+	if warmN == 0 then warmFrame:Hide() self:Hide() end
+end)
 local function WarmLetGo()
 	if not warmFrame then return end
-	-- (a moment into the opening: the map's own textures drawn by then, holding the files themselves)
+	warmRelease:Hide()
 	C_Timer.After(1, function()
-		if map:IsShown() and warmFrame then mod.TimeAfter("warm art let go", warmFrame.Hide, warmFrame) end
+		if map:IsShown() and warmFrame then warmRelease:Show() end
 	end)
 end
+local function WarmStop() warmRelease:Hide() end
 function mod:ToggleWarm()
 	mod.db.keepWarm = mod.db.keepWarm == false
 	if not mod.db.keepWarm and warmFrame then
+		warmRelease:Hide()
 		for i = 1, warmN do warmTex[i]:SetTexture(nil) warmTex[i]:Hide() end
 		warmN = 0
 		warmFrame:Hide()
@@ -937,7 +957,7 @@ function mod:SetupExtras(worldMap)
 	map, sc = worldMap, worldMap.ScrollContainer
 	map:HookScript("OnShow", function() fader:SetShown((mod.db.moveFade or 0) > 0) ApplyFpsCap() end)
 	map:HookScript("OnHide", function() fader:Hide() faded = 1 SetFade(1) ApplyFpsCap() end)
-	map:HookScript("OnHide", function() mod.TimeClose("warm art held", WarmHold) end)
+	map:HookScript("OnHide", function() WarmStop() mod.TimeClose("warm art held", WarmHold) end)
 	map:HookScript("OnShow", WarmLetGo)
 	hooksecurefunc(map, "SetAlpha", KeepFade)
 	SetUpAllPins()
