@@ -16,6 +16,11 @@ local _, ns = ...
 local S = ns.MapStitch
 local mod = ns:GetModule("worldmap")
 local Safe, L = ns.Safe, ns.L
+-- timed for /openmap status after an opening (WorldMap.lua's mod.TimeAfter; plain, without it)
+local function Timed(name, fn, ...)
+	if mod.TimeAfter then return mod.TimeAfter(name, fn, ...) end
+	return fn(...)
+end
 
 mod.defaults.friends = true         -- friends and guild on the map
 mod.defaults.friendsShare = false   -- your place sent to your guild and your friends who use OpenMap
@@ -314,7 +319,7 @@ local scanning = false
 local function QueueScan()
 	if scanning then return end
 	scanning = true
-	C_Timer.After(1, function() scanning = false Scan() end)
+	C_Timer.After(1, function() scanning = false Timed("friends and guild scanned", Scan) end)
 end
 
 local function AskRosters()
@@ -542,9 +547,9 @@ function mod:SetupFriends(worldMap)
 		if wait > 0 then return end
 		wait = 1
 		redrawIn, rosterIn = redrawIn - 1, rosterIn - 1
-		if rosterIn <= 0 then rosterIn = ROSTER_EVERY AskRosters() end
+		if rosterIn <= 0 then rosterIn = ROSTER_EVERY Timed("friends and guild asked", AskRosters) end
 		if redrawIn <= 0 or mod.IsStitched() ~= stitched then dirty = true end
-		if dirty then redrawIn, stitched = REDRAW_EVERY, mod.IsStitched() Redraw() end
+		if dirty then redrawIn, stitched = REDRAW_EVERY, mod.IsStitched() Timed("friends and guild drawn", Redraw) end
 	end)
 	worldMap:HookScript("OnShow", function()
 		wait, rosterIn, dirty = 0, 0, true

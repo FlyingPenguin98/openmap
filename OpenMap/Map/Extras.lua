@@ -569,7 +569,7 @@ local function SetUpPins(name, pins)
 		provider.RefreshAllData = function(self, ...)
 			local before = self:GetMap() and self:GetMap():GetMapID()
 			if before ~= count.mapID then count.placed, count.ours, count.moved, count.mapID = 0, 0, 0, before end
-			return Refresh(self, ...)
+			return mod.TimeAfter(spec.questie and "Questie's icons placed" or "map pins placed", Refresh, self, ...)
 		end
 	end
 	-- (taken over with the map open, after the library placed its icons the game's way: again, ours)
@@ -616,7 +616,7 @@ PinRetry:SetScript("OnUpdate", function(self)
 	if now - self.at < 0.5 then return end
 	self.at = now
 	if not map or not map:IsShown() or not next(pending) then self:Hide() return end
-	SetUpAllPins()
+	mod.TimeAfter("pin libraries, again", SetUpAllPins)
 end)
 local function SetUpAllPinsAndWait()
 	SetUpAllPins(true)
@@ -754,7 +754,7 @@ local function WarmLetGo()
 	if not warmFrame then return end
 	-- (a moment into the opening: the map's own textures drawn by then, holding the files themselves)
 	C_Timer.After(1, function()
-		if map:IsShown() and warmFrame then warmFrame:Hide() end
+		if map:IsShown() and warmFrame then mod.TimeAfter("warm art let go", warmFrame.Hide, warmFrame) end
 	end)
 end
 function mod:ToggleWarm()
@@ -928,20 +928,20 @@ QPATH.tick:Hide()
 QPATH.tick:SetScript("OnUpdate", function()
 	local now = GetTime()
 	if now - QPATH.movedAt < QPATH_SETTLE or (mod.Zooming and mod.Zooming()) then return end
-	if QPATH.moved then QuestieNearNow() end
+	if QPATH.moved then mod.TimeAfter("Questie paths, zones near", QuestieNearNow) end
 	if now - QPATH.at < QPATH_EVERY then return end
-	if QPATH.dirty or now - QPATH.at > QPATH_REFRESH then DrawQuestiePaths() end
+	if QPATH.dirty or now - QPATH.at > QPATH_REFRESH then mod.TimeAfter("Questie paths drawn", DrawQuestiePaths) end
 end)
 
 function mod:SetupExtras(worldMap)
 	map, sc = worldMap, worldMap.ScrollContainer
 	map:HookScript("OnShow", function() fader:SetShown((mod.db.moveFade or 0) > 0) ApplyFpsCap() end)
 	map:HookScript("OnHide", function() fader:Hide() faded = 1 SetFade(1) ApplyFpsCap() end)
-	map:HookScript("OnHide", WarmHold)
+	map:HookScript("OnHide", function() mod.TimeClose("warm art held", WarmHold) end)
 	map:HookScript("OnShow", WarmLetGo)
 	hooksecurefunc(map, "SetAlpha", KeepFade)
 	SetUpAllPins()
-	map:HookScript("OnShow", SetUpAllPinsAndWait)     -- (a copy an addon loaded since brought)
+	map:HookScript("OnShow", function() mod.TimeAfter("pin libraries", SetUpAllPinsAndWait) end)     -- (a copy an addon loaded since brought)
 	ns.RegisterEvent(PinRetry, "ADDON_LOADED", function() SetUpAllPins() end)
 	HookQuestiePaths()                               -- (now: an older Questie's path stretches are kept as they're made)
 	map:HookScript("OnShow", function() HookQuestiePaths() if QPATH.hooked then QPATH.dirty = true QPATH.tick:Show() end end)

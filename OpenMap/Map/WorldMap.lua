@@ -567,6 +567,50 @@ local function Ours(name, fn)
 	end
 end
 
+-- After an opening (AFTER_OPEN seconds) and as the map closes: OpenMap's later work (timers, the
+-- warm art's let-go, the friends scan, Questie's icons and paths), the worst of each, and the longest
+-- frame then, ours or not (/openmap status). A stall after the opening frame shows here, not above
+local AFTER_OPEN = 3
+local after = { parts = {}, close = {}, gap = 0, gapAt = 0 }
+local afterFrame = CreateFrame("Frame")
+afterFrame:Hide()
+afterFrame:SetScript("OnUpdate", function(self)
+	local now = debugprofilestop()
+	if after.last and now - after.last > after.gap then after.gap, after.gapAt = now - after.last, after.last - after.start end
+	after.last = now
+	if now - after.start > AFTER_OPEN * 1000 then self:Hide() end
+end)
+local function AfterOpening()
+	if not debugprofilestop then return end
+	after.start, after.last, after.gap, after.gapAt = debugprofilestop(), nil, 0, 0
+	wipe(after.parts)
+	afterFrame:Show()
+end
+local function Note(list, name, ms) if ms > (list[name] or 0) then list[name] = ms end end
+-- fn(...) timed as `name` while an opening's later work is being watched (its results passed on)
+function mod.TimeAfter(name, fn, ...)
+	if not debugprofilestop or not afterFrame:IsShown() then return fn(...) end
+	local start = debugprofilestop()
+	local a, b, c = fn(...)
+	Note(after.parts, name, debugprofilestop() - start)
+	return a, b, c
+end
+-- fn(...) timed as `name`, as the map closes
+function mod.TimeClose(name, fn, ...)
+	if not debugprofilestop then return fn(...) end
+	local start = debugprofilestop()
+	local a, b, c = fn(...)
+	after.close[name] = debugprofilestop() - start
+	return a, b, c
+end
+local function Worst(list)
+	local parts = {}
+	for name, ms in pairs(list) do parts[#parts + 1] = { name, ms } end
+	table.sort(parts, function(x, y) return x[2] > y[2] end)
+	for i, p in ipairs(parts) do parts[i] = ("%s %.0f"):format(p[1], p[2]) end
+	return #parts > 0 and table.concat(parts, ", ") or "nothing timed"
+end
+
 -- the view for Close.lua (minimap, grain, caves): centre, half extents (normalized), zoom
 -- (Blizzard reports a pan several times a frame: the work is done once, on the next frame)
 local live                      -- { u, v, zoom, width, height }: the view on screen, and the view's size then
@@ -1084,6 +1128,7 @@ local function Setup()
 	end)
 	dp.OnShow = function()
 		if debugprofilestop then openStart, openOurs, openFrames, openParts = debugprofilestop(), 0, 0, {} openTimer:Show() end
+		AfterOpening()
 		shown()
 	end
 	map:AddDataProvider(dp)
@@ -1349,6 +1394,11 @@ function mod:Diag()
 		for i, p in ipairs(parts) do parts[i] = ("%s %.0f"):format(p[1], p[2]) end
 		if #parts > 0 then ns:Print("  the latest, by part (ms; parts can run inside each other): %s.", table.concat(parts, ", ")) end
 	end
+	if after.start then
+		ns:Print("In the %d s after the latest opening: the longest frame %.0f ms, %.1f s in; OpenMap's later work, slowest (ms): %s.",
+			AFTER_OPEN, after.gap, after.gapAt / 1000, Worst(after.parts))
+	end
+	if next(after.close) then ns:Print("As the map last closed (ms): %s.", Worst(after.close)) end
 	if mod.dungeonOpenMs then ns:Print("Opening the latest dungeon's map took %.0f ms (OpenMap's part).", mod.dungeonOpenMs) end
 	local registered, shown, placed, ours, moved
 	if mod.QuestieStatus then registered, shown, placed, ours, moved = mod.QuestieStatus() end
