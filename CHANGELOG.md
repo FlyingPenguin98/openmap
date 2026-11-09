@@ -43,6 +43,10 @@
   dungeon: the map art OpenMap keeps loaded while the map is closed was drawn there, hundreds of
   faint copies on one pixel. Found by ryanull24.
 
+- **Friends on other numbered realms show on the map**: Forever's numbered realms of one pool
+  (Realm4, Realm12 ...) count as one realm, so a friend there shows like a friend on yours. They
+  were left out as if on another realm. By TheRayoX.
+
 ## v0.8.2 (2026-11-08)
 
 ### Improved

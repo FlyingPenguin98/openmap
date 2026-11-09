@@ -510,5 +510,6 @@
  "the switch for dungeon maps, and separate switches for friends and guild": "던전 지도 스위치, 친구와 길드 각각의 스위치",
  "zooming about four times smoother, found and measured": "약 네 배 부드러워진 확대/축소, 발견 및 측정",
  "Click: track this quest, zoom to it and show it in the quest log": "클릭: 이 퀘스트를 추적하고 확대한 뒤 퀘스트 목록에 표시",
- "Click: track this quest and zoom to it": "클릭: 이 퀘스트를 추적하고 확대"
+ "Click: track this quest and zoom to it": "클릭: 이 퀘스트를 추적하고 확대",
+ "friends on other numbered realms on the map": "번호가 붙은 다른 서버의 친구를 지도에 표시"
 }

@@ -14,6 +14,7 @@ ns.MapChangelog = {
 		"|cff6e2c0aClicking a quest's icon on the windowed map shows it in the quest log|r: the quest log beside the map opens if it was closed, with the quest's details, as well as tracking the quest and zooming in on it. (On the full-screen map a click still tracks and zooms only.)",
 		"|cff6e2c0aA dungeon map remembers its tab|r: picking Quests beside the quest log keeps it picked the next time a dungeon's map opens.",
 		"|cff6e2c0aNo more dot in the bottom-left corner of the screen|r after closing the map, or inside a dungeon: the map art OpenMap keeps loaded while the map is closed was drawn there, hundreds of faint copies on one pixel. Found by ryanull24.",
+		"|cff6e2c0aFriends on other numbered realms show on the map|r: Forever's numbered realms of one pool (Realm4, Realm12 ...) count as one realm, so a friend there shows like a friend on yours. They were left out as if on another realm. By TheRayoX.",
 	} },
 	{ version = "v0.8.2", date = "2026-11-08", heads = { [1] = "Improved", [2] = "Fixed", }, items = {
 		"|cff6e2c0aPanning no longer hitches|r: the map set up to 300 textures' files in a single frame where a pan brought new ground into view, and each set is a load and an upload, so that frame showed as a hitch of about 35 ms. It sets 60 a frame now; the art still fades in, a few frames later.",

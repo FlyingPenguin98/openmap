@@ -93,7 +93,7 @@
  {
   "en": "... and %d more",
   "where": [
-   "Map/Friends.lua:414",
+   "Map/Friends.lua:428",
    "Map/Pins.lua:305"
   ]
  },
@@ -1101,7 +1101,7 @@
  {
   "en": "Everyone who reports problems and ideas on CurseForge.",
   "where": [
-   "Credits.lua:41"
+   "Credits.lua:42"
   ]
  },
  {
@@ -1228,19 +1228,19 @@
  {
   "en": "Friend",
   "where": [
-   "Map/Friends.lua:392"
+   "Map/Friends.lua:406"
   ]
  },
  {
   "en": "Friends and guild",
   "where": [
-   "Map/Friends.lua:510"
+   "Map/Friends.lua:524"
   ]
  },
  {
   "en": "Friends on the map",
   "where": [
-   "Map/Friends.lua:572",
+   "Map/Friends.lua:586",
    "Map/Panel.lua:211"
   ]
  },
@@ -1292,14 +1292,14 @@
  {
   "en": "Guild",
   "where": [
-   "Map/Friends.lua:392",
+   "Map/Friends.lua:406",
    "Map/Pins.lua:536"
   ]
  },
  {
   "en": "Guild members on the map",
   "where": [
-   "Map/Friends.lua:574",
+   "Map/Friends.lua:588",
    "Map/Panel.lua:212"
   ]
  },
@@ -1405,7 +1405,7 @@
  {
   "en": "If a word reads wrong in your language, say so on CurseForge: it's fixed for the next version.",
   "where": [
-   "Credits.lua:38"
+   "Credits.lua:39"
   ]
  },
  {
@@ -1501,7 +1501,7 @@
  {
   "en": "Libraries",
   "where": [
-   "Credits.lua:33"
+   "Credits.lua:34"
   ]
  },
  {
@@ -1563,7 +1563,7 @@
  {
   "en": "Map art",
   "where": [
-   "Credits.lua:30"
+   "Credits.lua:31"
   ]
  },
  {
@@ -1815,7 +1815,7 @@
  {
   "en": "Not now",
   "where": [
-   "Map/Friends.lua:524"
+   "Map/Friends.lua:538"
   ]
  },
  {
@@ -1895,7 +1895,7 @@
  {
   "en": "Only your guild and friends, never from a dungeon, raid or battleground. OpenMap's menu: More, Sharing.",
   "where": [
-   "Map/Friends.lua:528"
+   "Map/Friends.lua:542"
   ]
  },
  {
@@ -2227,7 +2227,7 @@
  {
   "en": "Reports and ideas",
   "where": [
-   "Credits.lua:40"
+   "Credits.lua:41"
   ]
  },
  {
@@ -2302,13 +2302,13 @@
  {
   "en": "Share where I am",
   "where": [
-   "Map/Friends.lua:523"
+   "Map/Friends.lua:537"
   ]
  },
  {
   "en": "Share where you are",
   "where": [
-   "Map/Friends.lua:576",
+   "Map/Friends.lua:590",
    "Map/Panel.lua:334"
   ]
  },
@@ -2701,7 +2701,7 @@
  {
   "en": "Translations",
   "where": [
-   "Credits.lua:37"
+   "Credits.lua:38"
   ]
  },
  {
@@ -2755,7 +2755,7 @@
  {
   "en": "Updated %d s ago",
   "where": [
-   "Map/Friends.lua:404"
+   "Map/Friends.lua:418"
   ]
  },
  {
@@ -2940,13 +2940,13 @@
  {
   "en": "Your friends and guild members who use OpenMap can show on your map as a dot where they stand. Share where you are, so they see you on theirs?",
   "where": [
-   "Map/Friends.lua:515"
+   "Map/Friends.lua:529"
   ]
  },
  {
   "en": "Your friends who are online: a badge on the zone each is in, with who's there (as the friends list shows it), or a class-coloured dot where they stand for those who use OpenMap and share where they are.",
   "where": [
-   "Map/Friends.lua:573"
+   "Map/Friends.lua:587"
   ]
  },
  {
@@ -2964,13 +2964,13 @@
  {
   "en": "Your guild members who are online: a badge on the zone each is in, with who's there (as the guild roster shows it), or a class-coloured dot where they stand for those who use OpenMap and share where they are.",
   "where": [
-   "Map/Friends.lua:575"
+   "Map/Friends.lua:589"
   ]
  },
  {
   "en": "Your guild, and your friends who use OpenMap, see you as a dot where you stand on their map, sent every few seconds while you move. Never from inside a dungeon, raid or battleground. Off, they see only your zone, as the friends list and guild roster show it.",
   "where": [
-   "Map/Friends.lua:577"
+   "Map/Friends.lua:591"
   ]
  },
  {
@@ -3098,6 +3098,12 @@
   ]
  },
  {
+  "en": "friends on other numbered realms on the map",
+  "where": [
+   "Credits.lua:29"
+  ]
+ },
+ {
   "en": "from %d",
   "where": [
    "Map/Dungeons.lua:1769"
@@ -3143,7 +3149,7 @@
  {
   "en": "the map art is the game's own",
   "where": [
-   "Credits.lua:31"
+   "Credits.lua:32"
   ]
  },
  {

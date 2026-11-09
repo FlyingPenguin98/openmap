@@ -26,6 +26,7 @@ ns.Credits = {
 		{ "Naladdar", L["the resizable settings menu, resizing the map with Move Any, and the Titan Panel launcher"] },
 		{ "ZiiMs", L["the switch for dungeon maps, and separate switches for friends and guild"] },
 		{ "forcedroidbrain", L["map brightness"] },
+		{ "TheRayoX", L["friends on other numbered realms on the map"] },
 	} },
 	{ L["Map art"], {
 		{ "Blizzard Entertainment", L["the map art is the game's own"] },
