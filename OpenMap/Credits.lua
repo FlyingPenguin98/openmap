@@ -20,6 +20,7 @@ ns.Credits = {
 		{ "Ironship", L["the map in combat, RareScanner's icons over the map and other map addons' pins"] },
 		{ "C-Clymer", L["how the map reopens, and middle-click to center on you"] },
 		{ "RADD95", L["dungeon and cave maps in every language (they showed green on some languages' clients)"] },
+		{ "TheRayoX" },
 	} },
 	{ L["Map art"], {
 		{ "Blizzard Entertainment", L["the map art is the game's own"] },
