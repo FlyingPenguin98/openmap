@@ -24,6 +24,7 @@ d.dungeonCard = true            -- the card open (false: folded to its title)
 d.dungeonLevels = true          -- each entrance's level range under its icon
 d.dungeonHints = 0              -- dungeon maps opened with the how-to-leave hint (it shows for the first few)
 d.dungeonTab = "floors"         -- the dungeon map's side panel: floors, bosses, quests or loot
+d.dungeonDockTab = "dungeon"    -- the tab picked beside the quest log on a dungeon's map: "dungeon" or "quests"
 d.entrances = {}                -- lines /openmap entrance recorded, to paste into build.py
 
 local LOOK = {
@@ -550,6 +551,7 @@ local function BuildView()
 			if log and log:IsVisible() then
 				if view.dockTab == self.key then return end
 				view.dockTab = self.key
+				mod.db.dungeonDockTab = self.key   -- (kept: the next dungeon's map opens at it too)
 				Sound("IG_CHARACTER_INFO_TAB")
 				Dock()
 				return
@@ -1038,7 +1040,7 @@ local function OpenView(inst, pin)
 	view.leaving = nil
 	view:SetAlpha(1)
 	view:Show()
-	view.dockTab = "dungeon"
+	view.dockTab = mod.db.dungeonDockTab == "quests" and "quests" or "dungeon"   -- (the tab last picked)
 	Dock()
 	view.floor = nil
 	ShowFloor(first, true)
@@ -2049,7 +2051,11 @@ function mod:SetupDungeons(worldMap)
 	-- the quest log opened or closed over a dungeon's map: the side panel into it (its tab picked) or out
 	local function Redock(pick)
 		if not (view and view:IsShown()) then return end
-		if pick then view.dockTab = view.wantTab or "dungeon" end   -- (opened from one of the tabs: that one)
+		if pick then
+			-- (opened from one of the tabs: that one, kept; else the tab last picked)
+			if view.wantTab then mod.db.dungeonDockTab = view.wantTab end
+			view.dockTab = mod.db.dungeonDockTab == "quests" and "quests" or "dungeon"
+		end
 		Dock()
 		FillSide()
 	end
