@@ -39,9 +39,9 @@
 
 ### Fixed
 
-- **No more dot in the bottom-left corner of the screen** after closing the map: the map art
-  OpenMap keeps loaded while the map is closed was drawn there, hundreds of faint copies on one
-  pixel. Found by ryanull24.
+- **No more dot in the bottom-left corner of the screen** after closing the map, or inside a
+  dungeon: the map art OpenMap keeps loaded while the map is closed was drawn there, hundreds of
+  faint copies on one pixel. Found by ryanull24.
 
 ## v0.8.2 (2026-11-08)
 

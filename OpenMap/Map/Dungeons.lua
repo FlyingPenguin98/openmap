@@ -1998,6 +1998,8 @@ local function HoldStep(self)
 			t = self:CreateTexture(nil, "BACKGROUND")
 			t:SetAllPoints(self)
 			t:SetAlpha(0.01)
+			t:SetBlendMode("ADD")         -- (added as black: stacked, they showed as a dot, as in #45)
+			t:SetVertexColor(0, 0, 0)
 			holdTex[i] = t
 		end
 		t:SetTexture(holdFiles[i])
