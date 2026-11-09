@@ -1,5 +1,11 @@
 # OpenMap changelog
 
+## Unreleased
+
+### Fixed
+
+- **Friends on numbered Forever realms appear on your map**: friends on any realm in the same ruleset pool are now included, regardless of the numeric realm suffix.
+
 ## v0.8.2 (2026-11-08)
 
 ### Improved

@@ -76,6 +76,20 @@ end
 -- a realm as compared: no spaces, hyphens or apostrophes, any case
 local function Plain(rlm) return (rlm:gsub("[%s%-']", "")):lower() end
 
+-- Forever's numbered realms share a ruleset map. Compare the pool, not its shard number:
+-- CAMWOWEU5Realm4PvP and CAMWOWEU5Realm12PvP both become camwoweu5realmpvp.
+local function RealmPool(rlm)
+	local key = Plain(rlm)
+	if ns.Client == "Forever" then key = key:gsub("realm%d+", "realm") end
+	return key
+end
+
+local function SamePool(full)
+	local _, rlm = full:match("^([^%-]+)%-(.+)$")
+	local mine = Realm()
+	return rlm and mine ~= "" and RealmPool(rlm) == RealmPool(mine) or false
+end
+
 -- "Name-Realm" for a name as the game gives it (on your own realm it comes without one)
 local function Full(name, rlm)
 	if Safe.IsSecret(name) or type(name) ~= "string" or name == "" then return end
@@ -263,7 +277,7 @@ local function ScanGuild()
 end
 
 local function Friend(full, level, area, className, how)
-	if Short(full) == full and not roster[full] then return end   -- (a friend on another realm isn't on your map; a guild member is)
+	if not SamePool(full) and not roster[full] then return end   -- (a friend outside your realm pool isn't on your map; a guild member is)
 	local r = roster[full] or { name = Shown(full), level = tonumber(Safe.Value(level)), area = Safe.Value(area),
 		class = ClassFile(Safe.Value(className)) }
 	r.friend = true
