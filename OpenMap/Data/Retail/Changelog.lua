@@ -4,8 +4,16 @@
 local _, ns = ...
 
 ns.MapChangelog = {
-	{ version = "Unreleased", date = "", heads = { [1] = "New", }, items = {
-		"|cff6e2c0aMap brightness|r in the Look tab: dim the whole stitched map, including explored areas and the sea, while player and quest icons stay bright. 100% keeps the original look (the default).",
+	{ version = "v0.8.3", date = "2026-11-09", heads = { [1] = "New", [5] = "Improved", [9] = "Fixed", }, items = {
+		"|cff6e2c0aTurn off OpenMap's dungeon maps|r (Options and the menu's On the map tab): off, clicking an entrance shows its card over the world map, and opening the map inside a dungeon shows the world map, so another dungeon map addon (NeedRoll, Dungeon Journal ...) can show its own. By ZiiMs.",
+		"|cff6e2c0aFriends and guild each have their own switch|r: keep your friends on the map and hide a big guild, or the other way round. A save with the old single switch off turns both off. By ZiiMs.",
+		"|cff6e2c0aMap brightness|r in the Look tab: dim the whole stitched map, including explored areas and the sea, while player and quest icons stay bright. 100% keeps the original look (the default). By forcedroidbrain.",
+		"|cff6e2c0aA launcher for Titan Panel|r and other LibDataBroker displays: it works like the minimap button (click: the map with its menu; right-click: the options window). By Naladdar.",
+		"|cff6e2c0aThe settings menu can be resized|r: drag its bottom-right corner to make it wider or shorter, double-click the corner to reset it. Long labels (German, the nearby zones settings) wrap instead of running into the next column, and the settings scroll when they don't fit the screen, instead of the whole menu shrinking. By Naladdar.",
+		"|cff6e2c0aThe map window can be resized with Move Any|r: Move Any still places and scales the window, and OpenMap's corner grips set its width and height. By Naladdar.",
+		"|cff6e2c0aClicking a quest's icon on the windowed map shows it in the quest log|r: the quest log beside the map opens if it was closed, with the quest's details, as well as tracking the quest and zooming in on it. (On the full-screen map a click still tracks and zooms only.)",
+		"|cff6e2c0aA dungeon map remembers its tab|r: picking Quests beside the quest log keeps it picked the next time a dungeon's map opens.",
+		"|cff6e2c0aNo more dot in the bottom-left corner of the screen|r after closing the map: the map art OpenMap keeps loaded while the map is closed was drawn there, hundreds of faint copies on one pixel. Found by ryanull24.",
 	} },
 	{ version = "v0.8.2", date = "2026-11-08", heads = { [1] = "Improved", [2] = "Fixed", }, items = {
 		"|cff6e2c0aPanning no longer hitches|r: the map set up to 300 textures' files in a single frame where a pan brought new ground into view, and each set is a load and an upload, so that frame showed as a hitch of about 35 ms. It sets 60 a frame now; the art still fades in, a few frames later.",
