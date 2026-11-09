@@ -741,6 +741,10 @@ local function WarmHold()
 			t = warmFrame:CreateTexture(nil, "BACKGROUND")
 			t:SetAllPoints(warmFrame)
 			t:SetAlpha(0.01)
+			-- (drawn, so the file stays loaded, but added as black: hundreds stacked on one pixel
+			-- showed as a white dot in the screen's corner, #45)
+			t:SetBlendMode("ADD")
+			t:SetVertexColor(0, 0, 0)
 			warmTex[i] = t
 		end
 		t:SetTexture(file)
