@@ -208,7 +208,8 @@ local function Rows()
 		optRow(L["Boat and zeppelin routes"], "routes", { atlas = "Ships_CargoShip-Map", texture = "Interface\\Icons\\INV_Misc_Spyglass_02", icon = true }),
 		optRow(L["Your arrow"], "playerArrow", { texture = "Interface\\Minimap\\MinimapArrow" }),
 		optRow(L["Party and raid members"], "group", Icon("Spell_Holy_PrayerOfFortitude")),
-		optRow(L["Friends and guild"], "friends", Icon("INV_Misc_GroupNeedMore")),
+		optRow(L["Friends on the map"], "friends", Icon("INV_Misc_GroupNeedMore")),
+		optRow(L["Guild members on the map"], "guild", Icon("INV_Shirt_GuildTabard_01")),
 		optRow(L["Your drawings"], "sketchShown", Icon("INV_Feather_04")),
 	}
 	if mod.defaults.allQuests ~= nil then        -- (Quests.lua: WoW Forever's toc loads it, retail's doesn't)
@@ -232,6 +233,7 @@ local function Rows()
 	rows[#rows + 1] = optRow(L["Fade icons while zooming"], "zoomHidePins", Icon("Ability_Stealth"))
 	rows[#rows].note = L["Improves performance"]      -- (a second line, so nobody turns it off unaware)
 	rows[#rows + 1] = { L["Dungeons"] }
+	rows[#rows + 1] = row(L["Dungeon maps"], "dungeonMaps", Icon("INV_Misc_Map_01"), mod.DungeonMapsOn, mod.SetDungeonMaps)
 	rows[#rows + 1] = optRow(L["Level ranges"], "dungeonLevels", Icon("Spell_ChargePositive"))
 	rows[#rows + 1] = optRow(L["Dungeon bosses"], "dungeonBosses", Icon("INV_Misc_Bone_ElfSkull_01"))
 	-- (with Questie, Dungeon Journal or NeedRoll: where they come from is in Options)

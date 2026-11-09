@@ -261,9 +261,36 @@ class FriendsTests(unittest.TestCase):
 
     def test_turned_off_nothing_on_the_map(self):
         self.run_(8)
-        self.lua.execute("mod.db.friends = false worldMap:Show() mod.RefreshFriends()")
+        self.lua.execute("mod.db.friends, mod.db.guild = false, false worldMap:Show() mod.RefreshFriends()")
         self.run_(2)
         self.assertEqual(self.lua.eval("#badges"), 0)
+
+    def zone_badges(self):
+        return self.lua.eval("(function() local t = {} for _, d in ipairs(badges) do t[#t + 1] = d.map .. ':' .. #d.people end return table.concat(t, ',') end)()")
+
+    def test_guild_off_keeps_friends(self):
+        self.run_(8)
+        self.lua.execute("mod.db.guild = false worldMap:Show() mod.RefreshFriends()")
+        self.run_(2)
+        self.assertEqual(self.zone_badges(), "1436:1")
+
+    def test_friends_off_keeps_the_guild(self):
+        self.run_(8)
+        self.lua.execute("mod.db.friends = false worldMap:Show() mod.RefreshFriends()")
+        self.run_(2)
+        self.assertEqual(self.zone_badges(), "1429:1")
+
+    def test_guild_off_hides_guild_dots(self):
+        self.run_(8)
+        self.lua.execute("""
+            Fire('CHAT_MSG_ADDON', 'OpenMapLoc', 'L1\\t1429\\t0.3\\t0.4\\tMAGE\\t30', 'GUILD', 'Guildie-Forever')
+            worldMap:Show()
+        """)
+        self.run_(2)
+        self.assertEqual(self.lua.eval("#pins"), 1)
+        self.lua.execute("mod.db.guild = false mod.RefreshFriends()")
+        self.run_(2)
+        self.assertEqual(self.lua.eval("#pins"), 0)
 
 
 if __name__ == "__main__":

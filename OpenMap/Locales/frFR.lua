@@ -456,7 +456,6 @@ L["You can change any of it later in OpenMap's menu (its button on the map, or /
 L["Your arrow"] = "Votre flèche"
 L["Your buttons"] = "Vos boutons"
 L["Your drawings"] = "Vos dessins"
-L["Your friends and guild members who are online: a badge on the zone each is in, with who's there (as the friends list and guild roster show it), or a class-coloured dot where they stand for those who use OpenMap and share where they are."] = "Vos amis et membres de guilde en ligne : un badge sur la zone où se trouve chacun, avec qui s'y trouve (comme le montrent la liste d'amis et la liste de guilde), ou un point aux couleurs de classe là où ils se tiennent pour ceux qui utilisent OpenMap et partagent leur position."
 L["Your friends and guild members who use OpenMap can show on your map as a dot where they stand. Share where you are, so they see you on theirs?"] = "Vos amis et membres de guilde qui utilisent OpenMap peuvent apparaître sur votre carte sous forme de point là où ils se trouvent. Partager votre position pour qu'ils vous voient sur la leur ?"
 L["Your guild (those with OpenMap are asked whether to add it)."] = "Votre guilde (on demande à ceux qui ont OpenMap s'ils veulent l'ajouter)."
 L["Your guild and friends see you"] = "Votre guilde et vos amis vous voient"

@@ -48,6 +48,9 @@ local mod = ns:NewModule("worldmap", {
 -- (dungeons, boats and zeppelins were one switch, `icons`: an old save's choice carried to each)
 function mod.Migrate(db)
 	if db.boats == nil and db.icons ~= nil then db.boats, db.zeppelins = db.icons, db.icons end
+	-- (friends and guild were one switch too, `friends`, and its menu row's id: the friends row keeps
+	-- that id, and a save's single choice carries to the guild's switch too)
+	if db.guild == nil then db.guild = db.friends end
 end
 
 local ICONS_FROM = { 0, 20, 0.5 }   -- iconsFrom's least (0: Auto), most, step (zoom: times the whole-world view)

@@ -456,7 +456,6 @@ L["You can change any of it later in OpenMap's menu (its button on the map, or /
 L["Your arrow"] = "你的箭头"
 L["Your buttons"] = "你的按钮"
 L["Your drawings"] = "你的绘图"
-L["Your friends and guild members who are online: a badge on the zone each is in, with who's there (as the friends list and guild roster show it), or a class-coloured dot where they stand for those who use OpenMap and share where they are."] = "在线的好友和公会成员：在每人所在的区域显示一个徽记，列出那里的人（与好友列表和公会名单一致）；使用OpenMap并共享位置的人则以职业颜色的圆点显示在其所在位置。"
 L["Your friends and guild members who use OpenMap can show on your map as a dot where they stand. Share where you are, so they see you on theirs?"] = "使用OpenMap的好友和公会成员可以在你的地图上以圆点显示其所在位置。要共享你的位置，让他们在自己的地图上看到你吗？"
 L["Your guild (those with OpenMap are asked whether to add it)."] = "你的公会（装有OpenMap的玩家会被询问是否添加）。"
 L["Your guild and friends see you"] = "公会和好友可以看到你"

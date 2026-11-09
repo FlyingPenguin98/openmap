@@ -456,7 +456,6 @@ L["You can change any of it later in OpenMap's menu (its button on the map, or /
 L["Your arrow"] = "Ваша стрелка"
 L["Your buttons"] = "Ваши кнопки"
 L["Your drawings"] = "Ваши рисунки"
-L["Your friends and guild members who are online: a badge on the zone each is in, with who's there (as the friends list and guild roster show it), or a class-coloured dot where they stand for those who use OpenMap and share where they are."] = "Ваши друзья и члены гильдии в сети: значок на зоне, где находится каждый, со списком тех, кто там (как в списке друзей и списке гильдии), или точка цвета класса там, где они стоят, для тех, кто пользуется OpenMap и делится своим местоположением."
 L["Your friends and guild members who use OpenMap can show on your map as a dot where they stand. Share where you are, so they see you on theirs?"] = "Друзья и члены гильдии, которые пользуются OpenMap, могут отображаться на вашей карте точкой там, где они стоят. Делиться своим местоположением, чтобы они видели вас на своей?"
 L["Your guild (those with OpenMap are asked whether to add it)."] = "Ваша гильдия (тем, у кого есть OpenMap, будет предложено добавить метку)."
 L["Your guild and friends see you"] = "Вас видят гильдия и друзья"
