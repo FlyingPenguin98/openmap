@@ -492,5 +492,7 @@
  "The colour unexplored areas are darkened with.": "未探索區域變暗時使用的顏色。",
  "Default colour": "預設顏色",
  "dungeon and cave maps in every language (they showed green on some languages' clients)": "所有語言下的地城和洞穴地圖（部分語言的用戶端上曾顯示為綠色）",
- "the map's hitches while panning, found and measured with /openmap bench": "拖曳地圖時的卡頓，用 /openmap bench 找出並測量"
+ "the map's hitches while panning, found and measured with /openmap bench": "拖曳地圖時的卡頓，用 /openmap bench 找出並測量",
+ "Map brightness": "地圖亮度",
+ "Brightness of the entire OpenMap map, including explored areas and the sea. Player and quest icons stay bright. 100% restores the original brightness.": "調整整張 OpenMap 地圖的亮度，包括已探索區域和海洋。玩家和任務圖示維持原有亮度。100% 可恢復原始亮度。"
 }

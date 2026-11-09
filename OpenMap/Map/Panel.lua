@@ -1496,6 +1496,7 @@ function mod:SetupPanel(worldMap)
 	menu.extraRows[#menu.extraRows + 1] = made.iconSize
 	for _, s in ipairs({
 		{ "windowScale", L["Map size"], Icon("INV_Misc_Spyglass_02") },
+		{ "brightness", L["Map brightness"], Icon("Spell_Shadow_DarkRitual") },
 		{ "colorMatch", L["Colour matching"], Icon("INV_Misc_Map_01") },
 		{ "desaturate", L["Take colour out"], Icon("Spell_Shadow_Twilight") },
 		{ "darkening", L["Darkening"], Icon("Spell_Shadow_DarkRitual") },
@@ -1517,7 +1518,7 @@ function mod:SetupPanel(worldMap)
 	end
 	-- each column's sliders need to move when the panel grows wider.
 	local sliderColumns = {
-		{ "zoom", "icons", "iconSize", "windowScale", "colorMatch", "desaturate" },
+		{ "zoom", "icons", "iconSize", "windowScale", "brightness", "colorMatch", "desaturate" },
 		{ "from", "minimapMix", "opacity", "darkening", "moveFade", "mapFpsCap" },
 	}
 	local function LayoutSliders()

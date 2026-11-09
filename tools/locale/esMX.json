@@ -492,5 +492,7 @@
  "The colour unexplored areas are darkened with.": "El color con el que se oscurecen las áreas sin explorar.",
  "Default colour": "Color predeterminado",
  "dungeon and cave maps in every language (they showed green on some languages' clients)": "mapas de calabozos y cuevas en todos los idiomas (se veían verdes en los clientes de algunos idiomas)",
- "the map's hitches while panning, found and measured with /openmap bench": "los tirones del mapa al desplazarlo, encontrados y medidos con /openmap bench"
+ "the map's hitches while panning, found and measured with /openmap bench": "los tirones del mapa al desplazarlo, encontrados y medidos con /openmap bench",
+ "Map brightness": "Brillo del mapa",
+ "Brightness of the entire OpenMap map, including explored areas and the sea. Player and quest icons stay bright. 100% restores the original brightness.": "Brillo de todo el mapa de OpenMap, incluidas las zonas exploradas y el mar. Los iconos del jugador y de las misiones mantienen su brillo. 100% restaura el brillo original."
 }

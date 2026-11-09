@@ -30,6 +30,7 @@ local mod = ns:NewModule("worldmap", {
 		playerArrow = true,     -- your own arrow on the world map (off: find your way old-school; the party still shows)
 		iconsFrom = 0,          -- the places' icons from this zoom (ICONS_FROM; 1: the whole world); 0: each from its own (Auto)
 		iconScale = 1,          -- OpenMap's icons at this times their own size (ICON_SCALE)
+		brightness = 1,         -- brightness of the whole stitched map; icons keep their own colour
 		darkening = 1,          -- how dark darkened unexplored areas are (0..1 of the full shade)
 		darkenColor = false,    -- their shade's colour, { r, g, b } (false: the game-like dark one)
 		routes = false,         -- boat and zeppelin routes
@@ -660,9 +661,31 @@ local function BlizzardArt()
 	for pin in map:EnumeratePinsByTemplate("MapExplorationPinTemplate") do pin:SetShown(show) end
 end
 
+-- A viewport-sized shade above all stitched art (including close-up terrain and caves),
+-- below Blizzard's and OpenMap's pins. It stays still while the canvas pans or zooms.
+function mod:UpdateBrightness()
+	if not sc or not S.IsBuilt() then return end
+	local brightness = math.max(0.25, math.min(1, tonumber(self.db.brightness) or self.defaults.brightness))
+	local shade = self.brightnessShade
+	if not shade and brightness == 1 then return end
+	if not shade then
+		shade = CreateFrame("Frame", nil, sc)
+		shade:SetAllPoints(sc)
+		shade:EnableMouse(false)
+		shade.texture = shade:CreateTexture(nil, "OVERLAY")
+		shade.texture:SetAllPoints(shade)
+		shade.texture:SetColorTexture(0, 0, 0, 1)
+		self.brightnessShade = shade
+	end
+	shade:SetFrameLevel(S.artTop)
+	shade.texture:SetAlpha(1 - brightness)
+	shade:SetShown(active and self.enabled and brightness < 1)
+end
+
 local function Attach(mapID)
 	active = mod.enabled and Stitchable(mapID) and S.IsBuilt() and S.Layout(mapID) or false
 	S.SetShown(active)
+	mod:UpdateBrightness()
 	BlizzardArt()
 	if active then
 		sc:SetMouseWheelZoomMode(MAP_CANVAS_MOUSE_WHEEL_ZOOM_BEHAVIOR_NONE)
@@ -1323,6 +1346,7 @@ end
 
 function mod:Refresh()
 	ApplyChart()
+	self:UpdateBrightness()
 	for key, opt in pairs(SET_OPTION) do
 		local set = S.GetPinSet(key)
 		if set then S.SetPinSetOn(set, self.db[opt]) end
@@ -1452,6 +1476,9 @@ function mod:Options()
 			set = function(info, v) set(info, v) mod.SetPadMap(v) end, hidden = true,
 			desc = ns.L["With the game's Gamepad UI on, OpenMap's map instead of Blizzard's. The controller's B and full-screen buttons on the map are OpenMap's then, so the game doesn't block them. Still being tried out: if the game blocks something, turn this off and /reload."] },
 		lookHeader = ns.Header(ns.L["Look"], 20),
+		brightness = { type = "range", name = ns.L["Map brightness"], order = 20.5, min = 0.25, max = 1, step = 0.05, isPercent = true,
+			get = get, set = set, disabled = off,
+			desc = ns.L["Brightness of the entire OpenMap map, including explored areas and the sea. Player and quest icons stay bright. 100% restores the original brightness."] },
 		colorMatch = { type = "range", name = ns.L["Colour matching"], order = 21, min = 0, max = 1, step = 0.05, isPercent = true,
 			get = get, set = set, disabled = off,
 			desc = ns.L["How far each zone's borders move toward a shared palette, so mountains and borders hand over smoothly between zones. Zone interiors keep their own colours."] },

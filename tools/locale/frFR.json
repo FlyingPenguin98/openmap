@@ -492,5 +492,7 @@
  "The colour unexplored areas are darkened with.": "La couleur utilisée pour assombrir les zones inexplorées.",
  "Default colour": "Couleur par défaut",
  "dungeon and cave maps in every language (they showed green on some languages' clients)": "les cartes des donjons et des grottes dans toutes les langues (elles étaient vertes sur les clients de certaines langues)",
- "the map's hitches while panning, found and measured with /openmap bench": "les saccades de la carte pendant le défilement, trouvées et mesurées avec /openmap bench"
+ "the map's hitches while panning, found and measured with /openmap bench": "les saccades de la carte pendant le défilement, trouvées et mesurées avec /openmap bench",
+ "Map brightness": "Luminosité de la carte",
+ "Brightness of the entire OpenMap map, including explored areas and the sea. Player and quest icons stay bright. 100% restores the original brightness.": "Luminosité de toute la carte OpenMap, y compris les zones explorées et la mer. Les icônes du joueur et des quêtes restent lumineuses. 100% rétablit la luminosité d’origine."
 }
