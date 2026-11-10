@@ -31,6 +31,7 @@ local map, sc, menu, toggle, trayArrow, checks, favBar, tiles, zoomRow, miniRow,
 local W, PAD, COL = 700, 16, 316  -- reserve room for scrolling beside the two columns
 local SCROLL_GAP = 20
 local MIN_W, MAX_W = 500, 1100
+local PAD_ABOVE = 56            -- the controller view: the menu's bottom, over the OpenMap button (Place)
 local BAR_X, BAR_Y = 14, 14     -- the OpenMap button's corner: the map's bottom left (room for its slot's frame)
 local TOGGLE = 36               -- the OpenMap button (an action button's size)
 local FAV = 30                  -- a favourite's button
@@ -1054,6 +1055,10 @@ Fill = function()
 	local footerHeight = 30 + PAD
 	local available = (UIParent:GetHeight() * UIParent:GetEffectiveScale() - 36)
 		/ menu:GetParent():GetEffectiveScale()
+	-- (the controller view: inside the map's view, above the OpenMap button, where the pad's cursor reaches)
+	if PadView() and sc:GetHeight() then
+		available = math.min(available, (sc:GetHeight() * sc:GetEffectiveScale()) / menu:GetParent():GetEffectiveScale() - PAD_ABOVE - 6)
+	end
 	local minHeight = checks.top + footerHeight + 80  -- retain a usable scroll viewport
 	local maxHeight = math.max(minHeight, available)
 	local naturalHeight = checks.top + bodyHeight + footerHeight
@@ -1078,6 +1083,10 @@ end
 -- or (not moved yet) where it first opens, above the OpenMap button
 local function Place()
 	menu:ClearAllPoints()
+	if PadView() then           -- (in the view, over the OpenMap button: the pad's cursor can't leave the view)
+		menu:SetPoint("BOTTOMLEFT", sc, "BOTTOMLEFT", 4, PAD_ABOVE)
+		return
+	end
 	local p = mod.db.menuPos
 	if p and p.screen then menu:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", p[1], p[2]) return end
 	-- (beside the OpenMap tab, toward the map's middle from its edge)
@@ -1316,6 +1325,8 @@ function mod:SetupPanel(worldMap)
 	local pad = mod.padRoots      -- (the gamepad's cursor presses their buttons: Gamepad.lua)
 	pad[#pad + 1], pad[#pad + 2], pad[#pad + 3], pad[#pad + 4] = toggle, trayArrow, favBar, menu
 	W = math.max(MIN_W, math.min(MAX_W, tonumber(mod.db.menuWidth) or 700))
+	-- (the controller view: no wider than the map's view, where the pad's cursor reaches)
+	if PadView() and sc:GetWidth() and sc:GetWidth() > 0 then W = math.max(MIN_W, math.min(W, sc:GetWidth() - 8)) end
 	COL = (W - 2 * PAD - 16 - SCROLL_GAP) / 2
 	menu:SetWidth(W)
 	-- (over the quest log, which Blizzard puts in the HIGH strata: the map's own is lower, so at any
@@ -1685,10 +1696,16 @@ function mod:SetupPanel(worldMap)
 		log:HookScript("OnHide", Changed)
 	end
 	menu:Hide()
-	map:HookScript("OnShow", function() if mod.db.menuOpen then SetOpen(true) end end)
+	-- (not with the controller view: B closes the map with the menu open, and the menu over the map again
+	-- each time it opened would be one more thing to close first)
+	map:HookScript("OnShow", function() if mod.db.menuOpen and not PadView() then SetOpen(true) end end)
 	map:HookScript("OnHide", function() menu:Hide() mod.SetPinMode(false) end)
-	if map:IsShown() and mod.db.menuOpen then SetOpen(true) end
+	if map:IsShown() and mod.db.menuOpen and not PadView() then SetOpen(true) end
 end
+
+-- for PadView.lua: the menu open, and closed (X)
+function mod.MenuShown() return menu and menu:IsShown() or false end
+function mod.CloseMenu() if menu and menu:IsShown() then SetOpen(false) end end
 
 -- the menu: OpenMap's settings, opened with the map if it isn't (/openmap, Blizzard's settings page)
 function mod:OpenMenu()

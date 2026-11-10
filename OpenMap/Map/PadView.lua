@@ -192,6 +192,11 @@ local function Step(inward)
 		if not inward and mod.CloseDungeonView then mod.CloseDungeonView() end   -- (X: out of it)
 		return
 	end
+	-- (X with OpenMap's menu open: the menu closed, the map left as it is)
+	if not inward and mod.MenuShown and mod.MenuShown() then
+		mod.CloseMenu()
+		return
+	end
 	if inward and hovered and hovered:IsVisible() then return Press(hovered) end
 	local cu, cv
 	if lastX then cu, cv = WorldAt(Offset(lastX, lastY)) else cu, cv = u, v end
