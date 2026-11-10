@@ -511,5 +511,9 @@
  "zooming about four times smoother, found and measured": "缩放流畅约四倍，由其发现并测量",
  "Click: track this quest, zoom to it and show it in the quest log": "点击：追踪此任务、放大到它并在任务日志中显示",
  "Click: track this quest and zoom to it": "点击：追踪此任务并放大到它",
- "friends on other numbered realms on the map": "在地图上显示其他编号服务器的好友"
+ "friends on other numbered realms on the map": "在地图上显示其他编号服务器的好友",
+ "OpenMap's map with the controller": "手柄使用OpenMap地图",
+ "With the game's Gamepad UI on, OpenMap draws its map over Blizzard's and leaves Blizzard's map as it is, so the controller's buttons keep working. Off: Blizzard's map while the Gamepad UI is on.": "开启游戏的手柄界面时，OpenMap会在暴雪地图之上绘制自己的地图，并保持暴雪地图不变，这样手柄按键仍可正常使用。关闭：手柄界面开启时使用暴雪地图。",
+ "With the controller, the D-pad's right opens the quest log.": "使用手柄时，按方向键右打开任务日志。",
+ "That isn't available with the Gamepad UI yet.": "手柄界面暂不支持此功能。"
 }

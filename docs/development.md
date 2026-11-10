@@ -35,7 +35,7 @@ AI coding agents: read [AGENTS.md](../AGENTS.md) too.
    python tools/offline-test/run.py plain
    python tools/offline-test/run.py combat
    python tools/offline-test/run.py secret
-   python tools/offline-test/run.py pad      # the game's Gamepad UI on: the map left alone
+   python tools/offline-test/run.py pad      # the game's Gamepad UI on, padView off: the map left alone
    python tools/offline-test/run.py padmap   # ... and with Options' padMap: OpenMap's map then
    python tools/offline-test/run.py padview  # ... and with padView: OpenMap's map over Blizzard's (PadView.lua)
    python -P tools/offline-test/combat.py   # the map's pins in combat (Combat.lua)

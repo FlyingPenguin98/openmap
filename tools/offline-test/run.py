@@ -7,8 +7,8 @@ Needs:  pip install lupa
 Loads every file of the client's toc, fires ADDON_LOADED / PLAYER_LOGIN / combat events, runs
 timers, builds + validates the options table and calls every option getter,
 then runs the slash commands. "secret" makes combat values behave like the
-client's secret values; "pad" has the game's Gamepad UI on, where OpenMap must
-leave the map alone; "padmap" the same with Options' padMap turned on, which
+client's secret values; "pad" has the game's Gamepad UI on and the controller view
+(padView) off, where OpenMap must leave the map alone; "padmap" the same with Options' padMap turned on, which
 gives OpenMap the map then; "padview" the same with padView chosen at login, which
 leaves Blizzard's map to Blizzard and draws OpenMap's over it (PadView.lua). Exit code 1 on any error. (The stub has no real world
 map, so the stitched map itself isn't built here: check that with
@@ -70,6 +70,8 @@ steps = L.eval("""function(ns, scenario)
     local pad = scenario == "pad" or scenario == "padmap" or scenario == "padview"
     if pad then InputUtil = { IsGamepadUIEnabled = function() return true end } end
     if scenario == "padview" then OpenMapDB = { worldmap = { padView = true } } end
+    -- ("pad", "padmap": the controller view turned off, OpenMap's map left to Blizzard, as before it)
+    if scenario == "pad" or scenario == "padmap" then OpenMapDB = { worldmap = { padView = false } } end
     FireEvent("ADDON_LOADED", "OpenMap")
     FireEvent("PLAYER_LOGIN")
     FireEvent("PLAYER_ENTERING_WORLD", true, false)

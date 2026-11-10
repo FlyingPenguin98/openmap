@@ -2,6 +2,21 @@
 
 ## Unreleased
 
+### New
+
+- **OpenMap's map with a controller** (the game's Gamepad UI): the seamless map is back with the
+  Gamepad UI on, where OpenMap used to leave the world map to Blizzard. OpenMap draws its map over
+  Blizzard's and leaves Blizzard's map as it is, so the controller's buttons keep working and closing
+  the map with B is no longer blocked. The left stick moves the cursor (at the edge it pans), the right
+  stick zooms about it, A zooms into a zone or presses the icon or button under the cursor, X zooms
+  out or closes what's open, and pressing the left stick puts the waypoint there. On it: dungeons,
+  boats, flight masters and their routes, your pins and the waypoint, your party, Questie's icons
+  (with their tooltips), townsfolk and mob paths, other addons' icons (TomTom, gatherers), dungeon
+  maps with their bosses, quests and loot, and the OpenMap menu with search, Find me, map pins, the
+  quill (A puts the pen down, A lifts it) and Report a problem. Questie's icons no longer slow the map
+  down there either. The D-pad's right opens the quest log, as on Blizzard's map. Options' "OpenMap's
+  map with the controller" (on by default) turns it off: Blizzard's map with the Gamepad UI, as before.
+
 ## v0.8.3 (2026-11-09)
 
 ### New

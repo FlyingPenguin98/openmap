@@ -27,7 +27,7 @@ local function Options()
 		set = function(_, v) mod.db.enabled = v; ns:Print(ns.L["Takes effect after a /reload."]) end }
 	args.padWaits = { type = "description", order = 0.5, fontSize = "medium",
 		name = function() return "|cffff8040" .. mod.PadOffText() .. "|r" end,
-		hidden = function() return not mod.padWaits end }
+		hidden = function() return not mod.padWaits or (mod.PadViewOn and mod.PadViewOn()) or false end }
 	return { type = "group", name = "|cff" .. ns.ACCENT .. "OpenMap|r " .. ns.version, args = args }
 end
 
@@ -56,6 +56,14 @@ local function Slash(msg)
 	}
 	-- (the controller view's diagnostics: it runs while OpenMap's usual map is off, PadView.lua)
 	if msg == "padview" and mod.PadViewDiag then return mod.PadViewDiag() end
+	-- the controller view's map (PadView.lua): what works on it, its status its own
+	if run[msg] and mod.padWaits and mod.PadViewOn and mod.PadViewOn() then
+		local onView = { pins = true, draw = true, news = true }
+		if msg == "status" and mod.PadViewDiag then mod.PadViewDiag()
+		elseif onView[msg] and mod[run[msg]] then mod[run[msg]](mod)
+		else ns:Print(ns.L["That isn't available with the Gamepad UI yet."]) end
+		return
+	end
 	if run[msg] then
 		if mod.enabled and mod[run[msg]] then mod[run[msg]](mod, takes[msg] and rest or nil)
 		elseif mod.padWaits then ns:Print(mod.PadOffText())

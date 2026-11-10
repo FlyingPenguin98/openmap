@@ -1,5 +1,5 @@
 --------------------------------------------------------------------------------
--- The controller view (padView, a test; off unless chosen): with the game's Gamepad UI on, OpenMap's
+-- The controller view (Options' padView, on by default): with the game's Gamepad UI on, OpenMap's
 -- stitched map drawn over Blizzard's world map on a frame of its own, Blizzard's map left as it is.
 --
 -- Why a frame of its own: on OpenMap's usual map (WorldMap.lua) the view is Blizzard's scroll
@@ -10,18 +10,23 @@
 -- the binding stack until a reload. Here nothing of Blizzard's map is written or replaced: its canvas
 -- is only made see-through while this view covers it, and its gamepad functions only hooked
 -- (hooksecurefunc), so the Gamepad UI's own code (the cursor, B, the D-pad, the focus) stays secure.
+-- What would change Blizzard's map or its quest log from OpenMap's code isn't done while the view is
+-- on (mod.PadViewOn: Dungeons.lua, Panel.lua, Report.lua ...), nor anything put on Escape's list
+-- (UISpecialFrames, which the Gamepad UI's own closing of windows reads).
 --
--- The controller, read rather than bound: the cursor is Blizzard's (SoftCursor, its left stick), the
--- right stick is read from the controller (mod.PadStickTilt) and zooms about the cursor, the cursor at
--- the view's edge pans as Blizzard's map does (its gamepadScrollSpeed, read), A zooms into the zone
--- under the cursor (or presses the icon there) and X out a level (after Blizzard's own, on its map
--- underneath, unseen); the left stick pressed puts the waypoint where the cursor is.
--- So far the art, the place names, your arrow, dungeons, boats, flight masters, your map pins and the
--- waypoint, your party, Questie's townsfolk, other addons' icons (Questie's, TomTom's, gatherers') and
--- Questie's mob paths, a dungeon's map in OpenMap's own view of it (its floors, its side panel beside
--- them), OpenMap's menu (its report without the note step), your pins' cards and list, and the quill
--- (A puts the pen down and lifts it); not yet the quest log's areas. Over OpenMap's windows the
--- right stick is their mouse wheel.
+-- The controller, read rather than bound: the cursor is Blizzard's (SoftCursor, its left stick; drawn
+-- again over the art), the right stick is read from the controller (mod.PadStickTilt) and zooms about
+-- the cursor, or is the mouse wheel of the OpenMap window under it; the cursor at the view's edge pans
+-- as Blizzard's map does (its gamepadScrollSpeed, read). A presses OpenMap's control or icon under the
+-- cursor, else zooms into the zone there; X closes OpenMap's window that's up (a dungeon's map, the
+-- menu, the quill), else zooms out a level (both after Blizzard's own, on its map underneath, unseen);
+-- the left stick pressed puts the waypoint where the cursor is. The quill: A puts the pen down, A lifts it.
+--
+-- On it: the art and names, your arrow, your party, dungeons, boats, flight masters and routes, your
+-- map pins and the waypoint, Questie's townsfolk, every addon's HereBeDragons icons (Questie's with its
+-- own tooltips) and Questie's mob paths, a dungeon's map in OpenMap's own view of it (floors and side
+-- panel), OpenMap's menu, the pins' list and cards, the quill, and Report a problem (without its note
+-- step: the game's popups run the Gamepad UI's own code). Not yet: the quest log's quest areas.
 --------------------------------------------------------------------------------
 
 local _, ns = ...

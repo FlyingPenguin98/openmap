@@ -43,7 +43,7 @@ local mod = ns:NewModule("worldmap", {
 		                        --  be set to; a world of smaller zones goes as much further: Data\<client>\Client.lua)
 		chart = false,          -- Santiago Reyes's sea chart round the world (Chart.lua)
 		padMap = false,         -- OpenMap's map with the Gamepad UI on too (Gamepad.lua binds B and full screen; a test)
-		padView = false,        -- with the Gamepad UI on, OpenMap's map over Blizzard's on a frame of its own (PadView.lua; a test)
+		padView = true,         -- with the Gamepad UI on, OpenMap's map over Blizzard's on a frame of its own (PadView.lua)
 	},
 })
 
@@ -1355,11 +1355,21 @@ function mod.SetPadMap(on)
 	if mod.PadKeys then mod.PadKeys() end
 end
 
+-- Options' padView turned on or off: on, while OpenMap waits for the Gamepad UI to go, its map over
+-- Blizzard's at once (PadView.lua); off once it's up, a reload (it's set up on Blizzard's map)
+function mod.SetPadView(on)
+	if on and mod.padWaits and mod.StartPadView then
+		mod.StartPadView()
+	elseif not on and mod.PadViewBuilt and mod.PadViewBuilt() then
+		ns:Print(ns.L["Takes effect after a /reload."])
+	end
+end
+
 function mod:OnEnable()
 	ns.RegisterEvent(styleOwner, "INPUT_DEVICE_INTERFACE_TRANSITION", StyleChanged)
 	if PadUI() and not self.db.padMap then
 		self.enabled, self.padWaits = false, true
-		-- (padView, a test: OpenMap's map on a frame of its own over Blizzard's, which it leaves alone)
+		-- (padView: OpenMap's map on a frame of its own over Blizzard's, which it leaves alone)
 		if self.db.padView and mod.StartPadView then
 			mod.StartPadView()
 			return
@@ -1519,6 +1529,9 @@ function mod:Options()
 		padMap = { type = "toggle", name = ns.L["OpenMap's map with the controller (test)"], order = 12, width = "full", get = get,
 			set = function(info, v) set(info, v) mod.SetPadMap(v) end, hidden = true,
 			desc = ns.L["With the game's Gamepad UI on, OpenMap's map instead of Blizzard's. The controller's B and full-screen buttons on the map are OpenMap's then, so the game doesn't block them. Still being tried out: if the game blocks something, turn this off and /reload."] },
+		padView = { type = "toggle", name = ns.L["OpenMap's map with the controller"], order = 12.5, width = "full", get = get,
+			set = function(info, v) set(info, v) mod.SetPadView(v) end,
+			desc = ns.L["With the game's Gamepad UI on, OpenMap draws its map over Blizzard's and leaves Blizzard's map as it is, so the controller's buttons keep working. Off: Blizzard's map while the Gamepad UI is on."] },
 		lookHeader = ns.Header(ns.L["Look"], 20),
 		brightness = { type = "range", name = ns.L["Map brightness"], order = 20.5, min = 0.25, max = 1, step = 0.05, isPercent = true,
 			get = get, set = set, disabled = off,

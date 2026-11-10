@@ -511,5 +511,9 @@
  "zooming about four times smoother, found and measured": "약 네 배 부드러워진 확대/축소, 발견 및 측정",
  "Click: track this quest, zoom to it and show it in the quest log": "클릭: 이 퀘스트를 추적하고 확대한 뒤 퀘스트 목록에 표시",
  "Click: track this quest and zoom to it": "클릭: 이 퀘스트를 추적하고 확대",
- "friends on other numbered realms on the map": "번호가 붙은 다른 서버의 친구를 지도에 표시"
+ "friends on other numbered realms on the map": "번호가 붙은 다른 서버의 친구를 지도에 표시",
+ "OpenMap's map with the controller": "게임패드로 OpenMap 지도 사용",
+ "With the game's Gamepad UI on, OpenMap draws its map over Blizzard's and leaves Blizzard's map as it is, so the controller's buttons keep working. Off: Blizzard's map while the Gamepad UI is on.": "게임의 게임패드 사용자 인터페이스가 켜져 있으면 OpenMap이 블리자드 지도 위에 자기 지도를 그리고 블리자드 지도는 그대로 두므로, 게임패드 버튼이 계속 작동합니다. 끄면: 게임패드 사용자 인터페이스가 켜져 있는 동안 블리자드 지도를 사용합니다.",
+ "With the controller, the D-pad's right opens the quest log.": "게임패드에서는 방향 패드 오른쪽으로 퀘스트 목록을 엽니다.",
+ "That isn't available with the Gamepad UI yet.": "게임패드 사용자 인터페이스에서는 아직 사용할 수 없습니다."
 }

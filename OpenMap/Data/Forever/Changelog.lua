@@ -4,6 +4,9 @@
 local _, ns = ...
 
 ns.MapChangelog = {
+	{ version = "Unreleased", date = "", heads = { [1] = "New", }, items = {
+		"|cff6e2c0aOpenMap's map with a controller|r (the game's Gamepad UI): the seamless map is back with the Gamepad UI on, where OpenMap used to leave the world map to Blizzard. OpenMap draws its map over Blizzard's and leaves Blizzard's map as it is, so the controller's buttons keep working and closing the map with B is no longer blocked. The left stick moves the cursor (at the edge it pans), the right stick zooms about it, A zooms into a zone or presses the icon or button under the cursor, X zooms out or closes what's open, and pressing the left stick puts the waypoint there. On it: dungeons, boats, flight masters and their routes, your pins and the waypoint, your party, Questie's icons (with their tooltips), townsfolk and mob paths, other addons' icons (TomTom, gatherers), dungeon maps with their bosses, quests and loot, and the OpenMap menu with search, Find me, map pins, the quill (A puts the pen down, A lifts it) and Report a problem. Questie's icons no longer slow the map down there either. The D-pad's right opens the quest log, as on Blizzard's map. Options' \"OpenMap's map with the controller\" (on by default) turns it off: Blizzard's map with the Gamepad UI, as before.",
+	} },
 	{ version = "v0.8.3", date = "2026-11-09", heads = { [1] = "New", [5] = "Improved", [9] = "Fixed", }, items = {
 		"|cff6e2c0aTurn off OpenMap's dungeon maps|r (Options and the menu's On the map tab): off, clicking an entrance shows its card over the world map, and opening the map inside a dungeon shows the world map, so another dungeon map addon (NeedRoll, Dungeon Journal ...) can show its own. By ZiiMs.",
 		"|cff6e2c0aFriends and guild each have their own switch|r: keep your friends on the map and hide a big guild, or the other way round. A save with the old single switch off turns both off. By ZiiMs.",
@@ -57,11 +60,5 @@ ns.MapChangelog = {
 		"|cff6e2c0aThe map's art is there at once when you open it|r: since 0.7.4 the zones showed blank parchment for a moment each time the map opened.",
 		"|cff6e2c0aClicking a quest on the map keeps the map as it is|r: the quest is tracked and the map zooms in on it, full screen or windowed. It opened the quest's details, which Blizzard shows in the windowed map, so a full-screen map left full screen. With the quest log open beside the map, its details show there too.",
 		"|cff6e2c0aHiding your pins hides their drawings too|r (the menu's Pins, right-clicked): what you drew on a pin stayed on the map without it.",
-	} },
-	{ version = "v0.7.4-beta", date = "2026-10-23", heads = { [1] = "New", }, items = {
-		"|cff6e2c0aChat over the full-screen map|r (the menu's Look tab, and Options): the chat windows stay on show over the map while it's full screen, to keep talking while you look. Off unless you turn it on (a player's request).",
-		"|cff6e2c0aFaster to load|r: only your language's translations are read (the other nine were a quarter of OpenMap's code), and its look through every addon's map icons for combat waits till you're in the world, not the loading screen (a player's report: half a second more load time).",
-		"|cff6e2c0aThe zones' detail comes in sooner|r when the map first opens up close: it took a couple of seconds after a login or reload.",
-		"|cff6e2c0a/openmap status says what loading costs|r: OpenMap's files, the login, the map's setup and building the map (a player found it added load time: this shows where).",
 	} },
 }
