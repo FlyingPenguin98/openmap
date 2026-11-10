@@ -29,6 +29,8 @@ local GLIDE_TIME = 0.4          -- A and X's zoom, as a click's on the usual map
 local PAD_ZOOM_RATE = 1.8       -- the right stick at full tilt, per second in log zoom (as WorldMap.lua's)
 local CITY_ZOOM = 1.5           -- deeper over a city (as WorldMap.lua's)
 local PLAYER_EVERY = 0.1        -- seconds between moves of your arrow
+local REACH = 12                -- px from the cursor that an icon counts as under it (Gamepad.lua's)
+local HOVER_EVERY = 0.05        -- seconds between looks at what's under the cursor
 
 local map, sc, view, canvas
 local pointer                   -- the pad's cursor, drawn again over the art (Blizzard's is under it)
@@ -38,7 +40,8 @@ local glide                     -- A or X's zoom under way
 local lastX, lastY              -- the pad's cursor on the last frame (screen px): Blizzard re-centres it
                                 --  as A or X changes its map, before the hooks below run
 local dirty = false
-local playerWait = 0
+local playerWait, hoverWait = 0, 0
+local hovered                   -- the icon under the pad's cursor, entered as the mouse would
 local diag = { started = 0, setup = "not yet", shows = 0, why = "not tried yet" }   -- (/openmap padview)
 
 local function Clamp(x, lo, hi) return math.max(lo, math.min(hi, x)) end
@@ -156,8 +159,11 @@ local function Glide(elapsed)
 	dirty = true
 end
 
--- A: into the zone (or continent) under the cursor; X: out a level (as a click and right-click)
+local Press
+-- A: into the zone (or continent) under the cursor, or the icon under it pressed; X: out a level (as a
+-- click and right-click)
 local function Step(inward)
+	if inward and hovered and hovered:IsVisible() then return Press(hovered) end
 	local cu, cv
 	if lastX then cu, cv = WorldAt(Offset(lastX, lastY)) else cu, cv = u, v end
 	local chain = S.ChainAt(cu, cv)
@@ -232,6 +238,45 @@ local function MakePointer(level)
 	end
 end
 
+-- the icon under the cursor gets the mouse's enter and leave (its tooltip, its highlight), as on the
+-- usual map (Gamepad.lua)
+local function Enter(pin)
+	if pin == hovered then return end
+	local was = hovered
+	hovered = pin
+	if was then
+		if was.UnlockHighlight then was:UnlockHighlight() end
+		local leave = was:GetScript("OnLeave")
+		if leave then pcall(leave, was, false) end
+	end
+	if pin then
+		if pin.LockHighlight then pin:LockHighlight() end
+		local enter = pin:GetScript("OnEnter")
+		if enter then pcall(enter, pin, false) end
+	end
+end
+
+-- an icon pressed (A, or a click): its own click, but for what would change Blizzard's map (a
+-- dungeon's map, Zephras Isle's): that's OpenMap's doing then, which taints the Gamepad UI. A
+-- dungeon's entrance is zoomed to instead, its tooltip kept up
+function Press(pin)
+	if pin.instances then
+		local u1, v1 = pin.u, pin.v
+		if u1 then GlideTo(u1, v1, math.max(zoom, 12)) end
+		return
+	end
+	if pin.away then
+		if pin.to then GlideTo(pin.to[1], pin.to[2], math.max(zoom, 6)) end
+		return
+	end
+	if pin.OnClick then pcall(pin.OnClick, pin) end
+	-- (its tooltip again: the click changes what it says, a flight master's route)
+	if hovered == pin then
+		local enter = pin:GetScript("OnEnter")
+		if enter then pcall(enter, pin, false) end
+	end
+end
+
 local function OnUpdate(_, elapsed)
 	local x, y = Cursor()
 	local tilt = x and mod.PadStickTilt and mod.PadStickTilt() or 0
@@ -259,6 +304,11 @@ local function OnUpdate(_, elapsed)
 	end
 	if dirty then Apply() end
 	Pointer(x, y)
+	hoverWait = hoverWait - elapsed
+	if hoverWait <= 0 then
+		hoverWait = HOVER_EVERY
+		Enter(x and S.PinAt(x, y, REACH) or nil)
+	end
 end
 
 --------------------------------------------------------------------------------
@@ -303,6 +353,15 @@ local function Build()
 	canvas:SetSize(W, H)
 	S.RaiseArrow(base + ART_RANGE + 40)
 	MakePointer(base + ART_RANGE + 60)
+	-- what the other files ask of the map, here this view's: a glide (a dock's other end), an icon
+	-- clicked with the mouse; and no map of Blizzard's opened (Dungeons.lua's, Zephras Isle's)
+	S.GlideToWorld = S.GlideToWorld or function(tu, tv, tz) GlideTo(tu, tv, math.max(tz or 1, zoom)) end
+	S.GlideToRect = S.GlideToRect or function(u0, v0, u1, v1, fill)
+		local W, H = S.Size()
+		local z = math.min(view:GetWidth() / ((u1 - u0) * W), view:GetHeight() / ((v1 - v0) * H)) / FitPx() / (fill or 1)
+		GlideTo((u0 + u1) / 2, (v0 + v1) / 2, z)
+	end
+	S.OnPinMouseUp = S.OnPinMouseUp or function(pin, button) if button == "LeftButton" then Press(pin) end end
 	-- the flight masters (Flights.lua's, on the art; their routes need the usual map's cursor: not yet)
 	if mod.BuildFlights then pcall(mod.BuildFlights, mod) end
 	S.SetShown(true)
@@ -351,6 +410,7 @@ local function Show()
 end
 
 local function Hide()
+	Enter(nil)
 	view:Hide()
 	if pointer then pointer:Hide() end
 	glide, lastX, lastY = nil, nil, nil
