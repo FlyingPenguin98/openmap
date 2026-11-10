@@ -54,6 +54,8 @@ local function Slash(msg)
 		welcome = "ShowWelcome", highlights = "Highlights", warm = "ToggleWarm",
 		reset = "ResetWindow",   -- (reset: the windowed map's size and place, for one off the screen)
 	}
+	-- (the controller view's diagnostics: it runs while OpenMap's usual map is off, PadView.lua)
+	if msg == "padview" and mod.PadViewDiag then return mod.PadViewDiag() end
 	if run[msg] then
 		if mod.enabled and mod[run[msg]] then mod[run[msg]](mod, takes[msg] and rest or nil)
 		elseif mod.padWaits then ns:Print(mod.PadOffText())

@@ -155,6 +155,7 @@ steps = L.eval("""function(ns, scenario)
             RunTimers(2)
             wm:NavigateToGamepadCursor()
             wm:NavigateToParentMap()
+            SlashCmdList.OPENMAP("padview")
             wm:Hide()
             InputUtil.IsGamepadUIEnabled = function() return false end
             FireEvent("INPUT_DEVICE_INTERFACE_TRANSITION", 0, 1)

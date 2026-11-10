@@ -38,6 +38,7 @@ local lastX, lastY              -- the pad's cursor on the last frame (screen px
                                 --  as A or X changes its map, before the hooks below run
 local dirty = false
 local playerWait = 0
+local diag = { started = 0, setup = "not yet", shows = 0, why = "not tried yet" }   -- (/openmap padview)
 
 local function Clamp(x, lo, hi) return math.max(lo, math.min(hi, x)) end
 
@@ -231,20 +232,30 @@ local function Look()
 	S.ApplyGrade(db.colorMatch, db.desaturate, mod.Unexplored())
 end
 
+local function Fail(why)
+	failed, diag.why = true, why
+	return false
+end
+
 local function Build()
 	if built or failed then return built end
-	if S.IsBuilt() then failed = true return false end   -- (built on Blizzard's map already: OpenMap's usual map)
+	if S.IsBuilt() then return Fail("the art is on Blizzard's map already (OpenMap's usual map)") end
 	local base = sc.Child:GetFrameLevel() + 2
 	view:SetFrameLevel(base)
 	canvas:SetFrameLevel(base)
-	S.Build(canvas, base + 1, ART_RANGE, base + ART_RANGE + 4)
+	local ok, err = pcall(S.Build, canvas, base + 1, ART_RANGE, base + ART_RANGE + 4)
+	if not ok then return Fail("building the art: " .. tostring(err)) end
 	local W, H = S.Size()
-	if not (S.IsBuilt() and W and S.Layout(WORLD)) then failed = true return false end
+	if not S.IsBuilt() then return Fail("the art wasn't built (the world map's size: " .. tostring(W) .. ")") end
+	ok, err = pcall(S.Layout, WORLD)
+	if not ok or not err then return Fail("laying out the art: " .. tostring(err)) end
 	canvas:SetSize(W, H)
 	S.RaiseArrow(base + ART_RANGE + 40)
 	S.SetShown(true)
-	Look()
+	ok, err = pcall(Look)
+	if not ok then diag.why = "the look (carried on): " .. tostring(err) end
 	built = true
+	if ok then diag.why = "built" end
 	return true
 end
 
@@ -271,6 +282,8 @@ local function FirstView()
 end
 
 local function Show()
+	diag.shows = diag.shows + 1
+	if not On() then diag.why = "off when the map opened (padView, the Gamepad UI, or OpenMap's usual map on)" end
 	if not On() or not Build() then
 		view:Hide()
 		if built then sc.Child:SetAlpha(1) end
@@ -292,10 +305,23 @@ end
 -- for WorldMap.lua: built here, OpenMap's usual map can't be (its art is on this view): a reload then
 function mod.PadViewBuilt() return built end
 
+-- /openmap padview: how the controller view is getting on
+function mod.PadViewDiag()
+	ns:Print("Controller view: on %s, started %d, set up: %s, map opened %d times, %s; showing %s, size %s.",
+		tostring(On()), diag.started, diag.setup, diag.shows, diag.why, tostring(view and view:IsShown() or false),
+		view and ("%.0f x %.0f"):format(view:GetWidth(), view:GetHeight()) or "-")
+end
+
 local function Setup()
 	map = _G.WorldMapFrame
 	sc = map and map.ScrollContainer
-	if not (sc and sc.Child and map.GetCanvas) or view then return end
+	if view then return end
+	if not (sc and sc.Child and map.GetCanvas) then
+		diag.setup = "Blizzard's map isn't the expected kind"
+		return
+	end
+	diag.setup = "done"
+
 	view = CreateFrame("Frame", nil, map)
 	view:SetAllPoints(sc)
 	view:SetClipsChildren(true)
@@ -322,9 +348,13 @@ end
 
 -- WorldMap.lua's OnEnable, with the Gamepad UI on and padView chosen (OpenMap's usual map waiting)
 function mod.StartPadView()
+	diag.started = diag.started + 1
 	if _G.WorldMapFrame then
 		Setup()
 	elseif EventUtil and EventUtil.ContinueOnAddOnLoaded then
+		diag.setup = "waiting for Blizzard's map to load"
 		EventUtil.ContinueOnAddOnLoaded("Blizzard_WorldMap", Setup)
+	else
+		diag.setup = "no Blizzard map, and no way to wait for it"
 	end
 end
