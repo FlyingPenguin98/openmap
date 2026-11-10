@@ -31,6 +31,7 @@ local CITY_ZOOM = 1.5           -- deeper over a city (as WorldMap.lua's)
 local PLAYER_EVERY = 0.1        -- seconds between moves of your arrow
 
 local map, sc, view, canvas
+local pointer                   -- the pad's cursor, drawn again over the art (Blizzard's is under it)
 local built, failed = false, false
 local u, v, zoom                -- the view: world centre (normalized) and zoom (1: the whole world fits)
 local glide                     -- A or X's zoom under way
@@ -188,6 +189,49 @@ local function UpdatePlayer()
 	S.SetPlayer(l + x * (r - l), t + y * (b - t), ns.Safe.Call(GetPlayerFacing))
 end
 
+-- the pad's cursor over the art, as Blizzard draws it (its diamond, and lines out to the view's edges):
+-- Blizzard's own is under this view, and it's left as it is (moving it would be OpenMap's doing)
+local function Pointer(x, y)
+	if not pointer then return end
+	if not x then pointer:Hide() return end
+	local sx, sy = Offset(x, y)
+	local w, h = view:GetWidth(), view:GetHeight()
+	local d, gap = pointer.diamond, 16
+	d:ClearAllPoints()
+	d:SetPoint("CENTER", view, "CENTER", sx, -sy)
+	local L = pointer.lines
+	L[1]:ClearAllPoints() L[1]:SetSize(w, 2) L[1]:SetPoint("RIGHT", view, "CENTER", sx - gap, -sy)
+	L[2]:ClearAllPoints() L[2]:SetSize(w, 2) L[2]:SetPoint("LEFT", view, "CENTER", sx + gap, -sy)
+	L[3]:ClearAllPoints() L[3]:SetSize(2, h) L[3]:SetPoint("BOTTOM", view, "CENTER", sx, -sy + gap)
+	L[4]:ClearAllPoints() L[4]:SetSize(2, h) L[4]:SetPoint("TOP", view, "CENTER", sx, -sy - gap)
+	pointer:Show()
+end
+
+local function MakePointer(level)
+	pointer = CreateFrame("Frame", nil, view)
+	pointer:SetAllPoints(view)
+	pointer:SetFrameLevel(level)
+	pointer:Hide()
+	local shade = pointer:CreateTexture(nil, "OVERLAY", nil, 6)
+	local d = pointer:CreateTexture(nil, "OVERLAY", nil, 7)
+	for i, t in ipairs({ shade, d }) do
+		if not pcall(t.SetAtlas, t, "gamepad-mapquestlog-cursor-diamond-gold") then
+			t:SetTexture("Interface\\Minimap\\Ping\\ping5")   -- (an atlas this client lacks)
+		end
+		t:SetSize(i == 1 and 38 or 35, i == 1 and 38 or 35)
+	end
+	shade:SetVertexColor(0, 0, 0)
+	shade:SetPoint("CENTER", d, "CENTER")
+	pointer.diamond = d
+	local c = NORMAL_FONT_COLOR
+	pointer.lines = {}
+	for i = 1, 4 do
+		local line = pointer:CreateTexture(nil, "ARTWORK")
+		if c then line:SetColorTexture(c.r, c.g, c.b, 0.6) else line:SetColorTexture(1, 0.82, 0, 0.6) end
+		pointer.lines[i] = line
+	end
+end
+
 local function OnUpdate(_, elapsed)
 	local x, y = Cursor()
 	local tilt = x and mod.PadStickTilt and mod.PadStickTilt() or 0
@@ -214,6 +258,7 @@ local function OnUpdate(_, elapsed)
 		UpdatePlayer()
 	end
 	if dirty then Apply() end
+	Pointer(x, y)
 end
 
 --------------------------------------------------------------------------------
@@ -230,6 +275,12 @@ local function Look()
 	S.SetGapFillsShown(db.gapFills ~= false)
 	if S.SetDarkening then S.SetDarkening(db.darkening or 1, db.darkenColor or nil) end
 	S.ApplyGrade(db.colorMatch, db.desaturate, mod.Unexplored())
+	-- each kind of icon on or off as Options have it (WorldMap.lua's SET_OPTION)
+	for key, opt in pairs({ dungeons = "icons", boats = "boats", zeppelins = "zeppelins", flight = "flight" }) do
+		local set = S.GetPinSet(key)
+		if set then S.SetPinSetOn(set, db[opt]) end
+	end
+	if mod.RefreshFlightsFound then pcall(mod.RefreshFlightsFound) end
 end
 
 local function Fail(why)
@@ -251,6 +302,9 @@ local function Build()
 	if not ok or not err then return Fail("laying out the art: " .. tostring(err)) end
 	canvas:SetSize(W, H)
 	S.RaiseArrow(base + ART_RANGE + 40)
+	MakePointer(base + ART_RANGE + 60)
+	-- the flight masters (Flights.lua's, on the art; their routes need the usual map's cursor: not yet)
+	if mod.BuildFlights then pcall(mod.BuildFlights, mod) end
 	S.SetShown(true)
 	ok, err = pcall(Look)
 	if not ok then diag.why = "the look (carried on): " .. tostring(err) end
@@ -298,6 +352,7 @@ end
 
 local function Hide()
 	view:Hide()
+	if pointer then pointer:Hide() end
 	glide, lastX, lastY = nil, nil, nil
 	if sc and sc.Child then sc.Child:SetAlpha(1) end
 end
