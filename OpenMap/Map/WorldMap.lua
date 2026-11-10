@@ -226,6 +226,7 @@ local anim                      -- the running animation, or nil
 -- GetCursorPosition: while it's what's in use. That's from when it shows or moves until the
 -- mouse moves over the map (as Blizzard's own map labels judge it); nil otherwise
 local padX, padY                -- the mouse when the pad's cursor showed or last moved
+local padTilt = 0               -- the zoom stick's tilt as last read (PadStickTilt), -1 to 1
 local function PadFocus()
 	local soft = _G.SoftCursor
 	if not (soft and soft:IsShown() and InputUtil and InputUtil.IsGamepadUIEnabled and InputUtil.IsGamepadUIEnabled()) then
@@ -239,7 +240,7 @@ local function PadCursor()
 	if not PadFocus() then padX = nil return end
 	local soft = _G.SoftCursor
 	local mx, my = GetCursorPosition()
-	if not padX or soft:IsMoving() or (sc.gamepadZoom or 0) ~= 0 then
+	if not padX or soft:IsMoving() or (sc.gamepadZoom or 0) ~= 0 or padTilt ~= 0 then
 		padX, padY = mx, my
 	elseif (mx ~= padX or my ~= padY) and sc:IsMouseOver() then
 		return
@@ -344,9 +345,37 @@ end
 -- the gamepad's zoom stick: a steady rate in log zoom, about its cursor (Blizzard's adds a fixed
 -- scale a second, which at the stitched map's depths is too slow zoomed in, too fast out)
 local PAD_ZOOM_RATE = 1.8       -- per second at full tilt (in log zoom: 6x a second)
-local function PadZoom(elapsed)
-	local speed = sc.gamepadZoomSpeed
-	local tilt = Clamp(sc.gamepadZoom / ((speed and speed > 0) and speed or 1), -1, 1)   -- (Blizzard's curve applied)
+local PAD_DEAD = 0.05           -- the zoom stick's tilt below which it's at rest
+
+-- With the Gamepad UI (Options' padMap) the zoom stick is read from the controller itself. Blizzard
+-- binds it to the map's zoom (GamepadZoom: sc.gamepadZoom) through its binding stack, but on OpenMap's
+-- map those bindings are made again from OpenMap's map changes (the footer's Refresh in OnMapChanged),
+-- so the stick can end up on the quest log's scrolling (SmartNavigation's), which refuses to run then
+-- ("Interface action failed because of an AddOn") and the map never zooms. Reading the stick takes no
+-- binding at all. nil: not to be read (no Gamepad UI, or the game doesn't give it): sc.gamepadZoom then
+local function PadStickTilt()
+	if not (mod.db.padMap and PadUI() and C_GamePad and C_GamePad.GetDeviceMappedState and C_GamePad.StickIndexToConfigName) then
+		return nil
+	end
+	local ok, state = pcall(C_GamePad.GetDeviceMappedState)
+	if not ok or type(state) ~= "table" then return nil end
+	local count, sticks = ns.Safe.Value(state.stickCount), ns.Safe.Value(state.sticks)
+	if type(count) ~= "number" or type(sticks) ~= "table" then return nil end
+	for i = 1, count do
+		if C_GamePad.StickIndexToConfigName(i - 1) == "Camera" then   -- (0 based; Blizzard's right stick)
+			local stick = sticks[i]
+			local y = type(stick) == "table" and ns.Safe.Value(stick.y)
+			if type(y) ~= "number" then return nil end
+			if math.abs(y) < PAD_DEAD then return 0 end
+			local tilt = math.min(math.abs(y), 1) ^ 1.8               -- (Blizzard's curve, GetZoomVelocityFromMagnitude)
+			return y >= 0 and tilt or -tilt
+		end
+	end
+	return nil
+end
+
+-- tilt: the zoom stick, -1 (out) to 1 (in)
+local function PadZoom(elapsed, tilt)
 	local u, v, zoom = View()
 	local sx, sy = CursorOffset()
 	local pu, pv = PerPx(zoom)
@@ -364,7 +393,13 @@ end
 
 -- after Blizzard's own OnUpdate, so its panning never adds to ours
 local function Animate(_, elapsed)
-	if active and (sc.gamepadZoom or 0) ~= 0 then return PadZoom(elapsed) end
+	local tilt = active and PadFocus() and PadStickTilt() or nil
+	if tilt == nil and active and (sc.gamepadZoom or 0) ~= 0 then
+		local speed = sc.gamepadZoomSpeed
+		tilt = Clamp(sc.gamepadZoom / ((speed and speed > 0) and speed or 1), -1, 1)   -- (Blizzard's curve applied)
+	end
+	padTilt = tilt or 0
+	if padTilt ~= 0 then return PadZoom(elapsed, padTilt) end
 	-- the gamepad's cursor at the view's edge pans it (Blizzard's): a move of the user's
 	if active and sc.HasGamepadScrollSpeed and sc:HasGamepadScrollSpeed() then userMoved = true end
 	if not anim then return end
