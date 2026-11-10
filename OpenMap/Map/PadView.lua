@@ -267,7 +267,9 @@ local function Pointer(x, y)
 end
 
 local function MakePointer(level)
-	pointer = CreateFrame("Frame", nil, view)
+	-- (on Blizzard's map, not in the view: the view clips its children, so all of it, the cursor too, is
+	-- drawn as one, at its own level, under a dungeon's map in Blizzard's scroll frame, which clips too)
+	pointer = CreateFrame("Frame", nil, map)
 	pointer:SetAllPoints(view)
 	pointer:SetFrameLevel(level)
 	pointer:Hide()
