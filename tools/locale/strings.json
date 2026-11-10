@@ -1027,6 +1027,12 @@
   ]
  },
  {
+  "en": "Enable OpenMap with Gamepad UI",
+  "where": [
+   "Map/WorldMap.lua:1532"
+  ]
+ },
+ {
   "en": "Enhance QoL: if its Mover > World Map is on, turn it off. It and OpenMap both size the map, and the map's scale goes wrong.",
   "where": [
    "Map/Window.lua:215"
@@ -1971,12 +1977,6 @@
   "en": "OpenMap's icons on the map at this size: dungeons, flight masters, boats, townsfolk, your pins. Questie's icons have their own size, in Questie's options.",
   "where": [
    "Map/Panel.lua:1518"
-  ]
- },
- {
-  "en": "OpenMap's map with the controller",
-  "where": [
-   "Map/WorldMap.lua:1532"
   ]
  },
  {

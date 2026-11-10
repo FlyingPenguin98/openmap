@@ -512,7 +512,7 @@
  "Click: track this quest, zoom to it and show it in the quest log": "Щелчок: отслеживать задание, приблизить и показать в журнале заданий",
  "Click: track this quest and zoom to it": "Щелчок: отслеживать задание и приблизить",
  "friends on other numbered realms on the map": "друзья с других пронумерованных миров на карте",
- "OpenMap's map with the controller": "Карта OpenMap с контроллером",
+ "Enable OpenMap with Gamepad UI": "Включить OpenMap с интерфейсом контроллера",
  "With the game's Gamepad UI on, OpenMap draws its map over Blizzard's and leaves Blizzard's map as it is, so the controller's buttons keep working. Off: Blizzard's map while the Gamepad UI is on.": "При включённом интерфейсе контроллера OpenMap рисует свою карту поверх карты Blizzard и оставляет карту Blizzard как есть, поэтому кнопки контроллера продолжают работать. Выключено: карта Blizzard, пока включён интерфейс контроллера.",
  "With the controller, the D-pad's right opens the quest log.": "С контроллером журнал заданий открывается нажатием вправо на крестовине.",
  "That isn't available with the Gamepad UI yet.": "С интерфейсом контроллера это пока недоступно."

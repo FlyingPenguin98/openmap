@@ -1529,7 +1529,7 @@ function mod:Options()
 		padMap = { type = "toggle", name = ns.L["OpenMap's map with the controller (test)"], order = 12, width = "full", get = get,
 			set = function(info, v) set(info, v) mod.SetPadMap(v) end, hidden = true,
 			desc = ns.L["With the game's Gamepad UI on, OpenMap's map instead of Blizzard's. The controller's B and full-screen buttons on the map are OpenMap's then, so the game doesn't block them. Still being tried out: if the game blocks something, turn this off and /reload."] },
-		padView = { type = "toggle", name = ns.L["OpenMap's map with the controller"], order = 12.5, width = "full", get = get,
+		padView = { type = "toggle", name = ns.L["Enable OpenMap with Gamepad UI"], order = 12.5, width = "full", get = get,
 			set = function(info, v) set(info, v) mod.SetPadView(v) end,
 			desc = ns.L["With the game's Gamepad UI on, OpenMap draws its map over Blizzard's and leaves Blizzard's map as it is, so the controller's buttons keep working. Off: Blizzard's map while the Gamepad UI is on."] },
 		lookHeader = ns.Header(ns.L["Look"], 20),

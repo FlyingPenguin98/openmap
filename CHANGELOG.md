@@ -14,8 +14,8 @@
   (with their tooltips), townsfolk and mob paths, other addons' icons (TomTom, gatherers), dungeon
   maps with their bosses, quests and loot, and the OpenMap menu with search, Find me, map pins, the
   quill (A puts the pen down, A lifts it) and Report a problem. Questie's icons no longer slow the map
-  down there either. The D-pad's right opens the quest log, as on Blizzard's map. Options' "OpenMap's
-  map with the controller" (on by default) turns it off: Blizzard's map with the Gamepad UI, as before.
+  down there either. The D-pad's right opens the quest log, as on Blizzard's map. Options' "Enable OpenMap with
+  Gamepad UI" (on by default) turns it off: Blizzard's map with the Gamepad UI, as before.
 
 ## v0.8.3 (2026-11-09)
 

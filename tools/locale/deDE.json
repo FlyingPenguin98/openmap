@@ -512,7 +512,7 @@
  "Click: track this quest, zoom to it and show it in the quest log": "Klick: Quest verfolgen, heranzoomen und im Questlog zeigen",
  "Click: track this quest and zoom to it": "Klick: Quest verfolgen und heranzoomen",
  "friends on other numbered realms on the map": "Freunde auf anderen nummerierten Realms auf der Karte",
- "OpenMap's map with the controller": "Karte von OpenMap mit dem Controller",
+ "Enable OpenMap with Gamepad UI": "OpenMap mit der Gamepad-UI aktivieren",
  "With the game's Gamepad UI on, OpenMap draws its map over Blizzard's and leaves Blizzard's map as it is, so the controller's buttons keep working. Off: Blizzard's map while the Gamepad UI is on.": "Mit der Gamepad-UI des Spiels zeichnet OpenMap seine Karte über die von Blizzard und lässt Blizzards Karte, wie sie ist, damit die Tasten des Controllers weiter funktionieren. Aus: Blizzards Karte, solange die Gamepad-UI an ist.",
  "With the controller, the D-pad's right opens the quest log.": "Mit dem Controller öffnet rechts auf dem Steuerkreuz das Questlog.",
  "That isn't available with the Gamepad UI yet.": "Das gibt es mit der Gamepad-UI noch nicht."
