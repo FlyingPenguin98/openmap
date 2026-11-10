@@ -17,6 +17,8 @@ local L = ns.L
 local d = mod.defaults
 d.menuPos = false               -- { left, top, screen = true } on the screen once dragged (one on the map, from before: dropped)
 d.menuOpen = false
+d.menuWidth = 700             -- floating settings panel width
+d.menuHeight = false         -- optional manually chosen height (false: fit contents)
 d.menuTab = "show"              -- the checklist's tab (TABS)
 d.favorites = {}                -- action and row ids, in the order they were starred: a button each on the map
 d.trayOpen = true               -- the favourites' row shown (the arrow beside the OpenMap button folds it)
@@ -25,8 +27,10 @@ d.tabRail = true                -- the OpenMap button and the favourites as tabs
 d.mapButtons = true             -- the OpenMap button and the favourites on the map at all (off: none; /openmap opens the menu)
 local TRAY_START = { "find", "pin", "quill" }
 
-local map, sc, menu, toggle, trayArrow, checks, favBar, tiles, zoomRow, miniRow, opacityRow
-local W, PAD, COL = 500, 16, 226   -- (two columns of COL, 16 apart, inside the padding)
+local map, sc, menu, toggle, trayArrow, checks, favBar, tiles, zoomRow, miniRow, opacityRow, bodyScroll, scrollBody, bodyBar
+local W, PAD, COL = 700, 16, 316  -- reserve room for scrolling beside the two columns
+local SCROLL_GAP = 20
+local MIN_W, MAX_W = 500, 1100
 local BAR_X, BAR_Y = 14, 14     -- the OpenMap button's corner: the map's bottom left (room for its slot's frame)
 local TOGGLE = 36               -- the OpenMap button (an action button's size)
 local FAV = 30                  -- a favourite's button
@@ -204,7 +208,8 @@ local function Rows()
 		optRow(L["Boat and zeppelin routes"], "routes", { atlas = "Ships_CargoShip-Map", texture = "Interface\\Icons\\INV_Misc_Spyglass_02", icon = true }),
 		optRow(L["Your arrow"], "playerArrow", { texture = "Interface\\Minimap\\MinimapArrow" }),
 		optRow(L["Party and raid members"], "group", Icon("Spell_Holy_PrayerOfFortitude")),
-		optRow(L["Friends and guild"], "friends", Icon("INV_Misc_GroupNeedMore")),
+		optRow(L["Friends on the map"], "friends", Icon("INV_Misc_GroupNeedMore")),
+		optRow(L["Guild members on the map"], "guild", Icon("INV_Shirt_GuildTabard_01")),
 		optRow(L["Your drawings"], "sketchShown", Icon("INV_Feather_04")),
 	}
 	if mod.defaults.allQuests ~= nil then        -- (Quests.lua: WoW Forever's toc loads it, retail's doesn't)
@@ -228,6 +233,7 @@ local function Rows()
 	rows[#rows + 1] = optRow(L["Fade icons while zooming"], "zoomHidePins", Icon("Ability_Stealth"))
 	rows[#rows].note = L["Improves performance"]      -- (a second line, so nobody turns it off unaware)
 	rows[#rows + 1] = { L["Dungeons"] }
+	rows[#rows + 1] = row(L["Dungeon maps"], "dungeonMaps", Icon("INV_Misc_Map_01"), mod.DungeonMapsOn, mod.SetDungeonMaps)
 	rows[#rows + 1] = optRow(L["Level ranges"], "dungeonLevels", Icon("Spell_ChargePositive"))
 	rows[#rows + 1] = optRow(L["Dungeon bosses"], "dungeonBosses", Icon("INV_Misc_Bone_ElfSkull_01"))
 	-- (with Questie, Dungeon Journal or NeedRoll: where they come from is in Options)
@@ -572,6 +578,7 @@ local RAIL_MAIN = { 40, 42 }    -- the OpenMap tab: out from the edge, along it 
 local RAIL_FAV = { 32, 34 }     -- a favourite's
 local RAIL_GAP, RAIL_ARROW = 3, 16
 local RAIL_END = 44             -- kept clear at each end of an edge (the quest log button, the coordinates)
+local RAIL_QUEST_ROOM = 40      -- right side: room below the tabs for the windowed quest log toggle
 local RAIL_DEFAULT = { edge = "right", at = 0 }   -- (low on the right, past the end kept clear)
 local DUNGEON_TABS = 2 * 42 + 3 -- a dungeon map's two tabs, along the right edge
 local VERTICAL = { left = true, right = true }
@@ -710,7 +717,10 @@ RefreshRail = function()
 	-- the OpenMap tab where it was put, kept off the edge's ends; the favourites the way along it
 	-- there's more room (on the right edge, less a dungeon map's tabs while they show)
 	local half = RAIL_MAIN[2] / 2
-	local s0 = math.max(RAIL_END + half, math.min(len - RAIL_END - half, (pos.at or 0) * len))
+	-- Move the entire tab stack up when the quest toggle sits beneath it.
+	-- Other edges and the fullscreen layout keep their existing positions.
+	local questRoom = (edge == "right" and map.IsMaximized and not map:IsMaximized() and mod.MoveAnyOn and mod.MoveAnyOn()) and RAIL_QUEST_ROOM or 0
+	local s0 = math.max(RAIL_END + questRoom + half, math.min(len - RAIL_END - half, (pos.at or 0) * len))
 	local dir = (len - s0 >= s0) and 1 or -1
 	local reserve = (edge == "right" and mod.DungeonTabsShown and mod.DungeonTabsShown()) and (DUNGEON_TABS + 12) or 0
 	local reach = (dir > 0 and (len - s0) or s0) - RAIL_END - reserve
@@ -883,9 +893,32 @@ Fill = function()
 		local s = sections[#sections]
 		s[#s + 1] = row
 	end
-	local function Height(s)                       -- (its heading, the gap before it, its rows, their notes)
-		local h = (#s - 1) * ROW_H + 32
-		for _, row in ipairs(s) do if row.note then h = h + NOTE_H end end
+	-- Measure wrapped rows before distributing sections between the two columns.
+	-- Otherwise a section with long translated labels looks short on paper but
+	-- overlaps another section when actually drawn.
+	local probe = checks.measure
+	if not probe then
+		probe = checks:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+		probe:Hide()
+		checks.measure = probe
+	end
+	probe:SetWidth(math.max(60, COL - 72))
+	if probe.SetWordWrap then probe:SetWordWrap(true) end
+	local function LineHeight(value)
+		probe:SetText(value)
+		return math.max(ROW_H, math.ceil(probe:GetStringHeight() or ROW_H) + 5)
+	end
+	local function Height(s)
+		local h = 32  -- section heading and spacing
+		for _, row in ipairs(s) do
+			if row[2] then
+				h = h + LineHeight(row[1])
+				if row.note then
+					probe:SetText(row.note)
+					h = h + math.max(NOTE_H, math.ceil(probe:GetStringHeight() or NOTE_H) + 2)
+				end
+			end
+		end
 		return h
 	end
 	local pick, best = 0, math.huge
@@ -944,14 +977,16 @@ Fill = function()
 					it.icon:SetPoint("LEFT", it, "RIGHT", 4, 0)
 					it.border = IconBorder(checks, it.icon, 16)   -- (spell icons only: map symbols go bare)
 					it.label = checks:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-					it.label:SetPoint("LEFT", it.icon, "RIGHT", 6, 0)
+					it.label:SetPoint("TOPLEFT", it.icon, "TOPRIGHT", 6, 2)
+					if it.label.SetWordWrap then it.label:SetWordWrap(true) end
+					it.label:SetJustifyH("LEFT")
 					-- (a row's note: a second, smaller line in gold under its label)
 					it.note = checks:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
 					it.note:SetPoint("TOPLEFT", it.label, "BOTTOMLEFT", 0, -1)
 					-- the whole line clicks the box
 					it.hit = CreateFrame("Button", nil, checks)
 					it.hit:SetHeight(ROW_H)
-					it.hit:SetPoint("LEFT", it.icon, "LEFT", -2, 0)
+					it.hit:SetPoint("TOPLEFT", it, "TOPRIGHT", 2, 0)
 					it.hit:SetHighlightTexture("Interface\\QuestFrame\\UI-QuestTitleHighlight", "ADD")
 					it.hit:SetScript("OnClick", function() it:Click() end)
 					it.star = MakeStar(checks, function() Fill() RefreshFavorites() end)
@@ -962,19 +997,24 @@ Fill = function()
 				it:SetPoint("TOPLEFT", x0, y - 1)
 				it.border:SetShown(SetIcon(it.icon, row.icon or Icon("INV_Misc_QuestionMark")))
 				it.icon:Show()
+				it.label:SetWidth(math.max(60, COL - 72))
 				it.label:SetText(row[1])
 				it.label:Show()
+				it.note:SetWidth(math.max(60, COL - 72))
 				it.note:SetText(row.note or "")
 				it.note:SetShown(row.note ~= nil)
 				it:SetChecked(row[2]() and true or false)
+				local lineH = math.max(ROW_H, math.ceil(it.label:GetStringHeight() or ROW_H) + 5)
+				local noteH = row.note and math.max(NOTE_H, math.ceil(it.note:GetStringHeight() or NOTE_H) + 2) or 0
 				it.hit:SetWidth(COL - 44)
+				it.hit:SetHeight(lineH + noteH)
 				SetStar(it.star, row.id)
 				it.star:ClearAllPoints()
 				it.star:SetPoint("TOPLEFT", x0 + COL - 16, y - 4)
 				it.star:SetShown(row.id ~= nil)
 				it:Show()
 				it.hit:Show()
-				y = y - ROW_H - (row.note and NOTE_H or 0)
+				y = y - lineH - noteH
 			end
 		end
 		tallest = math.max(tallest, -y)
@@ -989,12 +1029,30 @@ Fill = function()
 		opacityRow:Fill()
 		for _, r in ipairs(menu.extraRows or {}) do r:Fill() end
 	end
-	menu:SetHeight(checks.top + tallest + (look and (menu.sliders:GetHeight() + 10) or 0) + 30 + PAD)
-	-- shrunk to fit a short screen (a TV at a big UI scale: the Look tab ran off its foot, a player's report)
-	local room = UIParent:GetHeight() * UIParent:GetEffectiveScale() - 20
-	local need = menu:GetHeight() * menu:GetParent():GetEffectiveScale()
-	local fit = need > room and room / need or 1
-	if math.abs(menu:GetScale() - fit) > 0.001 then menu:SetScale(fit) end
+	-- Header, search, actions and tabs stay fixed. The user may choose the
+	-- menu height; only its checklist/sliders viewport scrolls when necessary.
+	local bodyHeight = tallest + (look and (menu.sliders:GetHeight() + 10) or 0)
+	local footerHeight = 30 + PAD
+	local available = (UIParent:GetHeight() * UIParent:GetEffectiveScale() - 36)
+		/ menu:GetParent():GetEffectiveScale()
+	local minHeight = checks.top + footerHeight + 80  -- retain a usable scroll viewport
+	local maxHeight = math.max(minHeight, available)
+	local naturalHeight = checks.top + bodyHeight + footerHeight
+	local requestedHeight = tonumber(mod.db.menuHeight) or naturalHeight
+	local height = math.min(maxHeight, math.max(minHeight, requestedHeight))
+	local viewport = math.max(1, height - checks.top - footerHeight)
+	menu:SetHeight(height)
+	bodyScroll:SetHeight(viewport)
+	scrollBody:SetHeight(math.max(bodyHeight, viewport))
+	local overflow = math.max(0, bodyHeight - viewport)
+	bodyBar:SetMinMaxValues(0, math.max(1, overflow))
+	bodyBar:SetHeight(math.max(24, viewport - 4))
+	bodyBar:SetShown(overflow > 1)
+	local target = mod.db.menuTab ~= bodyScroll.lastTab and 0 or bodyScroll:GetVerticalScroll()
+	bodyScroll.lastTab = mod.db.menuTab
+	target = math.min(overflow, math.max(0, target))
+	bodyBar:SetValue(target)
+	bodyScroll:SetVerticalScroll(target)
 end
 
 -- the menu stays where it is on the screen while the map window is dragged about: where you put it,
@@ -1238,6 +1296,8 @@ function mod:SetupPanel(worldMap)
 	menu = CreateFrame("Frame", "OpenMapMenu", map, "BackdropTemplate")
 	local pad = mod.padRoots      -- (the gamepad's cursor presses their buttons: Gamepad.lua)
 	pad[#pad + 1], pad[#pad + 2], pad[#pad + 3], pad[#pad + 4] = toggle, trayArrow, favBar, menu
+	W = math.max(MIN_W, math.min(MAX_W, tonumber(mod.db.menuWidth) or 700))
+	COL = (W - 2 * PAD - 16 - SCROLL_GAP) / 2
 	menu:SetWidth(W)
 	-- (over the quest log, which Blizzard puts in the HIGH strata: the map's own is lower, so at any
 	-- frame level the menu went behind it where they overlap)
@@ -1299,6 +1359,7 @@ function mod:SetupPanel(worldMap)
 	local gap = 6
 	local perRow = #actions > 6 and math.ceil(#actions / 2) or #actions   -- (past six: two rows, room for their labels)
 	local tw = (inner - gap * (perRow - 1)) / perRow
+	local actionsY = y
 	tiles = {}
 	for i, e in ipairs(actions) do
 		local t = Tile(menu, tw, TILE_H, 26)
@@ -1352,17 +1413,45 @@ function mod:SetupPanel(worldMap)
 	rule:SetWidth(inner - 4)
 	y = y - 12
 
-	checks = CreateFrame("Frame", nil, menu)
-	checks:SetPoint("TOPLEFT", PAD, y)
-	checks:SetWidth(inner)
+	-- Only the contents beneath the tabs scroll; the search, actions and
+	-- tab selection remain visible, including on 1080p and scaled UIs.
+	bodyScroll = CreateFrame("ScrollFrame", nil, menu)
+	bodyScroll:SetPoint("TOPLEFT", PAD, y)
+	bodyScroll:SetWidth(inner - SCROLL_GAP)
+	bodyScroll:SetHeight(100)
+	bodyScroll:EnableMouseWheel(true)
+	scrollBody = CreateFrame("Frame", nil, bodyScroll)
+	scrollBody:SetSize(inner - SCROLL_GAP, 1)
+	bodyScroll:SetScrollChild(scrollBody)
+	bodyBar = CreateFrame("Slider", nil, menu, "BackdropTemplate")
+	bodyBar:SetPoint("TOPLEFT", bodyScroll, "TOPRIGHT", 4, -2)
+	bodyBar:SetWidth(10)
+	bodyBar:SetOrientation("VERTICAL")
+	bodyBar:SetBackdrop({ bgFile = "Interface\\Buttons\\WHITE8X8" })
+	bodyBar:SetBackdropColor(0.08, 0.06, 0.04, 0.9)
+	bodyBar:SetThumbTexture("Interface\\Buttons\\UI-ScrollBar-Knob")
+	bodyBar:GetThumbTexture():SetSize(16, 24)
+	bodyBar:SetMinMaxValues(0, 1)
+	bodyBar:SetValueStep(12)
+	bodyBar:SetScript("OnValueChanged", function(_, value)
+		bodyScroll:SetVerticalScroll(value)
+	end)
+	bodyScroll:SetScript("OnMouseWheel", function(_, delta)
+		if bodyBar:IsShown() then bodyBar:SetValue(bodyBar:GetValue() - delta * 45) end
+	end)
+
+	checks = CreateFrame("Frame", nil, scrollBody)
+	checks:SetPoint("TOPLEFT", 0, 0)
+	checks:SetWidth(inner - SCROLL_GAP)
 	checks.top = -y
 
 	-- the sliders (on the look's tab), in two columns: the map's (how far in, its size and colour) and the
 	-- minimap's detail; back to their defaults
-	local sliders = CreateFrame("Frame", nil, menu)
+	local sliders = CreateFrame("Frame", nil, scrollBody)
 	menu.sliders = sliders
 	sliders:SetPoint("TOPLEFT", checks, "BOTTOMLEFT", 0, -10)
 	sliders:SetWidth(inner)
+	local sliderHeads = {}
 	local function Head(text, x)
 		local head = sliders:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 		head:SetTextColor(HEAD[1], HEAD[2], HEAD[3])
@@ -1371,6 +1460,7 @@ function mod:SetupPanel(worldMap)
 		local rule = Rule(sliders)
 		rule:SetPoint("LEFT", head, "RIGHT", 6, 0)
 		rule:SetWidth(math.max(1, COL - 10 - (head:GetStringWidth() or 40)))
+		sliderHeads[#sliderHeads + 1] = { head = head, rule = rule }
 	end
 	Head(L["Detail"], 0)
 	Head(L["Minimap"], COL + 16)
@@ -1406,6 +1496,7 @@ function mod:SetupPanel(worldMap)
 	menu.extraRows[#menu.extraRows + 1] = made.iconSize
 	for _, s in ipairs({
 		{ "windowScale", L["Map size"], Icon("INV_Misc_Spyglass_02") },
+		{ "brightness", L["Map brightness"], Icon("Spell_Shadow_DarkRitual") },
 		{ "colorMatch", L["Colour matching"], Icon("INV_Misc_Map_01") },
 		{ "desaturate", L["Take colour out"], Icon("Spell_Shadow_Twilight") },
 		{ "darkening", L["Darkening"], Icon("Spell_Shadow_DarkRitual") },
@@ -1425,19 +1516,29 @@ function mod:SetupPanel(worldMap)
 			menu.extraRows[#menu.extraRows + 1] = r
 		end
 	end
-	-- each column's, top down
-	local height = 0
-	for col, list in ipairs({ { "zoom", "icons", "iconSize", "windowScale", "colorMatch", "desaturate" }, { "from", "minimapMix", "opacity", "darkening", "moveFade", "mapFpsCap" } }) do
-		local y = -22
-		for _, key in ipairs(list) do
-			local r = made[key]
-			if r then
-				r:SetPoint("TOPLEFT", (col - 1) * (COL + 16), y)
-				y = y - SLIDER_H - 2
+	-- each column's sliders need to move when the panel grows wider.
+	local sliderColumns = {
+		{ "zoom", "icons", "iconSize", "windowScale", "brightness", "colorMatch", "desaturate" },
+		{ "from", "minimapMix", "opacity", "darkening", "moveFade", "mapFpsCap" },
+	}
+	local function LayoutSliders()
+		local height = 0
+		for col, list in ipairs(sliderColumns) do
+			local y = -22
+			for _, key in ipairs(list) do
+				local r = made[key]
+				if r then
+					r:SetWidth(COL)
+					r:ClearAllPoints()
+					r:SetPoint("TOPLEFT", (col - 1) * (COL + 16), y)
+					y = y - SLIDER_H - 2
+				end
 			end
+			height = math.max(height, -y)
 		end
-		height = math.max(height, -y)
+		return height
 	end
+	local height = LayoutSliders()
 	-- the sliders back to their defaults (every slider, Options' too: WorldMap.lua's ResetSliders)
 	local defaults = CreateFrame("Button", nil, sliders, "UIPanelButtonTemplate")
 	defaults:SetSize(96, 22)
@@ -1459,9 +1560,102 @@ function mod:SetupPanel(worldMap)
 	-- at the foot, on every tab: what the stars do
 	local hint = menu:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
 	hint:SetPoint("BOTTOMLEFT", PAD + 2, PAD - 2)
-	hint:SetWidth(inner - 4)
+	hint:SetWidth(inner - 24)  -- reserve the bottom-right resize handle
 	hint:SetJustifyH("LEFT")
 	hint:SetText(L["A star puts that action or setting on the map as a button of its own."])
+
+	-- The menu's height is calculated by Fill() from the visible tab's contents.
+	-- Its width and height can be resized; all columns, action tiles, search and
+	-- sliders are reflowed rather than scaling overflowing text.
+	local function ResizeWidth(width)
+		width = math.floor(math.max(MIN_W, math.min(MAX_W, width)) + 0.5)
+		if width == W then return end
+		W = width
+		COL = (W - 2 * PAD - 16 - SCROLL_GAP) / 2
+		local inner = W - 2 * PAD
+		menu:SetWidth(W)
+		if search then search:SetWidth(inner - 8) end
+		local tileW = (inner - gap * (perRow - 1)) / perRow
+		for i, t in ipairs(tiles) do
+			t:SetWidth(tileW)
+			t.label:SetWidth(tileW - 6)
+			t:ClearAllPoints()
+			t:SetPoint("TOPLEFT", PAD + ((i - 1) % perRow) * (tileW + gap),
+				actionsY - math.floor((i - 1) / perRow) * (TILE_H + gap))
+		end
+		rule:SetWidth(inner - 4)
+		bodyScroll:SetWidth(inner - SCROLL_GAP)
+		scrollBody:SetWidth(inner - SCROLL_GAP)
+		checks:SetWidth(inner - SCROLL_GAP)
+		sliders:SetWidth(inner - SCROLL_GAP)
+		for i, entry in ipairs(sliderHeads) do
+			entry.head:ClearAllPoints()
+			entry.head:SetPoint("TOPLEFT", (i - 1) * (COL + 16) + 2, 0)
+			entry.rule:SetWidth(math.max(1, COL - 10 - (entry.head:GetStringWidth() or 40)))
+		end
+		LayoutSliders()
+		hint:SetWidth(inner - 24)
+		return true
+	end
+
+	-- Dragging the corner now changes both dimensions. In particular,
+	-- shrinking height makes the checkbox area scroll rather than reducing UI scale.
+	local function ResizeHeight(height)
+		local value = math.floor(height + 0.5)
+		if math.abs(menu:GetHeight() - value) < 1 then return end
+		mod.db.menuHeight = value
+		return true
+	end
+
+	local grip = CreateFrame("Button", nil, menu)
+	grip:SetSize(18, 18)
+	grip:SetPoint("BOTTOMRIGHT", menu, "BOTTOMRIGHT", -5, 6)
+	grip:SetFrameLevel(menu:GetFrameLevel() + 21)
+	grip:SetNormalTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Up")
+	grip:SetHighlightTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Highlight")
+	grip:SetPushedTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Down")
+	grip:RegisterForDrag("LeftButton")
+	grip:RegisterForClicks("LeftButtonUp")
+	-- Reset both saved dimensions: default width, natural content-fitting height.
+	grip:SetScript("OnDoubleClick", function(_, mouse)
+		if mouse ~= "LeftButton" then return end
+		mod.db.menuWidth = nil
+		mod.db.menuHeight = nil
+		ResizeWidth(mod.defaults.menuWidth)
+		Fill()
+	end)
+	grip:SetScript("OnDragStart", function(self)
+		self.startX, self.startY = GetCursorPosition()
+		self.startWidth = W
+		self.startHeight = menu:GetHeight()
+		self.dragScale = menu:GetEffectiveScale()
+		-- Keep the current height while the width is also being changed.
+		-- Prior to manual resizing, the menu normally fits its contents.
+		mod.db.menuHeight = self.startHeight
+		self:SetScript("OnUpdate", function(handle)
+			local x, y = GetCursorPosition()
+			local widthChanged = ResizeWidth(handle.startWidth + (x - handle.startX) / handle.dragScale)
+			local heightChanged = ResizeHeight(handle.startHeight + (handle.startY - y) / handle.dragScale)
+			if widthChanged or heightChanged then Fill() end
+		end)
+	end)
+	grip:SetScript("OnDragStop", function(self)
+		self:SetScript("OnUpdate", nil)
+		mod.db.menuWidth = W
+		mod.db.menuHeight = menu:GetHeight()
+		menu:SetUserPlaced(false)
+	end)
+	grip:SetScript("OnHide", function(self) self:SetScript("OnUpdate", nil) end)
+	grip:SetScript("OnEnter", function(self)
+		Tip(self, "ANCHOR_TOP", L["Resize the OpenMap menu"],
+			{ L["Drag to change width and height. The settings scroll when needed."] })
+	end)
+	grip:SetScript("OnLeave", GameTooltip_Hide)
+
+	-- The visible portion follows resolution / UI-scale changes at runtime.
+	UIParent:HookScript("OnSizeChanged", function()
+		if menu and menu:IsShown() then Fill() end
+	end)
 
 	mod.OnPinMode = function() RefreshTiles() RefreshFavorites() end
 	-- the quest log opened or closed by Blizzard's own button too

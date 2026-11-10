@@ -20,6 +20,13 @@ ns.Credits = {
 		{ "Ironship", L["the map in combat, RareScanner's icons over the map and other map addons' pins"] },
 		{ "C-Clymer", L["how the map reopens, and middle-click to center on you"] },
 		{ "RADD95", L["dungeon and cave maps in every language (they showed green on some languages' clients)"] },
+		{ "Peendars", L["zooming about four times smoother, found and measured"] },
+		{ "Loukky", L["flight masters named in your client's language"] },
+		{ "diegodiaz1256", L["a dungeon's map opening when you open the map inside it, and one icon for townsfolk who walk about"] },
+		{ "Naladdar", L["the resizable settings menu, resizing the map with Move Any, and the Titan Panel launcher"] },
+		{ "ZiiMs", L["the switch for dungeon maps, and separate switches for friends and guild"] },
+		{ "forcedroidbrain", L["map brightness"] },
+		{ "TheRayoX", L["friends on other numbered realms on the map"] },
 	} },
 	{ L["Map art"], {
 		{ "Blizzard Entertainment", L["the map art is the game's own"] },

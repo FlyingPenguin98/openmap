@@ -1,5 +1,6 @@
 --------------------------------------------------------------------------------
--- Friends and guild on the map. Everyone online on your friends list (Battle.net friends playing
+-- Friends and guild on the map, each with its own switch (Options: Friends on the map,
+-- Guild members on the map). Everyone online on your friends list (Battle.net friends playing
 -- this game too) and in your guild shows by zone, as the game's own lists give it: a badge on the
 -- zone, with who's there. Those who use OpenMap and share where they are show as a class-coloured
 -- dot where they stand instead. Your party and raid are left to Nav.lua's dots and Blizzard's.
@@ -22,7 +23,8 @@ local function Timed(name, fn, ...)
 	return fn(...)
 end
 
-mod.defaults.friends = true         -- friends and guild on the map
+mod.defaults.friends = true         -- friends on the map
+mod.defaults.guild = true           -- guild members on the map
 mod.defaults.friendsShare = false   -- your place sent to your guild and your friends who use OpenMap
 
 local PREFIX = "OpenMapLoc"         -- (its own: the game holds back a burst per prefix, Pins.lua's apart)
@@ -75,6 +77,20 @@ end
 
 -- a realm as compared: no spaces, hyphens or apostrophes, any case
 local function Plain(rlm) return (rlm:gsub("[%s%-']", "")):lower() end
+
+-- Forever's numbered realms share a ruleset map. Compare the pool, not its shard number:
+-- CAMWOWEU5Realm4PvP and CAMWOWEU5Realm12PvP both become camwoweu5realmpvp.
+local function RealmPool(rlm)
+	local key = Plain(rlm)
+	if ns.Client == "Forever" then key = key:gsub("realm%d+", "realm") end
+	return key
+end
+
+local function SamePool(full)
+	local _, rlm = full:match("^([^%-]+)%-(.+)$")
+	local mine = Realm()
+	return rlm and mine ~= "" and RealmPool(rlm) == RealmPool(mine) or false
+end
 
 -- "Name-Realm" for a name as the game gives it (on your own realm it comes without one)
 local function Full(name, rlm)
@@ -263,7 +279,7 @@ local function ScanGuild()
 end
 
 local function Friend(full, level, area, className, how)
-	if Short(full) == full and not roster[full] then return end   -- (a friend on another realm isn't on your map; a guild member is)
+	if not SamePool(full) and not roster[full] then return end   -- (a friend outside your realm pool isn't on your map; a guild member is)
 	local r = roster[full] or { name = Shown(full), level = tonumber(Safe.Value(level)), area = Safe.Value(area),
 		class = ClassFile(Safe.Value(className)) }
 	r.friend = true
@@ -307,7 +323,7 @@ local function Scan()
 		for full in pairs(t) do if IsMe(full) then t[full] = nil end end
 	end
 	-- a friend just online: a hello, to learn whether they use OpenMap (they learn you do)
-	if mod.db.friends or mod.db.friendsShare then
+	if mod.db.friends or mod.db.guild or mod.db.friendsShare then
 		for full in pairs(friends) do
 			if not before[full] then ToFriend(full, "H1") end
 		end
@@ -421,6 +437,15 @@ end
 
 local function ByName(a, b) return a.name < b.name end
 
+-- whether someone shows with the two switches: a friend while friends are on, a guild member while
+-- the guild is; someone in both shows with either. `heardInGuild`: the message came on the guild channel
+local function Shows(full, heardInGuild)
+	local r = roster[full]
+	local isFriend = (r and r.friend) or friends[full]
+	local isGuild = heardInGuild or (r and r.guild)
+	return (isFriend and mod.db.friends) or (isGuild and mod.db.guild) or false
+end
+
 local function Redraw()
 	dirty = false
 	if not S.IsBuilt() then return end
@@ -428,12 +453,12 @@ local function Redraw()
 	zoneSet = zoneSet or S.PinSet("friendzones", 0, 3)
 	S.ClearPinSet(dotSet)
 	S.ClearPinSet(zoneSet)
-	if not mod.db.friends or not mod.IsStitched() then return end
+	if not (mod.db.friends or mod.db.guild) or not mod.IsStitched() then return end
 	local now, zones = GetTime(), {}
 	for full, p in pairs(live) do
 		if now - p.at > GONE_AFTER or IsMe(full) then
 			live[full] = nil
-		elseif not InGroup(full) then
+		elseif not InGroup(full) and Shows(full, p.guild) then
 			local u, v = mod.ToWorld(p.map, p.x, p.y)
 			if u then
 				local pin = S.AddPin(dotSet, u, v, DotLook(p.class), { full = full, p = p })
@@ -444,7 +469,7 @@ local function Redraw()
 	end
 	-- the rest by zone: one badge each, in the middle of the zone
 	for full, r in pairs(roster) do
-		local id = not live[full] and not InGroup(full) and ZoneMap(r.area)
+		local id = not live[full] and not InGroup(full) and Shows(full, false) and ZoneMap(r.area)
 		if id then
 			zones[id] = zones[id] or {}
 			tinsert(zones[id], r)
@@ -558,8 +583,10 @@ function mod:SetupFriends(worldMap)
 end
 
 function mod:FriendsOptions(opts, get, set, off)
-	opts.friends = { type = "toggle", name = L["Friends and guild"], order = 35.5, get = get, set = set, disabled = off,
-		desc = L["Your friends and guild members who are online: a badge on the zone each is in, with who's there (as the friends list and guild roster show it), or a class-coloured dot where they stand for those who use OpenMap and share where they are."] }
+	opts.friends = { type = "toggle", name = L["Friends on the map"], order = 35.45, get = get, set = set, disabled = off,
+		desc = L["Your friends who are online: a badge on the zone each is in, with who's there (as the friends list shows it), or a class-coloured dot where they stand for those who use OpenMap and share where they are."] }
+	opts.guild = { type = "toggle", name = L["Guild members on the map"], order = 35.5, get = get, set = set, disabled = off,
+		desc = L["Your guild members who are online: a badge on the zone each is in, with who's there (as the guild roster shows it), or a class-coloured dot where they stand for those who use OpenMap and share where they are."] }
 	opts.friendsShare = { type = "toggle", name = L["Share where you are"], order = 35.6, get = get, set = set, disabled = off,
 		desc = L["Your guild, and your friends who use OpenMap, see you as a dot where you stand on their map, sent every few seconds while you move. Never from inside a dungeon, raid or battleground. Off, they see only your zone, as the friends list and guild roster show it."] }
 end

@@ -15,6 +15,7 @@ local mod = ns:GetModule("worldmap")
 local Look, Safe, L = ns.Look, ns.Safe, ns.L
 
 local d = mod.defaults
+d.dungeonMaps = true            -- the maps of dungeons and raids (off: the world map, and an entrance's card)
 d.dungeonBosses = true          -- the card lists a dungeon's bosses
 d.dungeonQuests = true          -- and its quests (questSource)
 d.questSource = "auto"          -- the quests from: "questie", "journal" (Dungeon Journal), "needroll"; "auto": the first there
@@ -23,6 +24,7 @@ d.dungeonCard = true            -- the card open (false: folded to its title)
 d.dungeonLevels = true          -- each entrance's level range under its icon
 d.dungeonHints = 0              -- dungeon maps opened with the how-to-leave hint (it shows for the first few)
 d.dungeonTab = "floors"         -- the dungeon map's side panel: floors, bosses, quests or loot
+d.dungeonDockTab = "dungeon"    -- the tab picked beside the quest log on a dungeon's map: "dungeon" or "quests"
 d.entrances = {}                -- lines /openmap entrance recorded, to paste into build.py
 
 local LOOK = {
@@ -43,6 +45,9 @@ local byMap                     -- a dungeon's map (each floor) -> { insts = { .
 local returnTo                  -- the world as it was when a dungeon's map was opened: { u, v, zoom, maps = { [mapID] = true } }
 local away = {}                 -- maps off the stitched world a dock has opened (Zephras Isle): [mapID] = true
 local shownMap, lastMap         -- the map the window shows, and the one before it
+
+local function MapsOn() return mod.db.dungeonMaps ~= false end   -- (Options' Dungeon maps)
+mod.DungeonMapsOn = MapsOn
 
 local function Places() return ns.MapPlaces or {} end
 
@@ -546,6 +551,7 @@ local function BuildView()
 			if log and log:IsVisible() then
 				if view.dockTab == self.key then return end
 				view.dockTab = self.key
+				mod.db.dungeonDockTab = self.key   -- (kept: the next dungeon's map opens at it too)
 				Sound("IG_CHARACTER_INFO_TAB")
 				Dock()
 				return
@@ -1034,7 +1040,7 @@ local function OpenView(inst, pin)
 	view.leaving = nil
 	view:SetAlpha(1)
 	view:Show()
-	view.dockTab = "dungeon"
+	view.dockTab = mod.db.dungeonDockTab == "quests" and "quests" or "dungeon"   -- (the tab last picked)
 	Dock()
 	view.floor = nil
 	ShowFloor(first, true)
@@ -1106,26 +1112,26 @@ end
 local function Open(inst, pin)
 	if chooser then chooser:Hide() end
 	if mod.db.entranceClick == "journal" and OpenJournal(inst) then return end
-	local id = DungeonMap(inst)
-	if not id and OpenView(inst, pin) then return end
-	if not id then
-		-- no map of it at all (WoW Forever's own dungeons): its card over the world map, and down into
-		-- its entrance (Close.lua), or just closer in
-		portalCard = { inst }
-		RefreshCard()
-		local cave, u0, v0, u1, v1
-		if S.CaveAt and pin.cont then cave, u0, v0, u1, v1 = S.CaveAt(pin.cont, pin.x, pin.y) end
-		if cave and S.GlideToRect then S.GlideToRect(u0, v0, u1, v1, 1.1)
-		elseif S.GlideToWorld then
-			local _, _, zoom = mod.ViewNow()
-			S.GlideToWorld(pin.u, pin.v, math.max(zoom or 1, 12))
-		end
+	local id = MapsOn() and DungeonMap(inst)
+	if id then
+		if PadWaits() then return end
+		local u, v, zoom = mod.ViewNow()
+		returnTo = u and { u, v, zoom, maps = MapsOf(id) } or nil
+		S.OpenMap(id)
 		return
 	end
-	if PadWaits() then return end
-	local u, v, zoom = mod.ViewNow()
-	returnTo = u and { u, v, zoom, maps = MapsOf(id) } or nil
-	S.OpenMap(id)
+	if MapsOn() and OpenView(inst, pin) then return end
+	-- no map of it at all (WoW Forever's own dungeons), or dungeon maps turned off: its card over
+	-- the world map, and down into its entrance (Close.lua), or just closer in
+	portalCard = { inst }
+	RefreshCard()
+	local cave, u0, v0, u1, v1
+	if S.CaveAt and pin.cont then cave, u0, v0, u1, v1 = S.CaveAt(pin.cont, pin.x, pin.y) end
+	if cave and S.GlideToRect then S.GlideToRect(u0, v0, u1, v1, 1.1)
+	elseif S.GlideToWorld then
+		local _, _, zoom = mod.ViewNow()
+		S.GlideToWorld(pin.u, pin.v, math.max(zoom or 1, 12))
+	end
 end
 
 -- the stitched map is put up again (WorldMap.lua's view reset): out of a dungeon's map, the world as
@@ -1165,6 +1171,17 @@ local function Back()
 	if map and not mod.IsStitched() and not PadWaits() then map:NavigateToParentMap() end
 end
 
+-- Options' and the menu's Dungeon maps: off, a dungeon's map that's up goes back to the world map
+function mod.SetDungeonMaps(on)
+	mod.db.dungeonMaps = on
+	if not on then
+		if view and view:IsShown() then CloseView() end
+		if map and map:IsShown() and not mod.IsStitched() and IsDungeonMap(map:GetMapID()) then Back() end
+	end
+	mod:Refresh()
+	if ns.NotifyOptions then ns.NotifyOptions() end
+end
+
 --------------------------------------------------------------------------------
 -- The entrances
 --------------------------------------------------------------------------------
@@ -1173,6 +1190,7 @@ end
 -- at once when it's clicked (not drawn: textures set aside, the client loads their files)
 local preload
 local function Preload(pin)
+	if not MapsOn() then return end
 	if not preload then
 		preload = CreateFrame("Frame", nil, UIParent)
 		preload:Hide()
@@ -1199,7 +1217,9 @@ local function Enter(pin)
 	local one = #pin.instances == 1 and pin.instances[1]
 	local bosses = one and (Places().bosses or {})[one[1]]
 	if bosses and #bosses > 0 then GameTooltip:AddLine(L["%d bosses"]:format(#bosses), 0.8, 0.8, 0.8) end
-	if one then
+	if not MapsOn() then
+		GameTooltip:AddLine(#pin.instances == 1 and L["Click to see what's inside"] or L["Click to pick one"], 0.6, 0.6, 0.6)
+	elseif one then
 		GameTooltip:AddLine((DungeonMap(one) or FloorsOf(one)) and L["Click to open its map"] or L["Click to see what's inside (no map of it yet)"], 0.6, 0.6, 0.6)
 	else
 		GameTooltip:AddLine(L["Click to pick one and open its map"], 0.6, 0.6, 0.6)
@@ -1933,6 +1953,9 @@ end
 --------------------------------------------------------------------------------
 
 function mod:DungeonOptions(opts, get, set, off)
+	opts.dungeonMaps = { type = "toggle", name = L["Dungeon maps"], order = 31.02, width = "full", get = get, disabled = off,
+		set = function(_, v) mod.SetDungeonMaps(v) end,
+		desc = L["OpenMap's maps of dungeons and raids: Blizzard's where the client has one, the ones drawn for WoW Forever's where it has none. Off: inside a dungeon the map stays the world map, and an entrance's card opens over it instead."] }
 	opts.dungeonBosses = { type = "toggle", name = L["Dungeon maps: bosses"], order = 31.1, width = "full", get = get, set = set, disabled = off,
 		desc = L["A dungeon's map lists its bosses, in the game's order."] }
 	opts.dungeonLevels = { type = "toggle", name = L["Dungeon level ranges"], order = 31.05, width = "full", get = get, set = set, disabled = off,
@@ -1975,6 +1998,8 @@ local function HoldStep(self)
 			t = self:CreateTexture(nil, "BACKGROUND")
 			t:SetAllPoints(self)
 			t:SetAlpha(0.01)
+			t:SetBlendMode("ADD")         -- (added as black: stacked, they showed as a dot, as in #45)
+			t:SetVertexColor(0, 0, 0)
 			holdTex[i] = t
 		end
 		t:SetTexture(holdFiles[i])
@@ -1985,7 +2010,7 @@ local function HoldStep(self)
 end
 function mod.HoldDungeonHere()
 	local files = {}
-	local inst = mod.db.keepWarm ~= false and InstanceHere()
+	local inst = mod.db.keepWarm ~= false and MapsOn() and InstanceHere()
 	local floors = inst and not DungeonMap(inst) and FloorsOf(inst)
 	for _, f in ipairs(floors or {}) do
 		for _, file in ipairs(f.tiles or {}) do files[#files + 1] = file end
@@ -2028,7 +2053,11 @@ function mod:SetupDungeons(worldMap)
 	-- the quest log opened or closed over a dungeon's map: the side panel into it (its tab picked) or out
 	local function Redock(pick)
 		if not (view and view:IsShown()) then return end
-		if pick then view.dockTab = view.wantTab or "dungeon" end   -- (opened from one of the tabs: that one)
+		if pick then
+			-- (opened from one of the tabs: that one, kept; else the tab last picked)
+			if view.wantTab then mod.db.dungeonDockTab = view.wantTab end
+			view.dockTab = mod.db.dungeonDockTab == "quests" and "quests" or "dungeon"
+		end
 		Dock()
 		FillSide()
 	end
@@ -2060,7 +2089,7 @@ function mod:SetupDungeons(worldMap)
 				here = info.parentMapID
 			end
 			local inst = InstanceHere()
-			if not inst then return end
+			if not inst or not MapsOn() then return end
 			local id = DungeonMap(inst)
 			if not id then OpenView(inst, nil) elseif map:GetMapID() ~= id then S.OpenMap(id) end
 		end)
