@@ -185,10 +185,10 @@ local function Actions()
 	list[#list + 1] = { L["What's new"], id = "news", icon = Icon("INV_Scroll_03"),
 		tip = L["This version's changes (it glows after an update until you've looked)."],
 		run = function() mod:ToggleNews() end, lit = function() return mod.NewsUnseen and mod.NewsUnseen() end }
-	if PadView() then           -- (the controller view: not yet its pins, quill or report)
+	if PadView() then           -- (the controller view: not yet its report)
 		local keep = {}
 		for _, e in ipairs(list) do
-			if e.id == "find" or e.id == "questlog" or e.id == "news" then keep[#keep + 1] = e end
+			if e.id ~= "report" then keep[#keep + 1] = e end
 		end
 		list = keep
 	end

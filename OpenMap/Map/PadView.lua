@@ -18,8 +18,8 @@
 -- underneath, unseen); the left stick pressed puts the waypoint where the cursor is.
 -- So far the art, the place names, your arrow, dungeons, boats, flight masters, your map pins and the
 -- waypoint, Questie's icons (its lines not yet), and a dungeon's map in OpenMap's own view of it (its
--- floors; its side panel not yet), and OpenMap's menu (Find me, search, the checklist; not yet its pins,
--- quill or report); not yet other addons' icons or the quest log's areas. Over OpenMap's windows the
+-- floors; its side panel not yet), OpenMap's menu (all but its report), your pins' cards and list, and
+-- the quill (A puts the pen down and lifts it); not yet other addons' icons or the quest log's areas. Over OpenMap's windows the
 -- right stick is their mouse wheel.
 --------------------------------------------------------------------------------
 
@@ -190,6 +190,23 @@ local function Step(inward)
 	if inward and lastX and mod.PadPress and mod.PadPress(lastX, lastY, true) then return end
 	if dungeon then
 		if not inward and mod.CloseDungeonView then mod.CloseDungeonView() end   -- (X: out of it)
+		return
+	end
+	-- the quill out: A puts the pen down or lifts it; X puts the quill down
+	if mod.IsSketching and mod:IsSketching() then
+		if inward then
+			if mod.PadSketchPress then mod.PadSketchPress() end
+		else
+			mod:ToggleSketch(false)
+		end
+		return
+	end
+	-- Drop a pin (the menu's): A puts it where the cursor is, its note open
+	if inward and mod.PinMode and mod.PinMode() and lastX and mod.DropWaypoint then
+		local cu, cv = WorldAt(Offset(lastX, lastY))
+		mod.SetPinMode(false)
+		ownWaypointAt = GetTime()
+		mod.DropWaypoint(cu, cv)
 		return
 	end
 	-- (X with OpenMap's menu open: the menu closed, the map left as it is)
@@ -425,8 +442,13 @@ end
 -- dungeon's map, Zephras Isle's): that's OpenMap's doing then, which taints the Gamepad UI. A
 -- dungeon's entrance is zoomed to instead, its tooltip kept up
 function Press(pin)
-	-- your map pin: followed (the waypoint), or no longer (its note editor is the usual map's)
+	-- your map pin: its card, as a click opens it (its note, colour, Follow, Share ...)
 	local p = pin.data
+	if type(p) == "table" and p.id and p.map and p.x and pin.OnClick and mod.SetupPins then
+		ownWaypointAt = GetTime()
+		pcall(pin.OnClick, pin)
+		return
+	end
 	if type(p) == "table" and p.id and p.map and p.x and mod.TrackPoint then
 		local m, x, y = mod.WaypointPoint()
 		ownWaypointAt = GetTime()
@@ -591,6 +613,21 @@ local function Build()
 	mod.Animating = function() return glide ~= nil end
 	mod.Zooming = function() return glide ~= nil or GetTime() - stickZoomAt < 0.2 end
 	mod.CursorWorld = function() if lastX then return WorldAt(Offset(lastX, lastY)) end end
+	mod.PadCursorXY = function() return Cursor() end
+	mod.WheelZoom = function(delta)
+		local sx, sy = 0, 0
+		if lastX then sx, sy = Offset(lastX, lastY) end
+		ZoomAbout(sx, sy, zoom * (delta > 0 and 1.25 or 0.8))
+	end
+	-- the pins' list and card (Pins.lua) and the quill (Sketch.lua), on this view
+	if mod.SetupPins then
+		local okS, errS = pcall(mod.SetupPins, mod, map)
+		if not okS then diag.panel = "pins: " .. tostring(errS) end
+	end
+	if mod.SetupSketch and mod.BuildSketch then
+		local okS, errS = pcall(function() mod:SetupSketch(map) mod:BuildSketch() end)
+		if not okS then diag.panel = "quill: " .. tostring(errS) end
+	end
 	-- OpenMap's menu (Panel.lua: what changes Blizzard's map or quest log left out), over this view
 	if mod.SetupPanel and not (mod.PanelBuilt and mod.PanelBuilt()) then
 		local okP, errP = pcall(mod.SetupPanel, mod, map)
