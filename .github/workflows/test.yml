@@ -30,6 +30,7 @@ jobs:
       - run: python tools/offline-test/run.py secret
       - run: python tools/offline-test/run.py pad
       - run: python tools/offline-test/run.py padmap
+      - run: python tools/offline-test/run.py padview
       - run: python tools/offline-test/navigation.py
       - run: python -P tools/offline-test/brightness.py
       - run: python -P tools/offline-test/friends.py

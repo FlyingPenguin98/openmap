@@ -43,6 +43,7 @@ local mod = ns:NewModule("worldmap", {
 		                        --  be set to; a world of smaller zones goes as much further: Data\<client>\Client.lua)
 		chart = false,          -- Santiago Reyes's sea chart round the world (Chart.lua)
 		padMap = false,         -- OpenMap's map with the Gamepad UI on too (Gamepad.lua binds B and full screen; a test)
+		padView = false,        -- with the Gamepad UI on, OpenMap's map over Blizzard's on a frame of its own (PadView.lua; a test)
 	},
 })
 
@@ -354,7 +355,7 @@ local PAD_DEAD = 0.05           -- the zoom stick's tilt below which it's at res
 -- ("Interface action failed because of an AddOn") and the map never zooms. Reading the stick takes no
 -- binding at all. nil: not to be read (no Gamepad UI, or the game doesn't give it): sc.gamepadZoom then
 local function PadStickTilt()
-	if not (mod.db.padMap and PadUI() and C_GamePad and C_GamePad.GetDeviceMappedState and C_GamePad.StickIndexToConfigName) then
+	if not (PadUI() and C_GamePad and C_GamePad.GetDeviceMappedState and C_GamePad.StickIndexToConfigName) then
 		return nil
 	end
 	local ok, state = pcall(C_GamePad.GetDeviceMappedState)
@@ -373,6 +374,7 @@ local function PadStickTilt()
 	end
 	return nil
 end
+mod.PadStickTilt = PadStickTilt   -- (PadView.lua's zoom too)
 
 -- tilt: the zoom stick, -1 (out) to 1 (in)
 local function PadZoom(elapsed, tilt)
@@ -393,7 +395,7 @@ end
 
 -- after Blizzard's own OnUpdate, so its panning never adds to ours
 local function Animate(_, elapsed)
-	local tilt = active and PadFocus() and PadStickTilt() or nil
+	local tilt = active and mod.db.padMap and PadFocus() and PadStickTilt() or nil
 	if tilt == nil and active and (sc.gamepadZoom or 0) ~= 0 then
 		local speed = sc.gamepadZoomSpeed
 		tilt = Clamp(sc.gamepadZoom / ((speed and speed > 0) and speed or 1), -1, 1)   -- (Blizzard's curve applied)
@@ -1331,6 +1333,8 @@ local function StyleChanged()
 			end)
 			return
 		end
+		-- (the controller view built: the art is on its frame, not Blizzard's map: a reload gives it back)
+		if mod.PadViewBuilt and mod.PadViewBuilt() then return end
 		mod.padWaits = nil
 		mod.enabled = true
 		Start()
@@ -1355,6 +1359,11 @@ function mod:OnEnable()
 	ns.RegisterEvent(styleOwner, "INPUT_DEVICE_INTERFACE_TRANSITION", StyleChanged)
 	if PadUI() and not self.db.padMap then
 		self.enabled, self.padWaits = false, true
+		-- (padView, a test: OpenMap's map on a frame of its own over Blizzard's, which it leaves alone)
+		if self.db.padView and mod.StartPadView then
+			mod.StartPadView()
+			return
+		end
 		if not self.db.padNoted then
 			self.db.padNoted = true
 			ns:Print(mod.PadOffText())

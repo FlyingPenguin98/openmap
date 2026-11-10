@@ -1,6 +1,6 @@
 """Offline load test: runs OpenMap's toc in a stubbed WoW environment (Lua 5.1).
 
-Usage:  python tools/offline-test/run.py [plain|combat|secret|pad|padmap]
+Usage:  python tools/offline-test/run.py [plain|combat|secret|pad|padmap|padview]
         (OPENMAP_CLIENT=retail for retail's toc; tools/clients.py)
 Needs:  pip install lupa
 
@@ -9,7 +9,8 @@ timers, builds + validates the options table and calls every option getter,
 then runs the slash commands. "secret" makes combat values behave like the
 client's secret values; "pad" has the game's Gamepad UI on, where OpenMap must
 leave the map alone; "padmap" the same with Options' padMap turned on, which
-gives OpenMap the map then. Exit code 1 on any error. (The stub has no real world
+gives OpenMap the map then; "padview" the same with padView chosen at login, which
+leaves Blizzard's map to Blizzard and draws OpenMap's over it (PadView.lua). Exit code 1 on any error. (The stub has no real world
 map, so the stitched map itself isn't built here: check that with
 tools/map-preview and in game.) Stubs can't catch nil-tests on secrets or layout problems: always
 confirm in game.
@@ -66,7 +67,9 @@ for rel in toc_files():
 
 steps = L.eval("""function(ns, scenario)
     -- (the game's Gamepad UI on: OpenMap must leave Blizzard's map alone, WorldMap.lua's OnEnable)
-    if scenario == "pad" or scenario == "padmap" then InputUtil = { IsGamepadUIEnabled = function() return true end } end
+    local pad = scenario == "pad" or scenario == "padmap" or scenario == "padview"
+    if pad then InputUtil = { IsGamepadUIEnabled = function() return true end } end
+    if scenario == "padview" then OpenMapDB = { worldmap = { padView = true } } end
     FireEvent("ADDON_LOADED", "OpenMap")
     FireEvent("PLAYER_LOGIN")
     FireEvent("PLAYER_ENTERING_WORLD", true, false)
@@ -90,7 +93,7 @@ steps = L.eval("""function(ns, scenario)
     end
     RunTimers(2)
     -- your pins hidden and back (the menu's Pins, right-clicked)
-    if scenario ~= "pad" and scenario ~= "padmap" and ns.modules.worldmap.SetPinsHidden then
+    if not pad and ns.modules.worldmap.SetPinsHidden then
         local m = ns.modules.worldmap
         local ok5, e5 = pcall(function() m.SetPinsHidden(true) m.SetPinsHidden(false) end)
         if not ok5 then ERRORS[#ERRORS + 1] = "pins hidden: " .. tostring(e5) end
@@ -98,7 +101,7 @@ steps = L.eval("""function(ns, scenario)
     end
     -- friends and guild (Friends.lua): places heard from the guild, a stranger's whisper, a malformed
     -- message, one with a secret text; sharing turned on and off again
-    if scenario ~= "pad" and scenario ~= "padmap" and ns.modules.worldmap.RefreshFriends then
+    if not pad and ns.modules.worldmap.RefreshFriends then
         local m = ns.modules.worldmap
         local ok6, e6 = pcall(function()
             IsInGuild = function() return true end
@@ -133,6 +136,31 @@ steps = L.eval("""function(ns, scenario)
         FireEvent("INPUT_DEVICE_INTERFACE_TRANSITION", 0, 1)
         RunTimers(2)
         if not m.enabled or m.padWaits then ERRORS[#ERRORS + 1] = "pad: OpenMap didn't start when the Gamepad UI went off" end
+    end
+    if scenario == "padview" then
+        -- (OpenMap's usual map waits; the controller view sets up on a stand-in for Blizzard's map,
+        -- shows and hides with it, and A and X step in and out, without touching OpenMap's usual map)
+        local m = ns.modules.worldmap
+        if m.enabled or not m.padWaits then ERRORS[#ERRORS + 1] = "padview: OpenMap took Blizzard's map" end
+        local ok7, e7 = pcall(function()
+            local wm = CreateFrame("Frame", "WorldMapFrame", UIParent)
+            wm.ScrollContainer = CreateFrame("Frame", nil, wm)
+            wm.ScrollContainer.Child = CreateFrame("Frame", nil, wm.ScrollContainer)
+            wm.GetCanvas = function() return wm.ScrollContainer.Child end
+            wm.IsCanvasGamepadFocus = function() return true end
+            wm.NavigateToGamepadCursor = function() end
+            wm.NavigateToParentMap = function() end
+            m.StartPadView()
+            wm:Show()
+            RunTimers(2)
+            wm:NavigateToGamepadCursor()
+            wm:NavigateToParentMap()
+            wm:Hide()
+            InputUtil.IsGamepadUIEnabled = function() return false end
+            FireEvent("INPUT_DEVICE_INTERFACE_TRANSITION", 0, 1)
+            RunTimers(2)
+        end)
+        if not ok7 then ERRORS[#ERRORS + 1] = "padview: " .. tostring(e7) end
     end
     if scenario == "padmap" then
         -- (Options' padMap turned on while OpenMap waits: its map at once, the Gamepad UI still on)

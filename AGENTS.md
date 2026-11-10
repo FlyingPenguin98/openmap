@@ -41,6 +41,7 @@ python tools/offline-test/run.py combat
 python tools/offline-test/run.py secret
 python tools/offline-test/run.py pad
 python tools/offline-test/run.py padmap
+python tools/offline-test/run.py padview
 python tools/offline-test/navigation.py
 python -P tools/offline-test/combat.py
 python -P tools/offline-test/caves.py
@@ -49,7 +50,7 @@ python -P tools/offline-test/chart.py
 python -P tools/offline-test/friends.py
 ```
 
-All must pass, and the first seven again with `OPENMAP_CLIENT=retail` (retail's toc: one branch holds
+All must pass, and the first eight again with `OPENMAP_CLIENT=retail` (retail's toc: one branch holds
 every client, docs/development.md#clients). For anything visual, render before and after with
 `tools/map-preview/render.py` and look at the images; keep render.py's mirrors of
 Stitch.lua's constants in step. You can't run the game: say plainly what still needs an
