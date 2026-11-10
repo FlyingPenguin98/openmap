@@ -36,6 +36,7 @@ local HOVER_EVERY = 0.05        -- seconds between looks at what's under the cur
 local QUESTIE_LIB = "HereBeDragonsQuestie-Pins-2.0"
 local QUESTIE_FROM = 2.5        -- the zoom Questie's icons come in at (a continent's worth of quests is too many)
 local QUESTIE_EVERY = 0.5       -- seconds between looks at which icons Questie has on the map
+local QUESTIE_CLUSTER = 20      -- view px round a hovered Questie icon whose quests its tooltip lists too
 local ARROW_ABOVE = 8500        -- your arrow: this many levels over the view, over Questie's icons (their levels are
 local POINTER_ABOVE = 8800      --  fixed, from 2015: Extras.lua) ... and the pad's cursor over everything
 
@@ -53,7 +54,7 @@ local questieLayer              -- Questie's icons, on this view
 local questieAt = setmetatable({}, { __mode = "k" })   -- icon -> { u, v }: Questie's icons on the map, in world units
 local questieShown = {}         -- icon -> true: placed on this view now
 local questieWait = 0
-local PlaceQuestie              -- (below: Apply calls it)
+local PlaceQuestie, QuestieTip -- (below: Apply calls the one, the other the other)
 local ownWaypointAt = -10       -- when this view last set or cleared the waypoint itself (GetTime)
 local diag = { started = 0, setup = "not yet", shows = 0, why = "not tried yet" }   -- (/openmap padview)
 
@@ -324,6 +325,10 @@ function PlaceQuestie()
 				icon:SetPoint("CENTER", questieLayer, "CENTER", x, -y)
 				icon:Show()
 				seen[icon] = true
+				if not icon.openmapPadTip then          -- (the mouse over it: its tooltip, from this view: QuestieTip)
+					icon.openmapPadTip = true
+					icon:HookScript("OnEnter", function(self) if questieShown[self] then QuestieTip(self, GameTooltip) end end)
+				end
 			end
 		end
 	end
@@ -331,6 +336,29 @@ function PlaceQuestie()
 		if not seen[icon] and icon:GetParent() == questieLayer then icon:Hide() end
 	end
 	questieShown = seen
+end
+
+-- A Questie icon's tooltip. Questie's lists the quests of every icon round the hovered one on Blizzard's
+-- map (its pins there), where there are none now: it's given the icons round it on this view instead
+-- (MapIconTooltip.ShowOnTooltip's own `icons`). On `tooltip`: the pad's on Questie's own tooltip, as
+-- Questie does for the pad (GamepadMapHover: GameTooltip from there taints the Gamepad UI)
+function QuestieTip(icon, tooltip)
+	local loader = _G.QuestieLoader
+	local ok, tips = pcall(function() return loader:ImportModule("MapIconTooltip") end)
+	if not ok or type(tips) ~= "table" or type(tips.ShowOnTooltip) ~= "function" or not tooltip then return end
+	local near = {}
+	local cx, cy = icon:GetCenter()
+	if cx then
+		for other in pairs(questieShown) do
+			local ox, oy = other:GetCenter()
+			if ox and (ox - cx) ^ 2 + (oy - cy) ^ 2 <= QUESTIE_CLUSTER ^ 2 then near[#near + 1] = other end
+		end
+	end
+	tooltip:Hide()                                  -- (an empty one up already would hold it off: its 0.05 s guard)
+	pcall(tips.ShowOnTooltip, icon, tooltip, nil, near)
+	if tooltip ~= GameTooltip and tooltip:IsShown() and tooltip.SetAnchorType then
+		pcall(tooltip.SetAnchorType, tooltip, "ANCHOR_RIGHT")
+	end
 end
 
 -- the Questie icon nearest the cursor, if it's within reach
@@ -360,11 +388,17 @@ local function Enter(pin)
 		if was.UnlockHighlight then was:UnlockHighlight() end
 		local leave = was:GetScript("OnLeave")
 		if leave then pcall(leave, was, false) end
+		local own = _G.QuestieGamepadMapTooltip
+		if questieShown[was] and own and own ~= GameTooltip then own:Hide() end
 	end
 	if pin then
 		if pin.LockHighlight then pin:LockHighlight() end
-		local enter = pin:GetScript("OnEnter")
-		if enter then pcall(enter, pin, false) end
+		if questieShown[pin] then                       -- (Questie's: its tooltip from this view)
+			QuestieTip(pin, _G.QuestieGamepadMapTooltip or GameTooltip)
+		else
+			local enter = pin:GetScript("OnEnter")
+			if enter then pcall(enter, pin, false) end
+		end
 	end
 end
 
