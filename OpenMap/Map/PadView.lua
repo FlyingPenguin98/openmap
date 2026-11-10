@@ -17,9 +17,10 @@
 -- under the cursor (or presses the icon there) and X out a level (after Blizzard's own, on its map
 -- underneath, unseen); the left stick pressed puts the waypoint where the cursor is.
 -- So far the art, the place names, your arrow, dungeons, boats, flight masters, your map pins and the
--- waypoint, Questie's icons (its lines not yet), and a dungeon's map in OpenMap's own view of it (its
--- floors; its side panel not yet), OpenMap's menu (all but its report), your pins' cards and list, and
--- the quill (A puts the pen down and lifts it); not yet other addons' icons or the quest log's areas. Over OpenMap's windows the
+-- waypoint, your party, Questie's townsfolk, other addons' icons (Questie's, TomTom's, gatherers') and
+-- Questie's mob paths, a dungeon's map in OpenMap's own view of it (its floors, its side panel beside
+-- them), OpenMap's menu (its report without the note step), your pins' cards and list, and the quill
+-- (A puts the pen down and lifts it); not yet the quest log's areas. Over OpenMap's windows the
 -- right stick is their mouse wheel.
 --------------------------------------------------------------------------------
 
@@ -33,6 +34,7 @@ local GLIDE_TIME = 0.4          -- A and X's zoom, as a click's on the usual map
 local PAD_ZOOM_RATE = 1.8       -- the right stick at full tilt, per second in log zoom (as WorldMap.lua's)
 local CITY_ZOOM = 1.5           -- deeper over a city (as WorldMap.lua's)
 local PLAYER_EVERY = 0.1        -- seconds between moves of your arrow
+local GROUP_EVERY = 0.5         -- ... and of your party's and raid's dots (Nav.lua's)
 local REACH = 12                -- px from the cursor that an icon counts as under it (Gamepad.lua's)
 local HOVER_EVERY = 0.05        -- seconds between looks at what's under the cursor
 local QUESTIE_LIB = "HereBeDragonsQuestie-Pins-2.0"
@@ -51,7 +53,7 @@ local glide                     -- A or X's zoom under way
 local lastX, lastY              -- the pad's cursor on the last frame (screen px): Blizzard re-centres it
                                 --  as A or X changes its map, before the hooks below run
 local dirty = false
-local playerWait, hoverWait = 0, 0
+local playerWait, hoverWait, groupWait = 0, 0, 0
 local hovered                   -- the icon under the pad's cursor, entered as the mouse would
 local questieLayer              -- Questie's icons, on this view
 local questieAt = setmetatable({}, { __mode = "k" })   -- icon -> { u, v }: Questie's icons on the map, in world units
@@ -290,31 +292,49 @@ local function MakePointer(level)
 end
 
 --------------------------------------------------------------------------------
--- Questie's icons. HereBeDragons (Questie's copy) puts each on Blizzard's map, under this view and
--- unseen; there, each map change places every one of them again (the stall X had). While the view is
--- on, the library places none on Blizzard's map (its provider's HandlePin, wrapped: the library's own
--- table, not Blizzard's), and its icons are put on this view instead, where they are in the world:
--- from the map point Questie gave (the client's map rectangles, as Extras.lua places them), else the
--- library's world position. Icons only, not Questie's lines
+-- Other addons' icons: Questie's, TomTom's, gatherers' ... HereBeDragons (each addon's copy of its pins
+-- library) puts each on Blizzard's map, under this view and unseen; there, each map change places every
+-- one of them again (the stall X had with Questie). While the view is on, the libraries place none on
+-- Blizzard's map (each provider's HandlePin, wrapped: the library's own table, not Blizzard's), and their
+-- icons are put on this view instead, where they are in the world: from the map point Questie gave (the
+-- client's map rectangles, as Extras.lua places them), else the library's world position. Questie's
+-- path stretches (its older lines) aren't icons: its paths are Extras.lua's, drawn on the art
 --------------------------------------------------------------------------------
 
-local function QuestieLib()
-	return LibStub and LibStub(QUESTIE_LIB, true)
+local SHOW_CONTINENT = 2        -- HBD_PINS_WORLDMAP_SHOW_CONTINENT: an icon its addon shows from a continent's map
+
+-- every copy of the pins library loaded: name -> library
+local function PinLibs()
+	local out = {}
+	if not LibStub then return out end
+	if LibStub.IterateLibraries then
+		for name, lib in LibStub:IterateLibraries() do
+			if type(name) == "string" and type(lib) == "table"
+				and (name:match("^HereBeDragons.*%-Pins%-2%.0$") or name == "HereBeDragons-Pins-ZGV") then
+				out[name] = lib
+			end
+		end
+	else
+		out[QUESTIE_LIB] = LibStub(QUESTIE_LIB, true)
+	end
+	return out
 end
 
--- the library's provider wrapped once: nothing put on Blizzard's map while the view is on
-local function HoldQuestie()
-	local lib = QuestieLib()
-	local provider = lib and lib.worldmapProvider
-	if type(provider) ~= "table" or type(provider.HandlePin) ~= "function" or provider.openmapPadView then return end
-	provider.openmapPadView = true
-	local HandlePin = provider.HandlePin
-	provider.HandlePin = function(self, ...)
-		if built and On() then return end
-		return HandlePin(self, ...)
+-- each library's provider wrapped once: nothing put on Blizzard's map while the view is on
+local function HoldPins()
+	for _, lib in pairs(PinLibs()) do
+		local provider = lib.worldmapProvider
+		if type(provider) == "table" and type(provider.HandlePin) == "function" and not provider.openmapPadView then
+			provider.openmapPadView = true
+			local HandlePin = provider.HandlePin
+			provider.HandlePin = function(self, ...)
+				if built and On() then return end
+				return HandlePin(self, ...)
+			end
+			-- (the ones already on Blizzard's map: taken off, as the library does on a map change)
+			if map:IsShown() and type(provider.RemoveAllData) == "function" then pcall(provider.RemoveAllData, provider) end
+		end
 	end
-	-- (the ones already on Blizzard's map: taken off, as the library does on a map change)
-	if map:IsShown() and type(provider.RemoveAllData) == "function" then pcall(provider.RemoveAllData, provider) end
 end
 
 -- an icon's place in the world
@@ -330,38 +350,46 @@ local function IconWorld(icon, data)
 	end
 end
 
--- which icons Questie has on the map now, and where
+-- which icons the addons have on the map now, and where: icon -> { u, v, Questie's, its show flag }
 local function ScanQuestie()
-	local lib = QuestieLib()
-	local pins = lib and lib.worldmapPins
 	wipe(questieAt)
-	if type(pins) ~= "table" then return end
-	for icon, data in pairs(pins) do
-		if type(icon) == "table" and type(data) == "table" and icon.SetPoint and icon.type ~= "line" then
-			local ok, wu, wv = pcall(IconWorld, icon, data)
-			if ok and wu and wv then questieAt[icon] = { wu, wv } end
+	for name, lib in pairs(PinLibs()) do
+		local pins = lib.worldmapPins
+		local questie = name == QUESTIE_LIB
+		if type(pins) == "table" then
+			for icon, data in pairs(pins) do
+				if type(icon) == "table" and type(data) == "table" and icon.SetPoint and not (questie and icon.type == "line") then
+					local ok, wu, wv = pcall(IconWorld, icon, data)
+					if ok and wu and wv then questieAt[icon] = { wu, wv, questie, tonumber(data.worldMapShowFlag) or 0 } end
+				end
+			end
 		end
 	end
 end
 
--- Questie's icons in view put on it (at their size: the view isn't scaled), the rest hidden
+-- the icons in view put on it (at their size: the view isn't scaled), the rest hidden. Questie's from
+-- QUESTIE_FROM in; another addon's from there too, or from further out where it asks to be on a
+-- continent's map (TomTom's waypoint)
 function PlaceQuestie()
 	if not questieLayer then return end
 	local seen = {}
 	local profile = _G.Questie and Questie.db and Questie.db.profile
-	if zoom >= QUESTIE_FROM and not (profile and profile.enabled == false) then
+	local questieOn = zoom >= QUESTIE_FROM and not (profile and profile.enabled == false)
+	do
 		local W, H = S.Size()
 		local px = FitPx() * zoom
 		local hw, hh = view:GetWidth() / 2 + 16, view:GetHeight() / 2 + 16
 		for icon, at in pairs(questieAt) do
 			local x, y = (at[1] - u) * W * px, (at[2] - v) * H * px
-			if x > -hw and x < hw and y > -hh and y < hh then
+			local on
+			if at[3] then on = questieOn else on = zoom >= QUESTIE_FROM or at[4] >= SHOW_CONTINENT end
+			if on and x > -hw and x < hw and y > -hh and y < hh then
 				if icon:GetParent() ~= questieLayer then icon:SetParent(questieLayer) end
 				icon:ClearAllPoints()
 				icon:SetPoint("CENTER", questieLayer, "CENTER", x, -y)
 				icon:Show()
 				seen[icon] = true
-				if not icon.openmapPadTip then          -- (the mouse over it: its tooltip, from this view: QuestieTip)
+				if at[3] and not icon.openmapPadTip then   -- (the mouse over Questie's: its tooltip, from this view: QuestieTip)
 					icon.openmapPadTip = true
 					icon:HookScript("OnEnter", function(self) if questieShown[self] then QuestieTip(self, GameTooltip) end end)
 				end
@@ -386,7 +414,8 @@ function QuestieTip(icon, tooltip)
 	local cx, cy = icon:GetCenter()
 	if cx then
 		for other in pairs(questieShown) do
-			local ox, oy = other:GetCenter()
+			local ox, oy
+			if questieAt[other] and questieAt[other][3] then ox, oy = other:GetCenter() end
 			if ox and (ox - cx) ^ 2 + (oy - cy) ^ 2 <= QUESTIE_CLUSTER ^ 2 then near[#near + 1] = other end
 		end
 	end
@@ -429,7 +458,7 @@ local function Enter(pin)
 	end
 	if pin then
 		if pin.LockHighlight then pin:LockHighlight() end
-		if questieShown[pin] then                       -- (Questie's: its tooltip from this view)
+		if questieShown[pin] and questieAt[pin] and questieAt[pin][3] then   -- (Questie's: its tooltip from this view)
 			QuestieTip(pin, _G.QuestieGamepadMapTooltip or GameTooltip)
 		else
 			local enter = pin:GetScript("OnEnter")
@@ -521,6 +550,11 @@ local function OnUpdate(_, elapsed)
 		playerWait = PLAYER_EVERY
 		UpdatePlayer()
 	end
+	groupWait = groupWait - elapsed
+	if groupWait <= 0 then
+		groupWait = GROUP_EVERY
+		if mod.RefreshGroup then pcall(mod.RefreshGroup) end
+	end
 	if dirty then Apply() end
 	Pointer(x, y)
 	questieWait = questieWait - elapsed
@@ -561,6 +595,8 @@ local function Look()
 		if set then S.SetPinSetOn(set, db[opt]) end
 	end
 	if mod.RefreshFlightsFound then pcall(mod.RefreshFlightsFound) end
+	-- Questie's townsfolk and rares (Townsfolk.lua's: the kinds Options have on, built the first time)
+	if mod.RefreshTownsfolk then pcall(mod.RefreshTownsfolk, mod) end
 end
 
 local function Fail(why)
@@ -637,6 +673,11 @@ local function Build()
 		local okS, errS = pcall(function() mod:SetupSketch(map) mod:BuildSketch() end)
 		if not okS then diag.panel = "quill: " .. tostring(errS) end
 	end
+	-- Report a problem (Report.lua): drawn with the quill here, its code in the view
+	if mod.SetupReport then
+		local okR, errR = pcall(mod.SetupReport, mod, map)
+		if not okR then diag.panel = "report: " .. tostring(errR) end
+	end
 	-- OpenMap's menu (Panel.lua: what changes Blizzard's map or quest log left out), over this view
 	if mod.SetupPanel and not (mod.PanelBuilt and mod.PanelBuilt()) then
 		local okP, errP = pcall(mod.SetupPanel, mod, map)
@@ -680,8 +721,9 @@ local function Show()
 		return
 	end
 	if not u then FirstView() end
-	HoldQuestie()
+	HoldPins()
 	ScanQuestie()
+	if mod.PadQuestiePaths then pcall(mod.PadQuestiePaths, true) end   -- (Questie's mob paths: Extras.lua's)
 	glide = nil
 	sc.Child:SetAlpha(0)      -- (Blizzard's map underneath: there, unseen; nothing of it written)
 	view:Show()
@@ -690,6 +732,7 @@ end
 
 local function Hide()
 	Enter(nil)
+	if mod.PadQuestiePaths then pcall(mod.PadQuestiePaths, false) end
 	if mod.DungeonViewShown and mod.DungeonViewShown() and mod.CloseDungeonView then pcall(mod.CloseDungeonView) end
 	for icon in pairs(questieShown) do if icon:GetParent() == questieLayer then icon:Hide() end end
 	wipe(questieShown)

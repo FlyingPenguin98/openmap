@@ -994,7 +994,15 @@ DockNow = function()
 		side:SetPoint("TOPRIGHT", 0, -HEAD_H)
 		side:SetPoint("BOTTOMRIGHT")
 		side:SetWidth(SIDE_W)
-		side:Hide()
+		if PadView() and view:IsShown() then
+			-- (the controller view: never in the quest log, so beside the picture, in the view itself)
+			view.port:SetPoint("BOTTOMRIGHT", -SIDE_W, 0)
+			Lift(side, view:GetFrameLevel() + 15)
+			side:Show()
+			LayoutView()
+		else
+			side:Hide()
+		end
 	end
 	if not view:IsShown() then tabs:Hide() return end
 	PlaceTabs(open)

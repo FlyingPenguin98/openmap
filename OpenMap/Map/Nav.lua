@@ -414,8 +414,10 @@ end
 local function RefreshGroup()
 	if not groupSet then return end
 	S.ClearPinSet(groupSet)
-	if not mod.db.group or not mod.IsStitched() or not IsInGroup() then return end
-	local host = mod.HostMap()
+	-- (the controller view, PadView.lua: Blizzard's map underneath unseen, so every one of them here)
+	local padView = mod.PadViewOn and mod.PadViewOn()
+	if not mod.db.group or not (mod.IsStitched() or padView) or not IsInGroup() then return end
+	local host = not padView and mod.HostMap() or nil
 	local raid = IsInRaid()
 	for i = 1, raid and 40 or 4 do
 		local unit = (raid and "raid" or "party") .. i
@@ -438,6 +440,7 @@ end
 --------------------------------------------------------------------------------
 
 function mod.RefreshWaypoint() RefreshWaypoint() end   -- (PadView.lua: it has no SetupNav)
+function mod.RefreshGroup() RefreshGroup() end         -- (PadView.lua: its own ticker)
 
 function mod:BuildNav()
 	wpSet = S.PinSet("waypoint", 0, 5)

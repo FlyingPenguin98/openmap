@@ -828,7 +828,7 @@ local function DrawQuestiePaths()
 	QPATH.set = QPATH.set or S.PinSet("questiepaths", 0, 1)
 	S.ClearPinSet(QPATH.set)
 	QPATH.dirty, QPATH.at = false, GetTime()
-	if not mod.IsStitched() or not QPATH.near then return end
+	if not (mod.IsStitched() or (mod.PadViewOn and mod.PadViewOn())) or not QPATH.near then return end
 	local zones = QPATH.zones
 	if W then
 		local routes = {}
@@ -956,6 +956,17 @@ QPATH.tick:SetScript("OnUpdate", function()
 	if now - QPATH.at < QPATH_EVERY then return end
 	if QPATH.dirty or now - QPATH.at > QPATH_REFRESH then mod.TimeAfter("Questie paths drawn", DrawQuestiePaths) end
 end)
+
+-- for PadView.lua: the paths drawn on its view while it shows (it has no SetupExtras: nothing of
+-- Blizzard's map hooked)
+function mod.PadQuestiePaths(on)
+	if on then
+		HookQuestiePaths()
+		if QPATH.hooked then QPATH.dirty = true QPATH.tick:Show() end
+	else
+		QPATH.tick:Hide()
+	end
+end
 
 function mod:SetupExtras(worldMap)
 	map, sc = worldMap, worldMap.ScrollContainer
