@@ -14,9 +14,11 @@
 -- The controller, read rather than bound: the cursor is Blizzard's (SoftCursor, its left stick), the
 -- right stick is read from the controller (mod.PadStickTilt) and zooms about the cursor, the cursor at
 -- the view's edge pans as Blizzard's map does (its gamepadScrollSpeed, read), A zooms into the zone
--- under the cursor and X out a level (after Blizzard's own, on its map underneath, unseen).
--- For now the art, the place names and your arrow; not yet the map's icons (dungeons, flight paths,
--- Questie's, pins), OpenMap's menu or the quest log's areas.
+-- under the cursor (or presses the icon there) and X out a level (after Blizzard's own, on its map
+-- underneath, unseen); the left stick pressed puts the waypoint where the cursor is.
+-- So far the art, the place names, your arrow, dungeons, boats, flight masters, your map pins and the
+-- waypoint; not yet other addons' icons (Questie's), OpenMap's menu, a dungeon's map or the quest
+-- log's areas.
 --------------------------------------------------------------------------------
 
 local _, ns = ...
@@ -42,6 +44,7 @@ local lastX, lastY              -- the pad's cursor on the last frame (screen px
 local dirty = false
 local playerWait, hoverWait = 0, 0
 local hovered                   -- the icon under the pad's cursor, entered as the mouse would
+local ownWaypointAt = -10       -- when this view last set or cleared the waypoint itself (GetTime)
 local diag = { started = 0, setup = "not yet", shows = 0, why = "not tried yet" }   -- (/openmap padview)
 
 local function Clamp(x, lo, hi) return math.max(lo, math.min(hi, x)) end
@@ -260,6 +263,20 @@ end
 -- dungeon's map, Zephras Isle's): that's OpenMap's doing then, which taints the Gamepad UI. A
 -- dungeon's entrance is zoomed to instead, its tooltip kept up
 function Press(pin)
+	-- your map pin: followed (the waypoint), or no longer (its note editor is the usual map's)
+	local p = pin.data
+	if type(p) == "table" and p.id and p.map and p.x and mod.TrackPoint then
+		local m, x, y = mod.WaypointPoint()
+		ownWaypointAt = GetTime()
+		if m == p.map and x and math.abs(x - p.x) < 1e-3 and math.abs(y - p.y) < 1e-3 then
+			mod.ClearPin()
+		else
+			mod.TrackPoint(p.map, p.x, p.y, p.note ~= "" and p.note or nil)
+		end
+		local enter = pin:GetScript("OnEnter")
+		if hovered == pin and enter then pcall(enter, pin, false) end
+		return
+	end
 	if pin.instances then
 		local u1, v1 = pin.u, pin.v
 		if u1 then GlideTo(u1, v1, math.max(zoom, 12)) end
@@ -362,8 +379,10 @@ local function Build()
 		GlideTo((u0 + u1) / 2, (v0 + v1) / 2, z)
 	end
 	S.OnPinMouseUp = S.OnPinMouseUp or function(pin, button) if button == "LeftButton" then Press(pin) end end
-	-- the flight masters (Flights.lua's, on the art; their routes need the usual map's cursor: not yet)
+	-- the flight masters (Flights.lua's), your map pins (Pins.lua's) and the waypoint (Nav.lua's)
 	if mod.BuildFlights then pcall(mod.BuildFlights, mod) end
+	if mod.BuildMapPins then pcall(mod.BuildMapPins, mod) end
+	if mod.BuildNav then pcall(mod.BuildNav, mod) end
 	S.SetShown(true)
 	ok, err = pcall(Look)
 	if not ok then diag.why = "the look (carried on): " .. tostring(err) end
@@ -427,6 +446,28 @@ function mod.PadViewDiag()
 		view and ("%.0f x %.0f"):format(view:GetWidth(), view:GetHeight()) or "-")
 end
 
+-- The waypoint changed. Blizzard's own, the left stick pressed (GamepadTryPlaceWaypoint), goes where its
+-- cursor is on its map underneath, not on this view: put again where the cursor is here, on the zone
+-- there (as WorldMap.lua does on the usual map). Then the waypoint's icon here
+local function OnWaypoint()
+	if not built then return end
+	if view:IsShown() and GetTime() - ownWaypointAt > 0.5 and lastX and C_Map.HasUserWaypoint
+		and C_Map.GetUserWaypoint and C_Map.HasUserWaypoint() then
+		local point = C_Map.GetUserWaypoint()
+		if point and point.uiMapID == map:GetMapID() then           -- (put on Blizzard's map underneath)
+			local cu, cv = WorldAt(Offset(lastX, lastY))
+			local chain = S.ChainAt(cu, cv)
+			local zone = chain[#chain]
+			if zone and zone ~= WORLD and (not C_Map.CanSetUserWaypointOnMap or C_Map.CanSetUserWaypointOnMap(zone)) then
+				local l, r, t, b = S.Rect(zone)
+				ownWaypointAt = GetTime()
+				pcall(C_Map.SetUserWaypoint, UiMapPoint.CreateFromCoordinates(zone, (cu - l) / (r - l), (cv - t) / (b - t)))
+			end
+		end
+	end
+	if mod.RefreshWaypoint then pcall(mod.RefreshWaypoint) end
+end
+
 local function Setup()
 	map = _G.WorldMapFrame
 	sc = map and map.ScrollContainer
@@ -455,6 +496,8 @@ local function Setup()
 		hooksecurefunc(map, "NavigateToParentMap", function() if view:IsShown() then Step(false) end end)
 	end
 	local owner = {}
+	ns.RegisterEvent(owner, "USER_WAYPOINT_UPDATED", OnWaypoint)
+	ns.RegisterEvent(owner, "SUPER_TRACKING_CHANGED", function() if built and mod.RefreshWaypoint then pcall(mod.RefreshWaypoint) end end)
 	ns.RegisterEvent(owner, "INPUT_DEVICE_INTERFACE_TRANSITION", function()
 		if map:IsShown() then if On() then Show() else Hide() end end
 	end)

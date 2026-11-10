@@ -437,6 +437,8 @@ end
 
 --------------------------------------------------------------------------------
 
+function mod.RefreshWaypoint() RefreshWaypoint() end   -- (PadView.lua: it has no SetupNav)
+
 function mod:BuildNav()
 	wpSet = S.PinSet("waypoint", 0, 5)
 	pingSet = S.PinSet("ping", 0, 5)
