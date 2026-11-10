@@ -17,8 +17,8 @@
 -- under the cursor (or presses the icon there) and X out a level (after Blizzard's own, on its map
 -- underneath, unseen); the left stick pressed puts the waypoint where the cursor is.
 -- So far the art, the place names, your arrow, dungeons, boats, flight masters, your map pins and the
--- waypoint, and Questie's icons (its lines not yet); not yet other addons' icons, OpenMap's menu, a
--- dungeon's map or the quest log's areas.
+-- waypoint, Questie's icons (its lines not yet), and a dungeon's map in OpenMap's own view of it (its
+-- floors; its side panel not yet); not yet other addons' icons, OpenMap's menu or the quest log's areas.
 --------------------------------------------------------------------------------
 
 local _, ns = ...
@@ -38,7 +38,8 @@ local QUESTIE_FROM = 2.5        -- the zoom Questie's icons come in at (a contin
 local QUESTIE_EVERY = 0.5       -- seconds between looks at which icons Questie has on the map
 local QUESTIE_CLUSTER = 20      -- view px round a hovered Questie icon whose quests its tooltip lists too
 local ARROW_ABOVE = 8500        -- your arrow: this many levels over the view, over Questie's icons (their levels are
-local POINTER_ABOVE = 8800      --  fixed, from 2015: Extras.lua) ... and the pad's cursor over everything
+local POINTER_LEVEL = 9990      --  fixed, from 2015: Extras.lua) ... and the pad's cursor over everything (a dungeon's
+                                --  map, Dungeons.lua's, goes to 9840)
 
 local map, sc, view, canvas
 local pointer                   -- the pad's cursor, drawn again over the art (Blizzard's is under it)
@@ -178,6 +179,13 @@ local Press
 -- A: into the zone (or continent) under the cursor, or the icon under it pressed; X: out a level (as a
 -- click and right-click)
 local function Step(inward)
+	local dungeon = mod.DungeonViewShown and mod.DungeonViewShown()
+	-- (OpenMap's windows over the map first, a dungeon's map's buttons: Gamepad.lua's presses)
+	if inward and lastX and mod.PadPress and mod.PadPress(lastX, lastY, true) then return end
+	if dungeon then
+		if not inward and mod.CloseDungeonView then mod.CloseDungeonView() end   -- (X: out of it)
+		return
+	end
 	if inward and hovered and hovered:IsVisible() then return Press(hovered) end
 	local cu, cv
 	if lastX then cu, cv = WorldAt(Offset(lastX, lastY)) else cu, cv = u, v end
@@ -420,6 +428,10 @@ function Press(pin)
 		if hovered == pin and enter then pcall(enter, pin, false) end
 		return
 	end
+	if pin.instances and pin.OnClick and mod.DungeonMapsOn and mod.DungeonMapsOn() then
+		pcall(pin.OnClick, pin)                     -- (Dungeons.lua: OpenMap's own view of its map, PadView())
+		return
+	end
 	if pin.instances then
 		local u1, v1 = pin.u, pin.v
 		if u1 then GlideTo(u1, v1, math.max(zoom, 12)) end
@@ -439,14 +451,15 @@ end
 
 local function OnUpdate(_, elapsed)
 	local x, y = Cursor()
-	local tilt = x and mod.PadStickTilt and mod.PadStickTilt() or 0
+	local dungeon = mod.DungeonViewShown and mod.DungeonViewShown()
+	local tilt = x and not dungeon and mod.PadStickTilt and mod.PadStickTilt() or 0
 	if tilt ~= 0 then
 		glide = nil
 		local sx, sy = Offset(x, y)
 		ZoomAbout(sx, sy, zoom * math.exp(tilt * PAD_ZOOM_RATE * elapsed))
 	end
 	-- the cursor at the view's edge: Blizzard's pan speed for its map (view px a second), ours too
-	local speed = x and sc.gamepadScrollSpeed
+	local speed = x and not dungeon and sc.gamepadScrollSpeed
 	local sxs, sys = speed and tonumber(speed.X) or 0, speed and tonumber(speed.Y) or 0
 	if sxs ~= 0 or sys ~= 0 then
 		glide = nil
@@ -473,7 +486,10 @@ local function OnUpdate(_, elapsed)
 	hoverWait = hoverWait - elapsed
 	if hoverWait <= 0 then
 		hoverWait = HOVER_EVERY
-		Enter(x and (S.PinAt(x, y, REACH) or QuestieAt(x, y)) or nil)
+		local ctl, blocked
+		if x and mod.PadControlAt then ctl, blocked = mod.PadControlAt(x, y) end
+		if ctl or blocked or dungeon then Enter(ctl)
+		else Enter(x and (S.PinAt(x, y, REACH) or QuestieAt(x, y)) or nil) end
 	end
 end
 
@@ -518,7 +534,7 @@ local function Build()
 	if not ok or not err then return Fail("laying out the art: " .. tostring(err)) end
 	canvas:SetSize(W, H)
 	S.RaiseArrow(math.min(9900, base + ARROW_ABOVE))
-	MakePointer(math.min(9950, base + POINTER_ABOVE))
+	MakePointer(POINTER_LEVEL)
 	questieLayer = CreateFrame("Frame", nil, view)
 	questieLayer:SetAllPoints(view)
 	questieLayer:SetFrameLevel(base + ART_RANGE + 10)
@@ -584,6 +600,7 @@ end
 
 local function Hide()
 	Enter(nil)
+	if mod.DungeonViewShown and mod.DungeonViewShown() and mod.CloseDungeonView then pcall(mod.CloseDungeonView) end
 	for icon in pairs(questieShown) do if icon:GetParent() == questieLayer then icon:Hide() end end
 	wipe(questieShown)
 	view:Hide()
@@ -594,6 +611,8 @@ end
 
 -- for WorldMap.lua: built here, OpenMap's usual map can't be (its art is on this view): a reload then
 function mod.PadViewBuilt() return built end
+-- for Dungeons.lua: this view is the map now (Blizzard's left as it is)
+function mod.PadViewOn() return built and On() end
 
 -- /openmap padview: how the controller view is getting on
 function mod.PadViewDiag()
@@ -633,6 +652,7 @@ local function Setup()
 		return
 	end
 	diag.setup = "done"
+	if mod.PadDungeonHost then mod.PadDungeonHost(map) end
 
 	view = CreateFrame("Frame", nil, map)
 	view:SetAllPoints(sc)

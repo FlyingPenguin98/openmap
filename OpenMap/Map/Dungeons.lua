@@ -49,6 +49,12 @@ local shownMap, lastMap         -- the map the window shows, and the one before 
 local function MapsOn() return mod.db.dungeonMaps ~= false end   -- (Options' Dungeon maps)
 mod.DungeonMapsOn = MapsOn
 
+-- PadView.lua's controller view on: Blizzard's map is never changed from here then (that's OpenMap's code
+-- changing it, which taints the Gamepad UI), so a dungeon opens in OpenMap's own view of it (its floors'
+-- pictures, ns.MapDungeonMaps), not on Blizzard's map; and the side panel stays out of the quest log
+-- (opening or docking into it would be OpenMap's doing too)
+local function PadView() return mod.PadViewOn and mod.PadViewOn() or false end
+
 local function Places() return ns.MapPlaces or {} end
 
 -- an entrance's place on Azeroth's map (normalized): from world yards on its continent, or a spot on
@@ -547,6 +553,7 @@ local function BuildView()
 		b.hover = b:CreateTexture(nil, "HIGHLIGHT")
 		for _, tex in ipairs({ b.bg, b.selected, b.hover }) do tex:SetPoint("CENTER") end
 		b:SetScript("OnClick", function(self)
+			if PadView() then return end
 			local log = map.QuestLog
 			if log and log:IsVisible() then
 				if view.dockTab == self.key then return end
@@ -971,7 +978,7 @@ DockNow = function()
 		return
 	end
 	local log = map.QuestLog
-	local open = view:IsShown() and log and log:IsVisible() and true or false
+	local open = not PadView() and view:IsShown() and log and log:IsVisible() and true or false
 	side:ClearAllPoints()
 	view.port:SetPoint("BOTTOMRIGHT", 0, 0)
 	if open then
@@ -998,6 +1005,7 @@ end
 -- the log put away too: one brings it back, at that tab
 PlaceTabs = function(open)
 	local tabs, log = view.sideTabs, map.QuestLog
+	if PadView() then tabs:Hide() return end
 	if mod.PlaceDungeonTabsFrame then mod.PlaceDungeonTabsFrame(tabs)
 	else
 		tabs:ClearAllPoints()
@@ -1112,7 +1120,7 @@ end
 local function Open(inst, pin)
 	if chooser then chooser:Hide() end
 	if mod.db.entranceClick == "journal" and OpenJournal(inst) then return end
-	local id = MapsOn() and DungeonMap(inst)
+	local id = MapsOn() and not PadView() and DungeonMap(inst)
 	if id then
 		if PadWaits() then return end
 		local u, v, zoom = mod.ViewNow()
@@ -1158,6 +1166,7 @@ end
 -- a dungeon's is: the game's own map of it in the window, the world as it was on the way back out
 function mod.OpenAwayMap(mapID)
 	if not C_Map.GetMapInfo(mapID) then return false end
+	if PadView() then return false end
 	if PadWaits() then return true end
 	local u, v, zoom = mod.ViewNow()
 	away[mapID] = true
@@ -1168,8 +1177,15 @@ end
 
 local function Back()
 	if view and view:IsShown() then CloseView() return end
-	if map and not mod.IsStitched() and not PadWaits() then map:NavigateToParentMap() end
+	if map and not mod.IsStitched() and not PadWaits() and not PadView() then map:NavigateToParentMap() end
 end
+
+-- for PadView.lua: Blizzard's map known here (its SetupDungeons, the usual map's, isn't run then: nothing of
+-- it hooked), an entrance pressed, the view closed
+function mod.PadDungeonHost(worldMap)
+	if not map then map, sc = worldMap, worldMap.ScrollContainer end
+end
+function mod.CloseDungeonView() CloseView() end
 
 -- Options' and the menu's Dungeon maps: off, a dungeon's map that's up goes back to the world map
 function mod.SetDungeonMaps(on)

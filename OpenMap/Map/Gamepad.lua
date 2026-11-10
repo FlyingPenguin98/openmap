@@ -60,6 +60,9 @@ local function Under(x, y, noPins)
 	return nil, false
 end
 
+-- for PadView.lua: OpenMap's control under (x, y) (its dungeon's map, its windows), and whether one is in the way
+function mod.PadControlAt(x, y) return Under(x, y, true) end
+
 local function Enter(f)
 	if f == hovered then return end
 	local was = hovered
