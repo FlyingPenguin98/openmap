@@ -612,7 +612,16 @@ local function Build()
 	end
 	mod.Animating = function() return glide ~= nil end
 	mod.Zooming = function() return glide ~= nil or GetTime() - stickZoomAt < 0.2 end
-	mod.CursorWorld = function() if lastX then return WorldAt(Offset(lastX, lastY)) end end
+	-- (as WorldMap.lua's: the world point, and world units per view px, which the quill measures by)
+	mod.CursorWorld = function()
+		local x, y = Cursor()
+		if not x then x, y = lastX, lastY end
+		if not x then return end
+		local W, H = S.Size()
+		local px = FitPx() * zoom
+		local cu, cv = WorldAt(Offset(x, y))
+		return cu, cv, 1 / (W * px), 1 / (H * px)
+	end
 	mod.PadCursorXY = function() return Cursor() end
 	mod.WheelZoom = function(delta)
 		local sx, sy = 0, 0
