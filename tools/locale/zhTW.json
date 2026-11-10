@@ -515,5 +515,6 @@
  "Enable OpenMap with Gamepad UI": "在遊戲控制器使用者介面中啟用 OpenMap",
  "With the game's Gamepad UI on, OpenMap draws its map over Blizzard's and leaves Blizzard's map as it is, so the controller's buttons keep working. Off: Blizzard's map while the Gamepad UI is on.": "開啟遊戲的遊戲控制器使用者介面時，OpenMap 會在暴雪地圖之上繪製自己的地圖，並保持暴雪地圖不變，讓控制器按鍵能繼續運作。關閉：遊戲控制器使用者介面開啟時使用暴雪地圖。",
  "With the controller, the D-pad's right opens the quest log.": "使用控制器時，按方向鍵右以開啟任務日誌。",
- "That isn't available with the Gamepad UI yet.": "遊戲控制器使用者介面目前還不支援此功能。"
+ "That isn't available with the Gamepad UI yet.": "遊戲控制器使用者介面目前還不支援此功能。",
+ "OpenMap's map with a controller (the Gamepad UI)": "用遊戲控制器使用 OpenMap 地圖（遊戲控制器使用者介面）"
 }

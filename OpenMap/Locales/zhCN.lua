@@ -318,6 +318,7 @@ L["OpenMap is in beta: draw on the map where something looks wrong (a dungeon's 
 L["OpenMap is made by |cffe6b85cJi|r, and it's open source: join in on GitHub"] = "OpenMap由|cffe6b85cJi|r制作，开源项目：欢迎在GitHub上参与"
 L["OpenMap's icons on the map (dungeons, flight masters, boats, townsfolk, your pins ...) at this size. Questie's icons have their own size, in Questie's options."] = "OpenMap在地图上的图标（地下城、飞行管理员、船、镇民、你的标记……）按此大小显示。Questie的图标大小在Questie的选项中单独设置。"
 L["OpenMap's icons on the map at this size: dungeons, flight masters, boats, townsfolk, your pins. Questie's icons have their own size, in Questie's options."] = "OpenMap在地图上的图标按此大小显示：地下城、飞行管理员、船、镇民、你的标记。Questie的图标大小在Questie的选项中单独设置。"
+L["OpenMap's map with a controller (the Gamepad UI)"] = "用手柄使用OpenMap地图（手柄界面）"
 L["OpenMap's map with the controller (test)"] = "手柄使用OpenMap地图（测试）"
 L["OpenMap's maps of dungeons and raids: Blizzard's where the client has one, the ones drawn for WoW Forever's where it has none. Off: inside a dungeon the map stays the world map, and an entrance's card opens over it instead."] = "OpenMap的地下城和团队副本地图：客户端有的用暴雪的，没有的用为WoW Forever绘制的。关闭：在地下城内地图仍为世界地图，入口的卡片在其上打开。"
 L["OpenMap: zoom update %.1f ms, close-up %.1f ms (worst %.1f)"] = "OpenMap：缩放更新 %.1f ms，近景 %.1f ms（最差 %.1f）"

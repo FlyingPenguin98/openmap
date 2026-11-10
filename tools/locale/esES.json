@@ -515,5 +515,6 @@
  "Enable OpenMap with Gamepad UI": "Activar OpenMap con la IU para mandos",
  "With the game's Gamepad UI on, OpenMap draws its map over Blizzard's and leaves Blizzard's map as it is, so the controller's buttons keep working. Off: Blizzard's map while the Gamepad UI is on.": "Con la IU para mandos del juego activada, OpenMap dibuja su mapa sobre el de Blizzard y deja el mapa de Blizzard como está, así que los botones del mando siguen funcionando. Desactivado: el mapa de Blizzard mientras la IU para mandos esté activada.",
  "With the controller, the D-pad's right opens the quest log.": "Con el mando, la derecha de la cruceta abre el registro de misiones.",
- "That isn't available with the Gamepad UI yet.": "Eso aún no está disponible con la IU para mandos."
+ "That isn't available with the Gamepad UI yet.": "Eso aún no está disponible con la IU para mandos.",
+ "OpenMap's map with a controller (the Gamepad UI)": "El mapa de OpenMap con mando (la IU para mandos)"
 }

@@ -515,5 +515,6 @@
  "Enable OpenMap with Gamepad UI": "Activer OpenMap avec l'interface pour manette",
  "With the game's Gamepad UI on, OpenMap draws its map over Blizzard's and leaves Blizzard's map as it is, so the controller's buttons keep working. Off: Blizzard's map while the Gamepad UI is on.": "Avec l'interface pour manette du jeu activée, OpenMap dessine sa carte par-dessus celle de Blizzard et laisse la carte de Blizzard telle quelle, pour que les boutons de la manette continuent de fonctionner. Désactivé : la carte de Blizzard tant que l'interface pour manette est activée.",
  "With the controller, the D-pad's right opens the quest log.": "Avec la manette, la droite de la croix directionnelle ouvre le journal des quêtes.",
- "That isn't available with the Gamepad UI yet.": "Ce n'est pas encore disponible avec l'interface pour manette."
+ "That isn't available with the Gamepad UI yet.": "Ce n'est pas encore disponible avec l'interface pour manette.",
+ "OpenMap's map with a controller (the Gamepad UI)": "La carte d'OpenMap à la manette (l'interface pour manette)"
 }

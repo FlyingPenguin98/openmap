@@ -515,5 +515,6 @@
  "Enable OpenMap with Gamepad UI": "Включить OpenMap с интерфейсом контроллера",
  "With the game's Gamepad UI on, OpenMap draws its map over Blizzard's and leaves Blizzard's map as it is, so the controller's buttons keep working. Off: Blizzard's map while the Gamepad UI is on.": "При включённом интерфейсе контроллера OpenMap рисует свою карту поверх карты Blizzard и оставляет карту Blizzard как есть, поэтому кнопки контроллера продолжают работать. Выключено: карта Blizzard, пока включён интерфейс контроллера.",
  "With the controller, the D-pad's right opens the quest log.": "С контроллером журнал заданий открывается нажатием вправо на крестовине.",
- "That isn't available with the Gamepad UI yet.": "С интерфейсом контроллера это пока недоступно."
+ "That isn't available with the Gamepad UI yet.": "С интерфейсом контроллера это пока недоступно.",
+ "OpenMap's map with a controller (the Gamepad UI)": "Карта OpenMap с контроллером (интерфейс контроллера)"
 }

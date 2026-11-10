@@ -27,6 +27,7 @@ ns.Credits = {
 		{ "ZiiMs", L["the switch for dungeon maps, and separate switches for friends and guild"] },
 		{ "forcedroidbrain", L["map brightness"] },
 		{ "TheRayoX", L["friends on other numbered realms on the map"] },
+		{ "FlyingPenguin98", L["OpenMap's map with a controller (the Gamepad UI)"] },
 	} },
 	{ L["Map art"], {
 		{ "Blizzard Entertainment", L["the map art is the game's own"] },

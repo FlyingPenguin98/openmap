@@ -1107,7 +1107,7 @@
  {
   "en": "Everyone who reports problems and ideas on CurseForge.",
   "where": [
-   "Credits.lua:42"
+   "Credits.lua:43"
   ]
  },
  {
@@ -1411,7 +1411,7 @@
  {
   "en": "If a word reads wrong in your language, say so on CurseForge: it's fixed for the next version.",
   "where": [
-   "Credits.lua:39"
+   "Credits.lua:40"
   ]
  },
  {
@@ -1507,7 +1507,7 @@
  {
   "en": "Libraries",
   "where": [
-   "Credits.lua:34"
+   "Credits.lua:35"
   ]
  },
  {
@@ -1569,7 +1569,7 @@
  {
   "en": "Map art",
   "where": [
-   "Credits.lua:31"
+   "Credits.lua:32"
   ]
  },
  {
@@ -1980,6 +1980,12 @@
   ]
  },
  {
+  "en": "OpenMap's map with a controller (the Gamepad UI)",
+  "where": [
+   "Credits.lua:30"
+  ]
+ },
+ {
   "en": "OpenMap's map with the controller (test)",
   "where": [
    "Map/WorldMap.lua:1529"
@@ -2233,7 +2239,7 @@
  {
   "en": "Reports and ideas",
   "where": [
-   "Credits.lua:41"
+   "Credits.lua:42"
   ]
  },
  {
@@ -2714,7 +2720,7 @@
  {
   "en": "Translations",
   "where": [
-   "Credits.lua:38"
+   "Credits.lua:39"
   ]
  },
  {
@@ -3174,7 +3180,7 @@
  {
   "en": "the map art is the game's own",
   "where": [
-   "Credits.lua:32"
+   "Credits.lua:33"
   ]
  },
  {

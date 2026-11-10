@@ -318,6 +318,7 @@ L["OpenMap is in beta: draw on the map where something looks wrong (a dungeon's 
 L["OpenMap is made by |cffe6b85cJi|r, and it's open source: join in on GitHub"] = "OpenMap 제작: |cffe6b85cJi|r. 오픈 소스이니 GitHub에서 함께해 주십시오"
 L["OpenMap's icons on the map (dungeons, flight masters, boats, townsfolk, your pins ...) at this size. Questie's icons have their own size, in Questie's options."] = "OpenMap이 지도에 표시하는 아이콘(던전, 비행 조련사, 배, 마을 주민, 내 핀 등)의 크기입니다. Questie 아이콘의 크기는 Questie 설정에서 따로 정합니다."
 L["OpenMap's icons on the map at this size: dungeons, flight masters, boats, townsfolk, your pins. Questie's icons have their own size, in Questie's options."] = "OpenMap이 지도에 표시하는 아이콘의 크기입니다: 던전, 비행 조련사, 배, 마을 주민, 내 핀. Questie 아이콘의 크기는 Questie 설정에서 따로 정합니다."
+L["OpenMap's map with a controller (the Gamepad UI)"] = "게임패드로 쓰는 OpenMap 지도 (게임패드 사용자 인터페이스)"
 L["OpenMap's map with the controller (test)"] = "게임패드로 OpenMap 지도 사용 (테스트)"
 L["OpenMap's maps of dungeons and raids: Blizzard's where the client has one, the ones drawn for WoW Forever's where it has none. Off: inside a dungeon the map stays the world map, and an entrance's card opens over it instead."] = "OpenMap의 던전 및 공격대 지도: 클라이언트에 있으면 블리자드 지도, 없으면 WoW Forever용으로 그린 지도입니다. 끄면: 던전 안에서도 지도가 세계 지도로 유지되고, 입구의 카드가 그 위에 열립니다."
 L["OpenMap: zoom update %.1f ms, close-up %.1f ms (worst %.1f)"] = "OpenMap: 확대 갱신 %.1f ms, 근접 표시 %.1f ms (최악 %.1f)"
