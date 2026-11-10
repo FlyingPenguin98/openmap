@@ -17,8 +17,8 @@
 -- under the cursor (or presses the icon there) and X out a level (after Blizzard's own, on its map
 -- underneath, unseen); the left stick pressed puts the waypoint where the cursor is.
 -- So far the art, the place names, your arrow, dungeons, boats, flight masters, your map pins and the
--- waypoint; not yet other addons' icons (Questie's), OpenMap's menu, a dungeon's map or the quest
--- log's areas.
+-- waypoint, and Questie's icons (its lines not yet); not yet other addons' icons, OpenMap's menu, a
+-- dungeon's map or the quest log's areas.
 --------------------------------------------------------------------------------
 
 local _, ns = ...
@@ -33,6 +33,11 @@ local CITY_ZOOM = 1.5           -- deeper over a city (as WorldMap.lua's)
 local PLAYER_EVERY = 0.1        -- seconds between moves of your arrow
 local REACH = 12                -- px from the cursor that an icon counts as under it (Gamepad.lua's)
 local HOVER_EVERY = 0.05        -- seconds between looks at what's under the cursor
+local QUESTIE_LIB = "HereBeDragonsQuestie-Pins-2.0"
+local QUESTIE_FROM = 2.5        -- the zoom Questie's icons come in at (a continent's worth of quests is too many)
+local QUESTIE_EVERY = 0.5       -- seconds between looks at which icons Questie has on the map
+local ARROW_ABOVE = 8500        -- your arrow: this many levels over the view, over Questie's icons (their levels are
+local POINTER_ABOVE = 8800      --  fixed, from 2015: Extras.lua) ... and the pad's cursor over everything
 
 local map, sc, view, canvas
 local pointer                   -- the pad's cursor, drawn again over the art (Blizzard's is under it)
@@ -44,6 +49,11 @@ local lastX, lastY              -- the pad's cursor on the last frame (screen px
 local dirty = false
 local playerWait, hoverWait = 0, 0
 local hovered                   -- the icon under the pad's cursor, entered as the mouse would
+local questieLayer              -- Questie's icons, on this view
+local questieAt = setmetatable({}, { __mode = "k" })   -- icon -> { u, v }: Questie's icons on the map, in world units
+local questieShown = {}         -- icon -> true: placed on this view now
+local questieWait = 0
+local PlaceQuestie              -- (below: Apply calls it)
 local ownWaypointAt = -10       -- when this view last set or cleared the waypoint itself (GetTime)
 local diag = { started = 0, setup = "not yet", shows = 0, why = "not tried yet" }   -- (/openmap padview)
 
@@ -132,6 +142,7 @@ local function Apply()
 	local hu, hv = view:GetWidth() / 2 / (W * px), view:GetHeight() / 2 / (H * px)
 	S.SetView(u, v, hu, hv, zoom * dk, zoom / (ns.ClientMaps and ns.ClientMaps.zoom or 1))
 	S.PlacePlayer()
+	PlaceQuestie()
 end
 
 -- to zoom `to`, the world point under the view offset (sx, sy) kept there
@@ -241,6 +252,104 @@ local function MakePointer(level)
 	end
 end
 
+--------------------------------------------------------------------------------
+-- Questie's icons. HereBeDragons (Questie's copy) puts each on Blizzard's map, under this view and
+-- unseen; there, each map change places every one of them again (the stall X had). While the view is
+-- on, the library places none on Blizzard's map (its provider's HandlePin, wrapped: the library's own
+-- table, not Blizzard's), and its icons are put on this view instead, where they are in the world:
+-- from the map point Questie gave (the client's map rectangles, as Extras.lua places them), else the
+-- library's world position. Icons only, not Questie's lines
+--------------------------------------------------------------------------------
+
+local function QuestieLib()
+	return LibStub and LibStub(QUESTIE_LIB, true)
+end
+
+-- the library's provider wrapped once: nothing put on Blizzard's map while the view is on
+local function HoldQuestie()
+	local lib = QuestieLib()
+	local provider = lib and lib.worldmapProvider
+	if type(provider) ~= "table" or type(provider.HandlePin) ~= "function" or provider.openmapPadView then return end
+	provider.openmapPadView = true
+	local HandlePin = provider.HandlePin
+	provider.HandlePin = function(self, ...)
+		if built and On() then return end
+		return HandlePin(self, ...)
+	end
+	-- (the ones already on Blizzard's map: taken off, as the library does on a map change)
+	if map:IsShown() and type(provider.RemoveAllData) == "function" then pcall(provider.RemoveAllData, provider) end
+end
+
+-- an icon's place in the world
+local function IconWorld(icon, data)
+	local uiMapID = data.uiMapID
+	if uiMapID and icon.UiMapID == uiMapID and type(icon.x) == "number" and type(icon.y) == "number" then
+		local l, r, t, b = S.Rect(uiMapID)
+		if l then return l + icon.x / 100 * (r - l), t + icon.y / 100 * (b - t) end
+	end
+	-- (the library's x, y are the game's world Y, X: Extras.lua)
+	if type(data.instanceID) == "number" and type(data.x) == "number" and type(data.y) == "number" and S.FromYards then
+		return S.FromYards(data.instanceID, data.y, data.x)
+	end
+end
+
+-- which icons Questie has on the map now, and where
+local function ScanQuestie()
+	local lib = QuestieLib()
+	local pins = lib and lib.worldmapPins
+	wipe(questieAt)
+	if type(pins) ~= "table" then return end
+	for icon, data in pairs(pins) do
+		if type(icon) == "table" and type(data) == "table" and icon.SetPoint and icon.type ~= "line" then
+			local ok, wu, wv = pcall(IconWorld, icon, data)
+			if ok and wu and wv then questieAt[icon] = { wu, wv } end
+		end
+	end
+end
+
+-- Questie's icons in view put on it (at their size: the view isn't scaled), the rest hidden
+function PlaceQuestie()
+	if not questieLayer then return end
+	local seen = {}
+	local profile = _G.Questie and Questie.db and Questie.db.profile
+	if zoom >= QUESTIE_FROM and not (profile and profile.enabled == false) then
+		local W, H = S.Size()
+		local px = FitPx() * zoom
+		local hw, hh = view:GetWidth() / 2 + 16, view:GetHeight() / 2 + 16
+		for icon, at in pairs(questieAt) do
+			local x, y = (at[1] - u) * W * px, (at[2] - v) * H * px
+			if x > -hw and x < hw and y > -hh and y < hh then
+				if icon:GetParent() ~= questieLayer then icon:SetParent(questieLayer) end
+				icon:ClearAllPoints()
+				icon:SetPoint("CENTER", questieLayer, "CENTER", x, -y)
+				icon:Show()
+				seen[icon] = true
+			end
+		end
+	end
+	for icon in pairs(questieShown) do
+		if not seen[icon] and icon:GetParent() == questieLayer then icon:Hide() end
+	end
+	questieShown = seen
+end
+
+-- the Questie icon nearest the cursor, if it's within reach
+local function QuestieAt(x, y)
+	local best, bestD = nil, REACH * REACH
+	for icon in pairs(questieShown) do
+		if icon:IsVisible() then
+			local cx, cy = icon:GetCenter()
+			if cx then
+				local es = icon:GetEffectiveScale()
+				local dx, dy = cx * es - x, cy * es - y
+				local d = dx * dx + dy * dy
+				if d < bestD then best, bestD = icon, d end
+			end
+		end
+	end
+	return best
+end
+
 -- the icon under the cursor gets the mouse's enter and leave (its tooltip, its highlight), as on the
 -- usual map (Gamepad.lua)
 local function Enter(pin)
@@ -321,10 +430,16 @@ local function OnUpdate(_, elapsed)
 	end
 	if dirty then Apply() end
 	Pointer(x, y)
+	questieWait = questieWait - elapsed
+	if questieWait <= 0 then
+		questieWait = QUESTIE_EVERY
+		ScanQuestie()
+		PlaceQuestie()
+	end
 	hoverWait = hoverWait - elapsed
 	if hoverWait <= 0 then
 		hoverWait = HOVER_EVERY
-		Enter(x and S.PinAt(x, y, REACH) or nil)
+		Enter(x and (S.PinAt(x, y, REACH) or QuestieAt(x, y)) or nil)
 	end
 end
 
@@ -368,8 +483,11 @@ local function Build()
 	ok, err = pcall(S.Layout, WORLD)
 	if not ok or not err then return Fail("laying out the art: " .. tostring(err)) end
 	canvas:SetSize(W, H)
-	S.RaiseArrow(base + ART_RANGE + 40)
-	MakePointer(base + ART_RANGE + 60)
+	S.RaiseArrow(math.min(9900, base + ARROW_ABOVE))
+	MakePointer(math.min(9950, base + POINTER_ABOVE))
+	questieLayer = CreateFrame("Frame", nil, view)
+	questieLayer:SetAllPoints(view)
+	questieLayer:SetFrameLevel(base + ART_RANGE + 10)
 	-- what the other files ask of the map, here this view's: a glide (a dock's other end), an icon
 	-- clicked with the mouse; and no map of Blizzard's opened (Dungeons.lua's, Zephras Isle's)
 	S.GlideToWorld = S.GlideToWorld or function(tu, tv, tz) GlideTo(tu, tv, math.max(tz or 1, zoom)) end
@@ -422,6 +540,8 @@ local function Show()
 		return
 	end
 	if not u then FirstView() end
+	HoldQuestie()
+	ScanQuestie()
 	glide = nil
 	sc.Child:SetAlpha(0)      -- (Blizzard's map underneath: there, unseen; nothing of it written)
 	view:Show()
@@ -430,6 +550,8 @@ end
 
 local function Hide()
 	Enter(nil)
+	for icon in pairs(questieShown) do if icon:GetParent() == questieLayer then icon:Hide() end end
+	wipe(questieShown)
 	view:Hide()
 	if pointer then pointer:Hide() end
 	glide, lastX, lastY = nil, nil, nil
