@@ -39,7 +39,7 @@ end
 --------------------------------------------------------------------------------
 
 function mod:FindMe(keepZoom)
-	if not mod.IsStitched() then return end
+	if not mod.IsStitched() and not (mod.PadViewOn and mod.PadViewOn()) then return end
 	local u, v, best = UnitWorld("player")
 	if not u then
 		-- the map underneath may still know (the zone you're in, shown)

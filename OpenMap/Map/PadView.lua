@@ -18,7 +18,9 @@
 -- underneath, unseen); the left stick pressed puts the waypoint where the cursor is.
 -- So far the art, the place names, your arrow, dungeons, boats, flight masters, your map pins and the
 -- waypoint, Questie's icons (its lines not yet), and a dungeon's map in OpenMap's own view of it (its
--- floors; its side panel not yet); not yet other addons' icons, OpenMap's menu or the quest log's areas.
+-- floors; its side panel not yet), and OpenMap's menu (Find me, search, the checklist; not yet its pins,
+-- quill or report); not yet other addons' icons or the quest log's areas. Over OpenMap's windows the
+-- right stick is their mouse wheel.
 --------------------------------------------------------------------------------
 
 local _, ns = ...
@@ -57,6 +59,10 @@ local questieShown = {}         -- icon -> true: placed on this view now
 local questieWait = 0
 local PlaceQuestie, QuestieTip -- (below: Apply calls the one, the other the other)
 local ownWaypointAt = -10       -- when this view last set or cleared the waypoint itself (GetTime)
+local overWindow, wheelFrame    -- the pad's cursor over one of OpenMap's windows (its menu ...), and what scrolls there
+local wheelWait = 0
+local stickZoomAt = -10         -- when the right stick last zoomed the view (GetTime)
+local WHEEL_EVERY = 0.12        -- seconds between the right stick's wheel notches at full tilt
 local diag = { started = 0, setup = "not yet", shows = 0, why = "not tried yet" }   -- (/openmap padview)
 
 local function Clamp(x, lo, hi) return math.max(lo, math.min(hi, x)) end
@@ -452,14 +458,27 @@ end
 local function OnUpdate(_, elapsed)
 	local x, y = Cursor()
 	local dungeon = mod.DungeonViewShown and mod.DungeonViewShown()
-	local tilt = x and not dungeon and mod.PadStickTilt and mod.PadStickTilt() or 0
+	local stick = x and mod.PadStickTilt and mod.PadStickTilt() or 0
+	-- over one of OpenMap's windows (its menu, a dungeon's map): the right stick is its mouse wheel
+	if overWindow and x then
+		wheelWait = wheelWait - elapsed
+		if stick ~= 0 and wheelFrame and wheelWait <= 0 then
+			wheelWait = WHEEL_EVERY / math.max(0.3, math.abs(stick))
+			local fn = wheelFrame:GetScript("OnMouseWheel")
+			if fn then pcall(fn, wheelFrame, stick > 0 and 1 or -1) end
+		elseif stick == 0 then
+			wheelWait = 0
+		end
+	end
+	local tilt = (dungeon or overWindow) and 0 or stick
 	if tilt ~= 0 then
+		stickZoomAt = GetTime()
 		glide = nil
 		local sx, sy = Offset(x, y)
 		ZoomAbout(sx, sy, zoom * math.exp(tilt * PAD_ZOOM_RATE * elapsed))
 	end
 	-- the cursor at the view's edge: Blizzard's pan speed for its map (view px a second), ours too
-	local speed = x and not dungeon and sc.gamepadScrollSpeed
+	local speed = x and not dungeon and not overWindow and sc.gamepadScrollSpeed
 	local sxs, sys = speed and tonumber(speed.X) or 0, speed and tonumber(speed.Y) or 0
 	if sxs ~= 0 or sys ~= 0 then
 		glide = nil
@@ -488,6 +507,8 @@ local function OnUpdate(_, elapsed)
 		hoverWait = HOVER_EVERY
 		local ctl, blocked
 		if x and mod.PadControlAt then ctl, blocked = mod.PadControlAt(x, y) end
+		overWindow = (ctl or blocked) and true or false
+		wheelFrame = overWindow and mod.PadWheelAt and mod.PadWheelAt(x, y) or nil
 		if ctl or blocked or dungeon then Enter(ctl)
 		else Enter(x and (S.PinAt(x, y, REACH) or QuestieAt(x, y)) or nil) end
 	end
@@ -552,6 +573,24 @@ local function Build()
 	if mod.BuildMapPins then pcall(mod.BuildMapPins, mod) end
 	if mod.BuildNav then pcall(mod.BuildNav, mod) end
 	S.SetShown(true)
+	-- what the other files ask of the view (Nav.lua's Find me and search, Close.lua's resting while it
+	-- zooms ...): this view's, OpenMap's usual map not being set up while it's on
+	mod.Glide = function(tu, tv, tz) GlideTo(tu, tv, tz or zoom) end
+	mod.ViewNow = function() return u, v, zoom end
+	mod.FitZoom = function(id) return FitZoom(id) end
+	mod.ShowNow = function(tu, tv, tz)
+		glide = nil
+		u, v, zoom = tu, tv, Clamp(tz or zoom, 1, MostAt(tu, tv))
+		dirty = true
+	end
+	mod.Animating = function() return glide ~= nil end
+	mod.Zooming = function() return glide ~= nil or GetTime() - stickZoomAt < 0.2 end
+	mod.CursorWorld = function() if lastX then return WorldAt(Offset(lastX, lastY)) end end
+	-- OpenMap's menu (Panel.lua: what changes Blizzard's map or quest log left out), over this view
+	if mod.SetupPanel and not (mod.PanelBuilt and mod.PanelBuilt()) then
+		local okP, errP = pcall(mod.SetupPanel, mod, map)
+		if not okP then diag.panel = tostring(errP) end
+	end
 	ok, err = pcall(Look)
 	if not ok then diag.why = "the look (carried on): " .. tostring(err) end
 	built = true
@@ -616,9 +655,10 @@ function mod.PadViewOn() return built and On() end
 
 -- /openmap padview: how the controller view is getting on
 function mod.PadViewDiag()
-	ns:Print("Controller view: on %s, started %d, set up: %s, map opened %d times, %s; showing %s, size %s.",
+	ns:Print("Controller view: on %s, started %d, set up: %s, map opened %d times, %s; showing %s, size %s; menu %s.",
 		tostring(On()), diag.started, diag.setup, diag.shows, diag.why, tostring(view and view:IsShown() or false),
-		view and ("%.0f x %.0f"):format(view:GetWidth(), view:GetHeight()) or "-")
+		view and ("%.0f x %.0f"):format(view:GetWidth(), view:GetHeight()) or "-",
+		diag.panel or tostring(mod.PanelBuilt and mod.PanelBuilt() or false))
 end
 
 -- The waypoint changed. Blizzard's own, the left stick pressed (GamepadTryPlaceWaypoint), goes where its
@@ -671,6 +711,13 @@ local function Setup()
 	if map.NavigateToParentMap then
 		hooksecurefunc(map, "NavigateToParentMap", function() if view:IsShown() then Step(false) end end)
 	end
+	-- a setting changed (the menu's checklist, Options): the view's look again
+	hooksecurefunc(mod, "Refresh", function()
+		if built and On() then
+			pcall(Look)
+			dirty = true
+		end
+	end)
 	local owner = {}
 	ns.RegisterEvent(owner, "USER_WAYPOINT_UPDATED", OnWaypoint)
 	ns.RegisterEvent(owner, "SUPER_TRACKING_CHANGED", function() if built and mod.RefreshWaypoint then pcall(mod.RefreshWaypoint) end end)

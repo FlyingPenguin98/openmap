@@ -115,12 +115,21 @@ end
 -- button does, never in combat (it lays the window out again)
 --------------------------------------------------------------------------------
 
+-- PadView.lua's controller view on: what would change Blizzard's map or its quest log from here (OpenMap's
+-- code, which taints the Gamepad UI) isn't offered, and the menu stays off Escape's list (UISpecialFrames,
+-- read by the Gamepad UI's own closing of windows)
+local function PadView() return mod.PadViewOn and mod.PadViewOn() or false end
+
 local function QuestLogShown()
 	if map.IsSidePanelShown then return map:IsSidePanelShown() and true or false end
 	return map.QuestLog and map.QuestLog:IsShown() or false
 end
 
 local function ToggleQuestLog()
+	if PadView() then
+		ns:Print(L["With the controller, the D-pad's right opens the quest log."])
+		return
+	end
 	if InCombatLockdown() then
 		ns:Print(L["The quest log can't be opened or closed in combat."])
 		return
@@ -175,8 +184,18 @@ local function Actions()
 	list[#list + 1] = { L["What's new"], id = "news", icon = Icon("INV_Scroll_03"),
 		tip = L["This version's changes (it glows after an update until you've looked)."],
 		run = function() mod:ToggleNews() end, lit = function() return mod.NewsUnseen and mod.NewsUnseen() end }
+	if PadView() then           -- (the controller view: not yet its pins, quill or report)
+		local keep = {}
+		for _, e in ipairs(list) do
+			if e.id == "find" or e.id == "questlog" or e.id == "news" then keep[#keep + 1] = e end
+		end
+		list = keep
+	end
 	return list
 end
+
+-- for PadView.lua: the menu built on Blizzard's map while the controller view is on (its SetupPanel)
+function mod.PanelBuilt() return menu ~= nil end
 
 -- the checklist's tabs: what the map shows, how it looks, and the rest (TABS[i].key; a header row
 -- names its tab, and the rows after it are in it)
@@ -1282,7 +1301,7 @@ function mod:SetupPanel(worldMap)
 
 	-- the window's portrait (Blizzard's quest log book): OpenMap's icon, while it's stitching
 	local border = map.BorderFrame
-	if border and border.SetPortraitToAsset then
+	if border and border.SetPortraitToAsset and not PadView() then
 		local function Portrait()
 			border:SetPortraitToAsset(mod.IsStitched() and "Interface\\AddOns\\OpenMap\\Media\\Textures\\OpenMapIconRound" or "Interface\\QuestFrame\\UI-QuestLog-BookIcon")
 		end
@@ -1323,7 +1342,7 @@ function mod:SetupPanel(worldMap)
 	close:SetFrameLevel(menu:GetFrameLevel() + 20)
 	close:SetHitRectInsets(-4, -4, -4, -4)
 	close:SetScript("OnClick", function() SetOpen(false) end)
-	tinsert(UISpecialFrames, "OpenMapMenu")
+	if not PadView() then tinsert(UISpecialFrames, "OpenMapMenu") end
 	menu:SetScript("OnHide", function()
 		-- (Escape, or the X: closed. The map closing hides it too, but then it opens again with the map)
 		if map:IsShown() then

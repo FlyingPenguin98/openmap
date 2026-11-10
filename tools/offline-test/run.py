@@ -156,6 +156,15 @@ steps = L.eval("""function(ns, scenario)
             wm:NavigateToGamepadCursor()
             wm:NavigateToParentMap()
             SlashCmdList.OPENMAP("padview")
+            -- (the menu on it, and a setting changed: the stub can't build the art, so the view says it's on)
+            local was = m.PadViewOn
+            m.PadViewOn = function() return true end
+            MinimalSliderWithSteppersMixin = false  -- (the stub's template has no slider: the menu's own then)
+            m:SetupPanel(wm)
+            m:OpenMenu()
+            m:Refresh()
+            m:FindMe()
+            m.PadViewOn = was
             wm:Hide()
             InputUtil.IsGamepadUIEnabled = function() return false end
             FireEvent("INPUT_DEVICE_INTERFACE_TRANSITION", 0, 1)
